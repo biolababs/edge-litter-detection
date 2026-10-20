@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 - 2026-10-20
+
+- Replaced the manual-first README with a professional standalone software
+  quick start.
+- Added `startup.sh` to automate environment setup, model verification, source
+  discovery, inference, output naming, and API startup.
+- Added local camera and media/stream probing without loading the model.
+- Added checksum-verified HTTPS model installation.
+- Added explicit software-versus-thesis and input-source documentation.
+
 ## 0.4.0 - 2026-10-20
 
 - Made the reusable application hardware-neutral while keeping Jetson as a

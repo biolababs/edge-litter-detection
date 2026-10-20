@@ -14,6 +14,8 @@ dist/
 data/*
 !data/README.md
 !data/count-ground-truth.example.json
+media/*
+!media/README.md
 models/*
 !models/.gitkeep
 runs/*

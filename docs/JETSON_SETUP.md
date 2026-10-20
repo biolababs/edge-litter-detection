@@ -10,7 +10,7 @@ A read-only inventory on 20 October 2026 confirmed:
 - 7.4 GiB physical memory, with 4.5 GiB available in the captured snapshot;
 - TensorRT 10.3.0 for Python;
 - no PyTorch or RF-DETR package in the system Python;
-- active Ollama, llama-server, Node, Python, and OpenCode services;
+- active local LLM, application, and development services;
 - no camera device present.
 
 See `JETSON_INVENTORY_2026-10-20.md` for the sanitized inventory.
@@ -65,6 +65,18 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements-jetson.txt
 python -m pip install -e .
 ```
+
+After that environment exists, the normal application entry point remains the
+same:
+
+```bash
+LITTER_PYTHON="$PWD/.venv/bin/python" \
+  ./startup.sh --skip-install --source sample.mp4 --no-display
+```
+
+On Jetson, `startup.sh` refuses to create a generic PyTorch environment. This
+prevents an accidental installation that is incompatible with the fixed
+JetPack/CUDA stack.
 
 ## Power and clocks
 

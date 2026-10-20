@@ -91,7 +91,7 @@ def create_app() -> Any:
     holder = DetectorHolder()
     app = FastAPI(
         title="Edge Litter Detection API",
-        version="0.4.0",
+        version="0.5.0",
         description="Detect, classify, and count litter in an image.",
     )
 

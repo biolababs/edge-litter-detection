@@ -53,7 +53,7 @@ but it must not replace detector evaluation.
 ## Confirmed deployment constraints
 
 - Jetson Orin Nano 8 GB Super, JetPack 6.2.3, L4T 36.5.2.
-- Existing Ollama/llama-server and application services remain untouched.
+- Existing local LLM and application services remain untouched.
 - Detector incremental memory target: at most 1.5 GiB preferred, 2.0 GiB hard
   initial limit.
 - Preserve at least 2.0 GiB available memory during coexistence testing.

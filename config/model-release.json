@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "status": "pending",
+  "url": null,
+  "sha256": null,
+  "notes": "Populate only after the trained litter checkpoint is frozen, validated, and approved for redistribution."
+}

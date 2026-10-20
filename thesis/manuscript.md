@@ -203,7 +203,7 @@ The selected detector processes every frame. When a rule identifies an
 important or uncertain event, a selected and de-identified frame could later be
 sent to a compact local vision-language service for a human-readable summary.
 The summary is auxiliary output and is never used as ground-truth annotation.
-Because the target already hosts Ollama and llama-server processes, no
+Because the target already hosts local LLM inference processes, no
 additional continuous VLM is included in the initial deployment.
 
 ### 2.5 Research gap
@@ -254,6 +254,12 @@ tracking, counting, and local event handling. It reports current visible
 objects separately from unique confirmed track IDs encountered during the
 session. Evidence is written as streaming JSON Lines plus an end-of-run
 summary. A selected-frame VLM, if enabled later, is downstream and asynchronous.
+
+The reusable software is a deliverable separate from this manuscript. Its
+`startup.sh` entry point automates environment preparation, verified checkpoint
+installation, source discovery, inference, and timestamped evidence output.
+The thesis will cite the exact public Git commit and artifact checksums used for
+each experiment; the software does not require the thesis in order to run.
 
 Training occurs on a GPU host using versioned configuration and data. The best
 checkpoint is transferred to the target deployment environment. The export
@@ -504,7 +510,7 @@ remaining tables are templates and must not be read as results.
 | Power mode | MAXN_SUPER |
 | Physical memory at capture | 7.4 GiB total; 4.5 GiB available |
 | TensorRT / Python | TensorRT 10.3.0 package; Python 3.10.12 |
-| Current workload | Ollama, llama-server, Node, Python, and OpenCode services observed |
+| Current workload | Local LLM, application, and development services observed |
 | Camera | none observed |
 | Inventory effect | read-only; no device changes |
 

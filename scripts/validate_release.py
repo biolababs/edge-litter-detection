@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+import json
+import os
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
+
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = [
     "README.md",
+    "startup.sh",
+    "tests/test_startup.sh",
     "LICENSE",
     "LICENSE-NOTICE.md",
     "MODEL_CARD.md",
@@ -18,8 +25,10 @@ REQUIRED = [
     "compose.yaml",
     "config/classes.yaml",
     "config/project.yaml",
+    "config/model-release.json",
     "config/data.example.yaml",
     "data/count-ground-truth.example.json",
+    "media/README.md",
     "docs/EXPERIMENT_PLAN.md",
     "docs/COUNTING.md",
     "docs/DEPLOYMENT.md",
@@ -30,10 +39,14 @@ REQUIRED = [
     "src/litter_edge/schema.py",
     "src/litter_edge/tracking.py",
     "src/litter_edge/runtime.py",
+    "src/litter_edge/discover.py",
+    "src/litter_edge/model_fetch.py",
     "src/litter_edge/evaluate.py",
     "src/litter_edge/evaluate_counts.py",
     "schemas/detection-event.schema.json",
     "schemas/count-ground-truth.schema.json",
+    "docs/INPUT_SOURCES.md",
+    "docs/SOFTWARE_AND_RESEARCH.md",
     "thesis/manuscript.md",
 ]
 
@@ -49,6 +62,8 @@ def main() -> None:
     for relative in REQUIRED:
         if not (ROOT / relative).is_file():
             errors.append(f"missing required file: {relative}")
+    if not os.access(ROOT / "startup.sh", os.X_OK):
+        errors.append("startup.sh must be executable")
 
     for path in ROOT.rglob("*"):
         if not path.is_file() or ".git" in path.parts:
@@ -68,6 +83,80 @@ def main() -> None:
         errors.append("manuscript must retain an explicit pending-results section")
     if "30 frames per second" in manuscript:
         errors.append("unsupported legacy 30 FPS claim found")
+
+    local_link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    markdown_files = [ROOT / "README.md", *(ROOT / "docs").glob("*.md")]
+    for markdown in markdown_files:
+        text = markdown.read_text(encoding="utf-8")
+        for target in local_link_pattern.findall(text):
+            if (
+                "://" in target
+                or target.startswith("#")
+                or target.startswith("mailto:")
+            ):
+                continue
+            clean_target = unquote(target.split("#", 1)[0]).strip("<>")
+            if clean_target and not (markdown.parent / clean_target).resolve().exists():
+                errors.append(
+                    "broken local Markdown link: "
+                    f"{markdown.relative_to(ROOT)} -> {target}"
+                )
+
+    pyproject_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    project_version_match = re.search(
+        r'^version\s*=\s*"([^"]+)"',
+        pyproject_text,
+        re.MULTILINE,
+    )
+    project_version = (
+        project_version_match.group(1) if project_version_match else "missing"
+    )
+    package_version = str(
+        json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+    )
+    citation_version = str(
+        yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))[
+            "version"
+        ]
+    )
+    init_text = (ROOT / "src/litter_edge/__init__.py").read_text(encoding="utf-8")
+    init_match = re.search(r'__version__\s*=\s*"([^"]+)"', init_text)
+    observed_versions = {
+        "pyproject.toml": project_version,
+        "package.json": package_version,
+        "CITATION.cff": citation_version,
+        "src/litter_edge/__init__.py": (
+            init_match.group(1) if init_match else "missing"
+        ),
+    }
+    for source, version in observed_versions.items():
+        if version != project_version:
+            errors.append(
+                f"version mismatch: {source} has {version}, expected {project_version}"
+            )
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    if f"## {project_version} " not in changelog:
+        errors.append(f"CHANGELOG.md has no entry for version {project_version}")
+
+    model_release = json.loads(
+        (ROOT / "config/model-release.json").read_text(encoding="utf-8")
+    )
+    if model_release.get("schema_version") != "1.0":
+        errors.append("config/model-release.json schema_version must be 1.0")
+    release_status = model_release.get("status")
+    release_url = model_release.get("url")
+    release_sha256 = model_release.get("sha256")
+    if release_status not in {"pending", "published"}:
+        errors.append("config/model-release.json status must be pending or published")
+    if release_status == "published":
+        if not isinstance(release_url, str) or not release_url.startswith("https://"):
+            errors.append("published model release requires an HTTPS URL")
+        if not isinstance(release_sha256, str) or not re.fullmatch(
+            r"[0-9a-fA-F]{64}", release_sha256
+        ):
+            errors.append("published model release requires a SHA-256 digest")
+    elif release_url is not None or release_sha256 is not None:
+        errors.append("pending model release must not define url or sha256")
 
     if errors:
         print("\n".join(f"ERROR: {error}" for error in errors), file=sys.stderr)

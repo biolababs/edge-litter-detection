@@ -1,151 +1,177 @@
-# Edge Litter Detection, Classification, Tracking, and Counting
+# Edge Litter Detection
 
-Portable edge-AI software for locating litter, assigning a litter class, and
-counting objects in images and video.
+[![CI](https://github.com/biolababs/edge-litter-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/biolababs/edge-litter-detection/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-Apache--2.0-4c1.svg)](LICENSE)
+[![Model](https://img.shields.io/badge/Detector-RF--DETR%20Nano-7B61FF.svg)](https://github.com/roboflow/rf-detr)
 
-Public repository:
-`github.com/biolababs/edge-litter-detection`
+Portable software for real-time litter detection, multiclass classification,
+tracking, and counting on edge-AI devices.
 
-## What it produces
+The application accepts an image, downloaded video, local camera, or live
+stream and produces annotated media plus structured JSON evidence. The
+software is independent of the MSc thesis; the thesis uses this repository as
+its reference implementation.
 
-For each frame, the application returns:
+## Project status
 
-- bounding boxes and confidence scores;
-- multiclass labels: glass, metal, paper/cardboard, plastic, and other litter;
-- the number of each class visible in the current frame;
+| Component | Status |
+|---|---|
+| Image, video, camera, and stream runtime | Implemented |
+| Five-class RF-DETR adapter | Implemented |
+| Tracking, class stabilization, and counting | Implemented |
+| Source discovery and input probing | Implemented |
+| CLI, HTTP API, container, tests, and schemas | Implemented |
+| Trained litter checkpoint | Pending data and training |
+| Accuracy and edge-device results | Pending testing |
+
+> [!IMPORTANT]
+> A trained five-class litter checkpoint is not distributed yet. The
+> application code can be installed and its input pipeline can be tested now,
+> but valid litter inference requires a compatible trained checkpoint. The
+> repository does not relabel a generic COCO model as a litter detector.
+
+## What the application returns
+
+- bounding boxes, confidence scores, and litter classes;
+- five classes: `glass`, `metal`, `paper_cardboard`, `plastic`, and
+  `other_litter`;
+- visible counts for each frame;
 - stable track IDs across video frames;
-- unique counts per class for the current inspection session;
-- JSON Lines events, an end-of-run JSON summary, and optional annotated media.
+- unique confirmed-track counts for the active run;
+- streaming JSON Lines events;
+- an end-of-run JSON summary;
+- optional annotated images and videos.
 
-The project counts tracks rather than summing frame detections, so one object
-visible for 100 frames is normally counted once. See `docs/COUNTING.md` for
-the exact semantics and limitations.
+One object visible in 100 frames is normally counted once, not 100 times. See
+[Counting semantics](docs/COUNTING.md) for limitations and exact definitions.
 
-## Model and hardware policy
+## Quick start
 
-RF-DETR Nano is the implementation model. This project does not compare model
-families. The application core is runtime- and hardware-neutral:
-
-```text
-image / video / camera / RTSP
-             |
-             v
-  model + accelerator adapter
-             |
-             v
- standard Detection records
-             |
-             v
- class stabilization + tracking
-             |
-             v
- visible counts + unique session counts
-             |
-             +--> JSONL events
-             +--> JSON summary
-             `--> annotated image/video
-```
-
-The same tracking, counting, evidence, and API code can run with:
-
-- CPU for development and functional testing;
-- NVIDIA CUDA on workstations;
-- AMD ROCm, including a compatible Strix Halo/Ryzen AI Max environment;
-- NVIDIA Jetson after a target-compatible runtime is validated;
-- future ONNX Runtime, OpenVINO, or TensorRT adapters without changing the
-  counting core.
-
-Hardware results are reported separately. A Jetson number is never presented as
-an AMD, CPU, or general edge-device result.
-
-## Current status
-
-- Detection/classification adapter contract: implemented.
-- RF-DETR Nano PyTorch adapter: implemented.
-- Class-stabilized IoU tracking and unique-session counting: implemented.
-- Image/video/camera/stream CLI: implemented.
-- Single-image HTTP API: implemented.
-- CPU reference container and deployment profiles: implemented.
-- Jetson Orin Nano 8 GB Super inventory: completed read-only.
-- Data collection, litter-model training, target validation, and final
-  results: pending.
-
-No trained litter checkpoint or performance claim exists yet.
-
-## Install
-
-Use Python 3.10 or newer. Install the PyTorch build appropriate for the target
-first: CPU, NVIDIA CUDA, AMD ROCm, or NVIDIA JetPack.
-
-Primary RF-DETR runtime:
+Clone the repository and run the automated launcher:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[runtime,rfdetr]"
+git clone https://github.com/biolababs/edge-litter-detection.git
+cd edge-litter-detection
+./startup.sh
 ```
 
-Add the API:
+The launcher requires Python 3.10 or newer and automatically selects an
+available Python 3.10–3.12 interpreter.
+
+The launcher creates the Python environment, installs the application,
+discovers a camera or media file, validates the source, runs inference, and
+writes timestamped output under `reports/generated/`.
+
+After the project checkpoint is released, its URL and checksum will be recorded
+in `config/model-release.json`. A fresh clone will then need no model flags.
+
+If the default checkpoint is absent, the interactive launcher asks for its
+path. A published checkpoint can be installed and verified in the same command:
 
 ```bash
-python -m pip install -e ".[runtime,rfdetr,api]"
+./startup.sh \
+  --model-url "$LITTER_MODEL_URL" \
+  --model-sha256 "$LITTER_MODEL_SHA256"
 ```
 
-## Detect, classify, and count video
-
-After training or supplying a compatible litter checkpoint:
+Until the project checkpoint is published, supply a compatible trained
+checkpoint:
 
 ```bash
-python infer.py \
-  --model models/rfdetr-nano-litter.pth \
-  --source sample.mp4 \
-  --annotated-output reports/generated/sample-annotated.mp4 \
-  --events-output reports/generated/sample-events.jsonl \
-  --output reports/generated/sample-summary.json
+./startup.sh --model /path/to/rfdetr-nano-litter.pth
 ```
 
-Valid sources include an image, video, camera index such as `0`, or a stream
-URL. Use `--no-track` when only independent frame counts are needed.
+Select an input with the same launcher:
+
+```bash
+# Auto-detect the first working camera or file under media/
+./startup.sh
+
+# Specific attached camera
+./startup.sh --source 0
+
+# Downloaded image
+./startup.sh --source ./media/litter.jpg
+
+# Downloaded video
+./startup.sh --source ./media/litter.mp4
+
+# Live stream
+export LITTER_STREAM_URL="rtsp://camera-host/live"
+./startup.sh --source "$LITTER_STREAM_URL"
+
+# Headless edge device
+./startup.sh --source "$LITTER_STREAM_URL" --no-display
+
+# HTTP API
+./startup.sh --api
+```
+
+Press `q` in the display window or `Ctrl+C` in the terminal to finish a live
+run. Use `./startup.sh --help` for all automation options. Advanced users can
+still call the individual Python commands directly. See
+[Input sources](docs/INPUT_SOURCES.md).
+
+## Output contract
+
+| Output | Purpose |
+|---|---|
+| Annotated image/video | Visual boxes, labels, confidence, and track IDs |
+| JSONL event stream | One durable event for every processed frame |
+| JSON summary | Run metadata, throughput, peak visible counts, and unique counts |
+
+Every frame event follows
+[`schemas/detection-event.schema.json`](schemas/detection-event.schema.json).
+Stream credentials and URL query strings are removed from recorded evidence.
 
 ## HTTP API
 
+Start the single-image API through the same launcher:
+
 ```bash
-LITTER_MODEL=models/rfdetr-nano-litter.pth python serve.py
+./startup.sh --api
 ```
 
-The API listens on port `8088` by default:
+Use `--model`, `--model-url`, and `--model-sha256` in the same way as media
+inference.
+
+Check service state:
 
 ```bash
 curl http://127.0.0.1:8088/healthz
 curl http://127.0.0.1:8088/readyz
+```
 
+Detect one image:
+
+```bash
 curl \
   -H "Content-Type: image/jpeg" \
-  --data-binary @sample.jpg \
+  --data-binary @media/litter.jpg \
   http://127.0.0.1:8088/v1/detect
 ```
 
-HTTP requests are independent images and return per-image counts. Use the CLI
-for stateful video tracking and unique-session counts.
+HTTP requests are independent images. Stateful tracking and unique-session
+counting use the CLI.
 
 ## Container
 
-The root Dockerfile is a CPU/reference deployment:
+The included container is a CPU/reference API deployment:
 
 ```bash
 docker compose build
 docker compose up
 ```
 
-Mount the trained checkpoint under `models/`. NVIDIA, AMD, and Jetson
-deployments must use an accelerator-compatible PyTorch base environment; see
-`docs/DEPLOYMENT.md`.
+Mount the checkpoint under `models/`. Accelerator deployments should use a
+vendor-compatible PyTorch base environment rather than treating the CPU image
+as an optimized NVIDIA, AMD, or Jetson image.
 
-## Train
+## Train the litter model
 
-Prepare the data in the RF-DETR-supported YOLO or COCO layout described in
-`data/README.md`, then:
+Prepare YOLO- or COCO-format annotations as documented in
+[`data/README.md`](data/README.md):
 
 ```bash
 python -m pip install -e ".[runtime,train]"
@@ -155,39 +181,41 @@ python train.py \
   --data data/litter
 ```
 
-Training belongs on a workstation or cloud GPU, not the shared 8 GB Jetson.
+Training is intended for a workstation or cloud GPU. The trained artifact,
+class schema, dataset version, and threshold configuration must remain
+traceable. “YOLO format” here describes only an annotation layout; the detector
+implemented by this repository remains RF-DETR Nano.
 
 ## Evaluate accuracy
 
-Evaluate the one trained RF-DETR Nano checkpoint on the frozen held-out split:
+Evaluate the single trained checkpoint on a frozen held-out split:
 
 ```bash
 python evaluate.py \
   --weights runs/litter/rfdetr-nano-baseline/checkpoint_best_ema.pth \
   --data data/litter \
   --split test \
-  --output reports/generated/detection_accuracy.json
+  --output reports/generated/detection-accuracy.json
 ```
 
-Evaluate visible and unique-session count accuracy after annotating the
-representative video subset:
+Evaluate frame and unique-session count accuracy:
 
 ```bash
 python evaluate_counts.py \
-  --events reports/generated/sample-events.jsonl \
+  --events reports/generated/litter-video.jsonl \
   --ground-truth data/count-ground-truth.json \
-  --output reports/generated/count_accuracy.json
+  --output reports/generated/count-accuracy.json
 ```
 
-Start from `data/count-ground-truth.example.json`. These commands evaluate the
-single litter use case; they do not rank models.
+These commands evaluate whether the RF-DETR implementation satisfies the
+litter use case. They do not compare model families.
 
 ## Export
 
-RF-DETR supports portable export targets through optional dependencies:
+Example ONNX export:
 
 ```bash
-python -m pip install "rfdetr[onnx]"
+python -m pip install "rfdetr[onnx]>=1.10,<1.11"
 
 python export_model.py \
   --weights runs/litter/rfdetr-nano-baseline/checkpoint_best_ema.pth \
@@ -195,43 +223,96 @@ python export_model.py \
   --precision fp32
 ```
 
-TensorRT and TFLite exports are also exposed by the command. ONNX can be used
-with a validated OpenVINO integration. An export is not considered deployable
-until its output contract and accuracy are validated on the target runtime.
+The export command also exposes TensorRT and TFLite. Every exported artifact
+must be checked for accuracy retention and target-runtime compatibility before
+deployment.
 
-## Validate
+## Architecture
 
-```bash
-PYTHONPATH=src python -m unittest discover -s tests -v
-python scripts/validate_release.py
+```text
+image / video / camera / stream
+                |
+                v
+          RF-DETR adapter
+                |
+                v
+      standard Detection records
+                |
+                v
+       class-stabilized tracking
+                |
+                v
+     visible + unique run counts
+        /           |          \
+     JSONL      JSON summary   annotated media
 ```
 
-## Repository map
+The tracking, counting, event, and API layers are independent of accelerator
+hardware. Runtime-specific adapters can be added without rewriting the
+application core.
 
-- `src/litter_edge/adapters/`: model and accelerator integration boundary.
-- `src/litter_edge/tracking.py`: class-stabilized tracking and unique counting.
-- `src/litter_edge/runtime.py`: image/video/camera/stream application.
-- `src/litter_edge/evaluate.py`: held-out RF-DETR accuracy evaluation.
-- `src/litter_edge/evaluate_counts.py`: visible/session count evaluation.
-- `src/litter_edge/api.py`: single-image HTTP API.
-- `schemas/detection-event.schema.json`: stable frame-event integration
-  contract.
-- `config/classes.yaml`: versioned litter taxonomy.
-- `config/project.yaml`: experiment and runtime defaults.
-- `deploy/profiles/`: CPU, NVIDIA CUDA, and AMD ROCm examples.
-- `docs/`: counting, deployment, data, experiment, and publication plans.
-- `thesis/`: prospective MSc manuscript with results explicitly pending.
+## Supported deployment profiles
 
-## Security, privacy, and release status
+| Target | Primary path | Status |
+|---|---|---|
+| CPU | RF-DETR/PyTorch | Development and functional testing |
+| NVIDIA CUDA | RF-DETR/PyTorch CUDA | Adapter implemented |
+| AMD ROCm / Strix Halo | RF-DETR/PyTorch ROCm | Code path ready; validation pending |
+| Jetson Orin 8 GB | JetPack-compatible runtime | Read-only inventory complete; deployment pending |
+| ONNX/OpenVINO/TensorRT | Exported artifact plus adapter | Target integration pending |
 
-The software detects litter, not people. Face identification, person tracking,
-license-plate recognition, behavior scoring, and automated enforcement are out
-of scope.
+Hardware results are device-specific and are never generalized across targets.
 
-The historical notebooks outside this repository contained a Roboflow
-credential. It must be revoked before any historical material is published.
-Data, model weights, and generated reports are excluded from Git by default.
+## Software and thesis separation
+
+This repository has two related but distinct deliverables:
+
+- **Reusable software:** source code, tests, schemas, deployment examples, and
+  software documentation under Apache-2.0.
+- **Research work:** the MSc manuscript, dataset, trained weights, experiments,
+  and measured results, each with separate review and release requirements.
+
+The software can be cloned and deployed without the thesis. The thesis records
+how a versioned commit, dataset, checkpoint, and device configuration are
+evaluated. See [Software and research](docs/SOFTWARE_AND_RESEARCH.md).
+
+## Repository structure
+
+```text
+src/litter_edge/     application package
+config/              class and runtime configuration
+schemas/             stable JSON integration contracts
+deploy/              CPU, NVIDIA, AMD, and service examples
+docs/                operational and research documentation
+tests/               dependency-light unit tests
+thesis/              prospective MSc manuscript
+```
+
+## Validation
+
+```bash
+make validate
+```
+
+This runs unit tests, release checks, and command-line smoke checks. Target
+accuracy and real-time performance remain pending until the dataset, trained
+checkpoint, and authorized hardware test window exist.
+
+## Security and privacy
+
+The project detects litter, not people. Face identification, person
+re-identification, license-plate recognition, behavior scoring, and automated
+enforcement are out of scope.
+
+Do not commit stream credentials, private imagery, datasets, model weights, or
+raw device inventories. The API binds to localhost by default and has no
+built-in authentication; place it behind an authenticated gateway before
+network exposure. See [Security](SECURITY.md).
+
+## License and citation
 
 The software and software documentation are licensed under Apache-2.0. Dataset,
 model-weight, generated-result, and academic-manuscript rights remain separate;
-see `LICENSE-NOTICE.md`.
+see [License notice](LICENSE-NOTICE.md).
+
+Citation metadata is provided in [`CITATION.cff`](CITATION.cff).

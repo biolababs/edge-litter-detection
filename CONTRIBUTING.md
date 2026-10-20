@@ -10,14 +10,12 @@ operational safety. Model-family leaderboards are out of scope.
 ## Development setup
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[runtime,rfdetr,api]"
+./startup.sh --list-cameras
 ```
 
 Install the platform-appropriate PyTorch build before RF-DETR when using NVIDIA
-CUDA, AMD ROCm, or Jetson.
+CUDA, AMD ROCm, or Jetson. Advanced contributors may install the editable
+extras directly when they need a customized environment.
 
 ## Required checks
 

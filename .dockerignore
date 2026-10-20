@@ -5,6 +5,7 @@ __pycache__
 *.pyc
 archive
 data
+media
 models/*
 !models/.gitkeep
 reports/generated
