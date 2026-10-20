@@ -1,0 +1,53 @@
+# Contributing
+
+## Scope
+
+This repository implements one use case with RF-DETR Nano: litter detection,
+multiclass classification, tracking, and counting. Contributions should improve
+that implementation, its portability, accuracy evaluation, documentation, or
+operational safety. Model-family leaderboards are out of scope.
+
+## Development setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[runtime,rfdetr,api]"
+```
+
+Install the platform-appropriate PyTorch build before RF-DETR when using NVIDIA
+CUDA, AMD ROCm, or Jetson.
+
+## Required checks
+
+```bash
+make validate
+```
+
+Changes to `thesis/manuscript.md` also require:
+
+```bash
+make docx
+```
+
+Do not commit data, images, model weights, generated reports, credentials,
+private network details, or personally identifiable information.
+
+## Runtime adapters
+
+An accelerator/runtime adapter must return the standard `Detection` schema. It
+must not reimplement tracking or counting. Include:
+
+- a documented environment and export process;
+- a checksum and source checkpoint reference;
+- an accuracy-equivalence check;
+- unit tests using small fakes or fixtures;
+- no automatic package installation or device reconfiguration.
+
+## Reporting defects
+
+Include the Git revision, configuration, hardware manifest, sanitized error,
+input type, and whether the issue affects detection, classification, tracking,
+counting, export, or deployment. Never attach private camera frames or stream
+credentials to a public issue.

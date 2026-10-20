@@ -1,0 +1,32 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Data, model artifacts, and generated runs
+data/*
+!data/README.md
+!data/count-ground-truth.example.json
+models/*
+!models/.gitkeep
+runs/*
+!runs/.gitkeep
+reports/generated/*
+!reports/generated/.gitkeep
+*.engine
+*.onnx
+*.pt
+*.pth
+*.tflite
+*.mlpackage
+
+# Private historical material must never be published.
+archive/private/
+

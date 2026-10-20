@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+archive
+data
+models/*
+!models/.gitkeep
+reports/generated
+runs
+thesis
+node_modules
+.DS_Store

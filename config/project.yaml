@@ -1,0 +1,91 @@
+project_name: litter
+# RF-DETR is the primary implementation. The trained artifact is intentionally
+# absent until the dataset and training run exist.
+backend: rfdetr
+model: models/rfdetr-nano-litter.pth
+base_model: rfdetr-nano
+class_names: config/classes.yaml
+task: detect
+image_size: 640
+epochs: 100
+batch: 4
+device: auto
+workers: 8
+seed: 42
+deterministic: true
+patience: 30
+confidence: 0.25
+iou: 0.45
+max_detections: 100
+output_dir: runs/litter
+run_name: rfdetr-nano-baseline
+tracking:
+  enabled: true
+  method: class_stabilized_iou
+  iou_threshold: 0.30
+  max_missed_frames: 30
+  min_confirmed_hits: 2
+  class_mismatch_penalty: 0.75
+target:
+  device: jetson-orin-nano-8gb-super
+  board: p3768-0000+p3767-0005-super
+  architecture: aarch64
+  cpu: 6-core-cortex-a78ae
+  os: ubuntu-22.04.5
+  kernel: 5.15.199-tegra
+  jetpack: 6.2.3
+  l4t: 36.5.2
+  python: 3.10.12
+  tensorrt_python: 10.3.0
+  precision: fp16
+  engine_workspace_gb: 1
+  power_mode: MAXN_SUPER
+  deployment_authorized: false
+  shared_device: true
+  observed_memory_gb:
+    total: 7.4
+    used: 2.5
+    available: 4.5
+  storage:
+    root_device: nvme
+    root_available_gb: 772
+    data_device_available_gb: 231.4
+  installed_runtime:
+    tensorrt_python: true
+    docker: true
+    torch: false
+    rfdetr: false
+    nvcc: false
+    trtexec: false
+  camera_devices: none_observed
+  existing_workload:
+    - local_llm_inference
+    - application_services
+    - development_tools
+
+implementation:
+  model_family: rf_detr
+  variant: nano
+  purpose: litter_detection_classification_and_counting
+  model_comparison_in_scope: false
+
+validation:
+  accuracy_metrics:
+    - precision
+    - recall
+    - f1
+    - map50
+    - map50_95
+    - per_class_ap
+    - visible_count_mae
+    - unique_session_count_error
+  operational_gates:
+    minimum_test_recall: pending_pilot
+    minimum_sustained_fps: 15
+    maximum_p95_latency_ms: pending_camera_pipeline
+    preferred_incremental_memory_gb: 1.5
+    maximum_incremental_memory_gb: 2.0
+    minimum_remaining_available_memory_gb: 2.0
+    no_sustained_thermal_throttling: true
+
+

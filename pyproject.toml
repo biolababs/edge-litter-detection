@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "litter-edge"
+version = "0.4.0"
+description = "Portable edge litter detection, classification, tracking, and counting"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = [
+  "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+rfdetr = [
+  "rfdetr>=1.10,<1.11",
+]
+train = [
+  "rfdetr[train,loggers]>=1.10,<1.11",
+]
+runtime = [
+  "numpy==1.26.4",
+  "opencv-python-headless>=4.10,<5",
+]
+api = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.32,<1",
+]
+
+[project.scripts]
+litter-train = "litter_edge.train:main"
+litter-evaluate = "litter_edge.evaluate:main"
+litter-evaluate-counts = "litter_edge.evaluate_counts:main"
+litter-export = "litter_edge.export:main"
+litter-infer = "litter_edge.infer:main"
+litter-benchmark = "litter_edge.benchmark:main"
+litter-serve = "litter_edge.serve:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, cite this repository and the selected detector's primary source."
+title: "Edge Litter Detection, Multiclass Classification, Tracking, and Counting"
+type: software
+authors:
+  - family-names: Babsalaam
+    given-names: Abiola A.
+version: 0.4.0
+license: Apache-2.0
+keywords:
+  - litter detection
+  - RF-DETR
+  - NVIDIA Jetson
+  - AMD ROCm
+  - edge AI
+  - computer vision
+

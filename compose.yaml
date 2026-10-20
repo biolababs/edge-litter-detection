@@ -1,0 +1,16 @@
+services:
+  litter-api:
+    build:
+      context: .
+    environment:
+      LITTER_BACKEND: rfdetr
+      LITTER_MODEL: /app/models/rfdetr-nano-litter.pth
+      LITTER_CLASSES: /app/config/classes.yaml
+      LITTER_DEVICE: cpu
+      LITTER_HOST: 0.0.0.0
+      LITTER_PORT: "8088"
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./models:/app/models:ro
+    restart: unless-stopped

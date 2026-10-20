@@ -1,0 +1,22 @@
+[Unit]
+Description=Edge litter detection API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=litter-edge
+Group=litter-edge
+WorkingDirectory=/opt/edge-litter-detection
+EnvironmentFile=/etc/edge-litter-detection.env
+ExecStart=/opt/edge-litter-detection/.venv/bin/litter-serve
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/edge-litter-detection/reports/generated
+
+[Install]
+WantedBy=multi-user.target

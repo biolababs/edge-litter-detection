@@ -1,0 +1,16 @@
+{
+  "name": "edge-litter-detection-docs",
+  "private": true,
+  "version": "0.4.0",
+  "description": "Document build tooling for the edge litter use-case study",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "thesis:docx": "node scripts/generate_thesis_docx.js thesis/manuscript.md thesis/Jetson_Litter_Detection_Thesis_Draft.docx"
+  },
+  "dependencies": {
+    "docx": "9.5.2"
+  }
+}
+

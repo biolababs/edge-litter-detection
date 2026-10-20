@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/biolababs/edge-litter-detection/schemas/detection-event.schema.json",
+  "title": "Edge litter detection frame event",
+  "type": "object",
+  "required": [
+    "run_id",
+    "source",
+    "frame_index",
+    "timestamp_seconds",
+    "inference_ms",
+    "visible_counts",
+    "confirmed_visible_counts",
+    "unique_session_counts",
+    "newly_confirmed_track_ids",
+    "detections"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "string"
+    },
+    "frame_index": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "timestamp_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "inference_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "visible_counts": {
+      "$ref": "#/$defs/counts"
+    },
+    "confirmed_visible_counts": {
+      "$ref": "#/$defs/counts"
+    },
+    "unique_session_counts": {
+      "$ref": "#/$defs/counts"
+    },
+    "newly_confirmed_track_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "detections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/detection"
+      }
+    }
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "detection": {
+      "type": "object",
+      "required": [
+        "bbox_xyxy",
+        "confidence",
+        "class_id",
+        "class_name",
+        "track_id",
+        "confirmed"
+      ],
+      "properties": {
+        "bbox_xyxy": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "class_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "class_name": {
+          "type": "string"
+        },
+        "track_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "confirmed": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,4 @@
+# Install a platform-appropriate PyTorch build first.
+rfdetr[train,loggers]>=1.10,<1.11
+PyYAML>=6.0,<7
+
