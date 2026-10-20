@@ -3,7 +3,7 @@
 Portable edge-AI software for locating litter, assigning a litter class, and
 counting objects in images and video.
 
-Proposed public repository:
+Public repository:
 `github.com/biolababs/edge-litter-detection`
 
 ## What it produces

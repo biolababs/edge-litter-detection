@@ -33,9 +33,10 @@ It must not imply that the litter model has already been validated.
 
 ## GitHub repository
 
-- [ ] Create `biolababs/edge-litter-detection`.
-- [ ] Add the Git remote without storing credentials in its URL.
-- [ ] Push `main` and require the CI workflow.
+- [x] Create `biolababs/edge-litter-detection`.
+- [x] Add the Git remote without storing credentials in its URL.
+- [x] Push `main`.
+- [ ] Require the CI workflow for protected changes.
 - [ ] Enable secret scanning and dependency alerts.
 - [ ] Protect `main` from force pushes.
 - [x] Complete `CITATION.cff`, model card, changelog, and source license.

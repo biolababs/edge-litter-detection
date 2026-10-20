@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 - Unreleased
+## 0.4.0 - 2026-10-20
 
 - Made the reusable application hardware-neutral while keeping Jetson as a
   thesis evaluation target.
@@ -12,7 +12,7 @@
   and a single-image HTTP API.
 - Added a CPU reference container plus NVIDIA CUDA and AMD ROCm deployment
   profiles.
-- Added the proposed `biolababs/edge-litter-detection` GitHub release plan.
+- Published the initial `biolababs/edge-litter-detection` source repository.
 
 ## 0.3.0 - 2026-10-20
 

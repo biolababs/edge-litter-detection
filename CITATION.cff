@@ -6,7 +6,10 @@ authors:
   - family-names: Babsalaam
     given-names: Abiola A.
 version: 0.4.0
+date-released: 2026-10-20
 license: Apache-2.0
+repository-code: "https://github.com/biolababs/edge-litter-detection"
+url: "https://github.com/biolababs/edge-litter-detection"
 keywords:
   - litter detection
   - RF-DETR
