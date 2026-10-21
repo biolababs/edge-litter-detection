@@ -2,7 +2,7 @@
 
 Abiola A. Babsalaam  
 Independent Researcher  
-Preprint version 1.4 — 21 October 2026
+Preprint version 1.5 — 21 October 2026
 
 ## Abstract
 

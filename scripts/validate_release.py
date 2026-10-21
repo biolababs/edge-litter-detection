@@ -77,6 +77,7 @@ REQUIRED = [
     "docs/INTEGRATION_EVENTS.md",
     "package-lock.json",
     "scripts/build_preprint.sh",
+    "scripts/generate_publication_figures.py",
     "scripts/generate_paper_docx.js",
     "scripts/paper_to_report_json.js",
     "paper/edge_litter_detection_preprint.md",

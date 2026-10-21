@@ -1,77 +1,76 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
   <title id="title">Litter count semantics</title>
-  <desc id="desc">Four separate count concepts progress from frame detections to confirmed visible tracks, unique session tracks, and independently confirmed collections. The quantities are related but not interchangeable.</desc>
+  <desc id="desc">Four distinct count quantities progress from frame detections to independently confirmed collection.</desc>
   <defs>
-    <style>
-      .title{font:700 27px Arial,sans-serif;fill:#18213d}.n{font:700 25px Arial,sans-serif;fill:#fff}.h{font:700 18px Arial,sans-serif;fill:#18213d}
-      .t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}.card{fill:#fff;stroke:#aeb9ca;stroke-width:2}
-      .blue{fill:#4472c4}.teal{fill:#1b998b}.navy{fill:#1e2761}.amber{fill:#d99518}.arrow{stroke:#65728a;stroke-width:2.5;fill:none;marker-end:url(#a)}
-      .warn{fill:#fff5e6;stroke:#d99518;stroke-width:2}.persist{fill:#eef3fa;stroke:#8da1bd;stroke-width:1.5;stroke-dasharray:7 5}
-    </style>
-    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#65728a"/></marker>
-    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".13"/></filter>
+
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#111827}
+    .group{fill:#ffffff;stroke:#374151;stroke-width:1.5}
+    .boundary{fill:#f8fafc;stroke:#111827;stroke-width:1.8}
+    .node{fill:#ffffff;stroke:#4b5563;stroke-width:1.35}
+    .soft{fill:#f3f4f6;stroke:#6b7280;stroke-width:1.25}
+    .accent{fill:#eaf0f8;stroke:#2f5597;stroke-width:1.5}
+    .safety{fill:#fff7ed;stroke:#9a3412;stroke-width:1.5}
+    .gate{fill:#ffffff;stroke:#111827;stroke-width:1.6}
+    .arrow{fill:none;stroke:#374151;stroke-width:1.6;marker-end:url(#arrow)}
+    .feedback{fill:none;stroke:#4b5563;stroke-width:1.4;stroke-dasharray:7 5;marker-end:url(#arrow)}
+    .blocked{fill:none;stroke:#9a3412;stroke-width:1.8;stroke-dasharray:7 5}
+    .axis{stroke:#6b7280;stroke-width:1}
+    .grid{stroke:#d1d5db;stroke-width:1}
+    .section{font-size:18px;font-weight:700;letter-spacing:.3px}
+    .label{font-size:17px}
+    .small{font-size:16.5px;fill:#374151}
+    .tiny{font-size:14px;fill:#4b5563}
+    .number{font-size:13px;font-weight:700;fill:#ffffff}
+    .metric{font-size:21px;font-weight:700}
+    .panel{font-size:20px;font-weight:700}
+    .bar1{fill:#2f5597}
+    .bar2{fill:#64748b}
+    .bar3{fill:#94a3b8}
+    .bar4{fill:#cbd5e1}
+    .bar5{fill:#e5e7eb;stroke:#9ca3af;stroke-width:.7}
+  </style>
+
+    <marker id="arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0 0 L9 3.5 L0 7 Z" fill="#374151"/>
+    </marker>
   </defs>
-  <rect width="1200" height="560" fill="#fff"/>
-  <text class="title" x="42" y="45">Count semantics: observations are not outcomes</text>
-
-  <g filter="url(#s)">
-    <rect class="card" x="42" y="105" width="245" height="245" rx="16"/>
-    <rect class="blue" x="42" y="105" width="245" height="58" rx="16"/>
-    <rect class="blue" x="42" y="145" width="245" height="18"/>
-    <text class="n" x="67" y="143">1</text>
-    <text class="h" x="100" y="140" style="fill:#fff">Visible detections</text>
-    <text class="t" x="65" y="200">Objects detected in the</text>
-    <text class="t" x="65" y="222">current frame.</text>
-    <text class="small" x="65" y="266">Answers:</text>
-    <text class="h" x="65" y="291">“What is visible now?”</text>
-    <text class="small" x="65" y="325">May include one-frame noise.</text>
-
-    <rect class="card" x="332" y="105" width="245" height="245" rx="16"/>
-    <rect class="teal" x="332" y="105" width="245" height="58" rx="16"/>
-    <rect class="teal" x="332" y="145" width="245" height="18"/>
-    <text class="n" x="357" y="143">2</text>
-    <text class="h" x="390" y="140" style="fill:#fff">Confirmed visible</text>
-    <text class="t" x="355" y="200">Visible tracks that reached</text>
-    <text class="t" x="355" y="222">the confirmation threshold.</text>
-    <text class="small" x="355" y="266">Answers:</text>
-    <text class="h" x="355" y="291">“What is stable now?”</text>
-    <text class="small" x="355" y="325">Default: at least two hits.</text>
-
-    <rect class="card" x="622" y="105" width="245" height="245" rx="16"/>
-    <rect class="navy" x="622" y="105" width="245" height="58" rx="16"/>
-    <rect class="navy" x="622" y="145" width="245" height="18"/>
-    <text class="n" x="647" y="143">3</text>
-    <text class="h" x="680" y="140" style="fill:#fff">Unique session</text>
-    <text class="t" x="645" y="200">Confirmed track identities</text>
-    <text class="t" x="645" y="222">counted once in one run.</text>
-    <text class="small" x="645" y="266">Answers:</text>
-    <text class="h" x="645" y="291">“What did this run see?”</text>
-    <text class="small" x="645" y="325">Not a lifetime site inventory.</text>
-
-    <rect class="card" x="912" y="105" width="245" height="245" rx="16"/>
-    <rect class="amber" x="912" y="105" width="245" height="58" rx="16"/>
-    <rect class="amber" x="912" y="145" width="245" height="18"/>
-    <text class="n" x="937" y="143">4</text>
-    <text class="h" x="970" y="140" style="fill:#fff">Confirmed collected</text>
-    <text class="t" x="935" y="200">Physical pickups confirmed</text>
-    <text class="t" x="935" y="222">by a separate source.</text>
-    <text class="small" x="935" y="266">Answers:</text>
-    <text class="h" x="935" y="291">“What was collected?”</text>
-    <text class="small" x="935" y="325">Human, controller, or sensor.</text>
-  </g>
-
-  <path class="arrow" d="M287 228 H332"/>
-  <path class="arrow" d="M577 228 H622"/>
-  <path class="arrow" d="M867 228 H912"/>
-  <text class="small" x="309" y="94" text-anchor="middle">track</text>
-  <text class="small" x="599" y="94" text-anchor="middle">deduplicate</text>
-  <text class="small" x="889" y="94" text-anchor="middle">external proof</text>
-
-  <rect class="persist" x="194" y="392" width="812" height="54" rx="12"/>
-  <text class="h" x="600" y="416" text-anchor="middle">SQLite preserves each quantity with run, device, vehicle, route, and time context</text>
-  <text class="small" x="600" y="436" text-anchor="middle">review corrections and pickup confirmations remain auditable</text>
-
-  <rect class="warn" x="318" y="472" width="564" height="58" rx="12"/>
-  <text class="h" x="600" y="497" text-anchor="middle">Detection ≠ unique physical object ≠ confirmed collection</text>
-  <text class="small" x="600" y="518" text-anchor="middle">Do not sum frame detections or claim cleanup from model observations alone.</text>
+  <rect width="1200" height="430" fill="#ffffff"/>
+<rect class="node" x="30" y="55" width="250" height="235" rx="0"/>
+<circle cx="54" cy="79" r="11" fill="#2f5597"/><text class="number" x="54" y="83.5" text-anchor="middle">1</text>
+<text class="metric" x="155" y="92" text-anchor="middle">D_t</text>
+<text class="section" x="155" y="132" text-anchor="middle">Frame detections</text>
+<text class="small" x="155" y="170" text-anchor="middle">Objects reported</text>
+<text class="small" x="155" y="190" text-anchor="middle">in frame t</text>
+<text class="small" x="155" y="235" text-anchor="middle">What is visible now?</text>
+<path class="arrow" d="M280 172 L322 172"/>
+<rect class="node" x="322" y="55" width="250" height="235" rx="0"/>
+<circle cx="346" cy="79" r="11" fill="#2f5597"/><text class="number" x="346" y="83.5" text-anchor="middle">2</text>
+<text class="metric" x="447" y="92" text-anchor="middle">V_t</text>
+<text class="section" x="447" y="132" text-anchor="middle">Confirmed visible</text>
+<text class="small" x="447" y="170" text-anchor="middle">Tracks satisfying</text>
+<text class="small" x="447" y="190" text-anchor="middle">the hit rule</text>
+<text class="small" x="447" y="235" text-anchor="middle">What is stable now?</text>
+<path class="arrow" d="M572 172 L614 172"/>
+<rect class="node" x="614" y="55" width="250" height="235" rx="0"/>
+<circle cx="638" cy="79" r="11" fill="#2f5597"/><text class="number" x="638" y="83.5" text-anchor="middle">3</text>
+<text class="metric" x="739" y="92" text-anchor="middle">U_r</text>
+<text class="section" x="739" y="132" text-anchor="middle">Unique in run</text>
+<text class="small" x="739" y="170" text-anchor="middle">Confirmed track IDs</text>
+<text class="small" x="739" y="190" text-anchor="middle">counted once</text>
+<text class="small" x="739" y="235" text-anchor="middle">What did run r see?</text>
+<path class="arrow" d="M864 172 L906 172"/>
+<rect class="node" x="906" y="55" width="250" height="235" rx="0"/>
+<circle cx="930" cy="79" r="11" fill="#2f5597"/><text class="number" x="930" y="83.5" text-anchor="middle">4</text>
+<text class="metric" x="1031" y="92" text-anchor="middle">P_r</text>
+<text class="section" x="1031" y="132" text-anchor="middle">Confirmed collected</text>
+<text class="small" x="1031" y="170" text-anchor="middle">Pickup confirmed by</text>
+<text class="small" x="1031" y="190" text-anchor="middle">human/controller</text>
+<text class="small" x="1031" y="235" text-anchor="middle">What was collected?</text>
+<text class="tiny" x="306" y="45" text-anchor="middle">track confirmation</text>
+<text class="tiny" x="598" y="45" text-anchor="middle">run-level deduplication</text>
+<text class="tiny" x="890" y="45" text-anchor="middle">independent evidence</text>
+<rect class="soft" x="130" y="335" width="940" height="62" rx="0"/>
+<text class="small" x="600" y="363" text-anchor="middle">D_t, V_t, U_r and P_r are stored as distinct quantities with run, device, route and time context.</text>
+<text class="small" x="600" y="386" text-anchor="middle">Frame detections must not be reported as unique physical objects or confirmed cleanup.</text>
 </svg>

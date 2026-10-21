@@ -1,60 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="540" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
   <title id="title">Jetson Orin Nano full-pipeline latency profile</title>
-  <desc id="desc">A stacked horizontal bar shows model forward at 71.10 percent, detector preprocessing at 13.69 percent, annotation and output at 10.59 percent, postprocessing at 2.58 percent, and all remaining operations at 2.04 percent. Three warmed runs averaged 5.188 frames per second against a provisional 15 frame per second target.</desc>
+  <desc id="desc">A scientific stacked bar and throughput comparison summarize three warmed Jetson full-pipeline runs.</desc>
   <defs>
-    <style>
-      .title{font:700 27px Arial,sans-serif;fill:#18213d}.h{font:700 18px Arial,sans-serif;fill:#18213d}.big{font:700 34px Arial,sans-serif;fill:#18213d}
-      .t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}.white{font:700 14px Arial,sans-serif;fill:#fff}
-      .card{fill:#fff;stroke:#aeb9ca;stroke-width:2}.warn{fill:#fff4dd;stroke:#d99518;stroke-width:2}.line{stroke:#d99518;stroke-width:3;stroke-dasharray:8 5}
-    </style>
-    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".12"/></filter>
+
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#111827}
+    .group{fill:#ffffff;stroke:#374151;stroke-width:1.5}
+    .boundary{fill:#f8fafc;stroke:#111827;stroke-width:1.8}
+    .node{fill:#ffffff;stroke:#4b5563;stroke-width:1.35}
+    .soft{fill:#f3f4f6;stroke:#6b7280;stroke-width:1.25}
+    .accent{fill:#eaf0f8;stroke:#2f5597;stroke-width:1.5}
+    .safety{fill:#fff7ed;stroke:#9a3412;stroke-width:1.5}
+    .gate{fill:#ffffff;stroke:#111827;stroke-width:1.6}
+    .arrow{fill:none;stroke:#374151;stroke-width:1.6;marker-end:url(#arrow)}
+    .feedback{fill:none;stroke:#4b5563;stroke-width:1.4;stroke-dasharray:7 5;marker-end:url(#arrow)}
+    .blocked{fill:none;stroke:#9a3412;stroke-width:1.8;stroke-dasharray:7 5}
+    .axis{stroke:#6b7280;stroke-width:1}
+    .grid{stroke:#d1d5db;stroke-width:1}
+    .section{font-size:18px;font-weight:700;letter-spacing:.3px}
+    .label{font-size:17px}
+    .small{font-size:16.5px;fill:#374151}
+    .tiny{font-size:14px;fill:#4b5563}
+    .number{font-size:13px;font-weight:700;fill:#ffffff}
+    .metric{font-size:21px;font-weight:700}
+    .panel{font-size:20px;font-weight:700}
+    .bar1{fill:#2f5597}
+    .bar2{fill:#64748b}
+    .bar3{fill:#94a3b8}
+    .bar4{fill:#cbd5e1}
+    .bar5{fill:#e5e7eb;stroke:#9ca3af;stroke-width:.7}
+  </style>
+
+    <marker id="arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0 0 L9 3.5 L0 7 Z" fill="#374151"/>
+    </marker>
   </defs>
-  <rect width="1200" height="560" fill="#fff"/>
-  <text class="title" x="42" y="44">Jetson Orin Nano 8 GB: warmed full-pipeline profile</text>
-  <text class="small" x="42" y="70">Three × 300-frame runs · 10 warm-up calls per run · shared device services remained active</text>
-
-  <g filter="url(#s)">
-    <rect class="card" x="42" y="104" width="240" height="116" rx="15"/>
-    <text class="big" x="162" y="151" text-anchor="middle">5.188</text>
-    <text class="h" x="162" y="180" text-anchor="middle">source-to-result FPS</text>
-    <text class="small" x="162" y="203" text-anchor="middle">± 0.010 population SD</text>
-
-    <rect class="warn" x="312" y="104" width="240" height="116" rx="15"/>
-    <text class="big" x="432" y="151" text-anchor="middle">15 FPS</text>
-    <text class="h" x="432" y="180" text-anchor="middle">provisional target</text>
-    <text class="small" x="432" y="203" text-anchor="middle">not met: optimization required</text>
-
-    <rect class="card" x="582" y="104" width="270" height="116" rx="15"/>
-    <text class="big" x="717" y="151" text-anchor="middle">168.62 ms</text>
-    <text class="h" x="717" y="180" text-anchor="middle">mean detector call</text>
-    <text class="small" x="717" y="203" text-anchor="middle">± 0.10 ms across run means</text>
-
-    <rect class="card" x="882" y="104" width="276" height="116" rx="15"/>
-    <text class="big" x="1020" y="151" text-anchor="middle">12.70 W</text>
-    <text class="h" x="1020" y="180" text-anchor="middle">whole-board mean</text>
-    <text class="small" x="1020" y="203" text-anchor="middle">15.10 W peak · 63.94 °C peak GPU</text>
-  </g>
-
-  <text class="h" x="42" y="274">Exclusive wall-time share</text>
-  <rect x="42" y="296" width="796" height="74" rx="10" fill="#4472c4"/>
-  <rect x="838" y="296" width="153" height="74" fill="#1b998b"/>
-  <rect x="991" y="296" width="118" height="74" fill="#d99518"/>
-  <rect x="1109" y="296" width="29" height="74" fill="#7f5fb3"/>
-  <rect x="1138" y="296" width="20" height="74" rx="0 10 10 0" fill="#94a0b2"/>
-  <text class="white" x="440" y="326" text-anchor="middle">MODEL FORWARD</text>
-  <text class="white" x="440" y="350" text-anchor="middle">71.10%</text>
-  <text class="white" x="914" y="326" text-anchor="middle">PREPROCESS</text>
-  <text class="white" x="914" y="350" text-anchor="middle">13.69%</text>
-  <text class="white" x="1050" y="326" text-anchor="middle">ANNOTATE</text>
-  <text class="white" x="1050" y="350" text-anchor="middle">10.59%</text>
-
-  <line class="line" x1="42" y1="395" x2="1109" y2="395"/>
-  <text class="h" x="575" y="423" text-anchor="middle" style="fill:#a56808">95.38%: optimize model forward, preprocessing, and rendering first</text>
-
-  <g>
-    <rect x="42" y="463" width="16" height="16" fill="#7f5fb3"/><text class="t" x="68" y="476">postprocess 2.58%</text>
-    <rect x="242" y="463" width="16" height="16" fill="#94a0b2"/><text class="t" x="268" y="476">capture, tracking, SQLite, JSONL, and other 2.04%</text>
-  </g>
-  <rect class="warn" x="42" y="504" width="1116" height="38" rx="10"/>
-  <text class="small" x="600" y="528" text-anchor="middle">Tracking + JSONL + SQLite = 0.91%; removing durable count evidence would not close the throughput gap.</text>
+  <rect width="1200" height="540" fill="#ffffff"/>
+<text class="panel" x="50" y="45" text-anchor="start">(a) EXCLUSIVE WALL-TIME SHARE</text>
+<text class="small" x="50" y="73" text-anchor="start">Mean across three warmed 300-frame full-pipeline runs</text>
+<rect class="bar1" x="75" y="125" width="540.3599999999999" height="62"/>
+<text x="345.17999999999995" y="153" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">Model forward</text>
+<text x="345.17999999999995" y="174" text-anchor="middle" font-size="13" fill="#ffffff">71.10%</text>
+<rect class="bar2" x="615.3599999999999" y="125" width="104.044" height="62"/>
+<rect class="bar3" x="719.4039999999999" y="125" width="80.484" height="62"/>
+<rect class="bar4" x="799.8879999999999" y="125" width="19.608" height="62"/>
+<rect class="bar5" x="819.4959999999999" y="125" width="15.504000000000001" height="62"/>
+<rect class="bar1" x="75" y="210" width="14" height="14"/>
+<text class="tiny" x="96" y="222" text-anchor="start">Model forward 71.10%</text>
+<rect class="bar2" x="280" y="210" width="14" height="14"/>
+<text class="tiny" x="301" y="222" text-anchor="start">Preprocess 13.69%</text>
+<rect class="bar3" x="470" y="210" width="14" height="14"/>
+<text class="tiny" x="491" y="222" text-anchor="start">Annotation/output 10.59%</text>
+<rect class="bar4" x="690" y="210" width="14" height="14"/>
+<text class="tiny" x="711" y="222" text-anchor="start">Postprocess 2.58%</text>
+<rect class="bar5" x="75" y="238" width="14" height="14"/>
+<text class="tiny" x="96" y="250" text-anchor="start">Capture, tracking, SQLite, JSONL and other 2.04%</text>
+<text class="panel" x="50" y="302" text-anchor="start">(b) THROUGHPUT AGAINST PROVISIONAL TARGET</text>
+<text class="label" x="75" y="357" text-anchor="start">Measured</text>
+<rect class="bar1" x="190" y="337" width="179.84026666666668" height="28"/>
+<text class="small" x="381.8402666666667" y="357" text-anchor="start">5.188 FPS</text>
+<text class="label" x="75" y="407" text-anchor="start">Target</text>
+<rect x="190" y="387" width="520" height="28" fill="#ffffff" stroke="#111827" stroke-width="1.5"/>
+<text class="small" x="722" y="407" text-anchor="start">15 FPS</text>
+<path class="axis" d="M190 437 L710 437"/>
+<text class="tiny" x="190" y="460" text-anchor="middle">0</text>
+<text class="tiny" x="363" y="460" text-anchor="middle">5</text>
+<text class="tiny" x="537" y="460" text-anchor="middle">10</text>
+<text class="tiny" x="710" y="460" text-anchor="middle">15 FPS</text>
+<rect class="group" x="880" y="95" width="270" height="315" rx="0"/>
+<text class="section" x="905" y="130" text-anchor="start">Measured condition</text>
+<text class="small" x="905" y="165" text-anchor="start">Jetson Orin Nano 8 GB</text>
+<text class="small" x="905" y="194" text-anchor="start">3 × 300 frames</text>
+<text class="small" x="905" y="223" text-anchor="start">10 warm-up calls/run</text>
+<text class="small" x="905" y="252" text-anchor="start">mean detector call: 168.62 ms</text>
+<text class="small" x="905" y="281" text-anchor="start">population SD: 0.0104 FPS</text>
+<text class="small" x="905" y="310" text-anchor="start">whole-board mean: 12.70 W</text>
+<text class="small" x="905" y="339" text-anchor="start">peak GPU temperature: 63.94 °C</text>
+<text class="small" x="600" y="505" text-anchor="middle">Model forward + preprocessing + annotation/output = 95.38% of measured wall time.</text>
 </svg>

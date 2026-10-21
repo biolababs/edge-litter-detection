@@ -39,7 +39,7 @@ function parse(markdown, sourceDirectory) {
   function flushCode() {
     if (code.length) {
       sections.push({
-        type: "paragraph",
+        type: "code",
         text: code.join("\n"),
       });
       code = [];
@@ -137,8 +137,17 @@ function parse(markdown, sourceDirectory) {
       flushParagraph();
       const items = [];
       while (index < lines.length && lines[index].trim().startsWith("- ")) {
-        items.push(normalizeInline(lines[index].trim().slice(2)));
+        let item = lines[index].trim().slice(2);
         index += 1;
+        while (
+          index < lines.length &&
+          /^\s{2,}\S/.test(lines[index]) &&
+          !lines[index].trim().startsWith("- ")
+        ) {
+          item += ` ${lines[index].trim()}`;
+          index += 1;
+        }
+        items.push(normalizeInline(item));
       }
       index -= 1;
       sections.push({ type: "bullets", items });
@@ -149,10 +158,17 @@ function parse(markdown, sourceDirectory) {
       flushParagraph();
       const items = [];
       while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
-        items.push(
-          normalizeInline(lines[index].trim().replace(/^\d+\.\s+/, ""))
-        );
+        let item = lines[index].trim().replace(/^\d+\.\s+/, "");
         index += 1;
+        while (
+          index < lines.length &&
+          /^\s{2,}\S/.test(lines[index]) &&
+          !/^\d+\.\s+/.test(lines[index].trim())
+        ) {
+          item += ` ${lines[index].trim()}`;
+          index += 1;
+        }
+        items.push(normalizeInline(item));
       }
       index -= 1;
       sections.push({ type: "numbered", items });
@@ -185,7 +201,7 @@ function main() {
       title:
         "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
       subtitle:
-        "Preprint version 1.4 — prompts, class-confusion analysis, and warmed Jetson profiling",
+        "Preprint version 1.5 — journal format and publication figures",
       date: "21 October 2026",
       author: "Abiola A. Babsalaam — Independent Researcher",
       confidential: false,

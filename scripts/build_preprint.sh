@@ -6,6 +6,12 @@ cd "$repo_root"
 
 mkdir -p reports/generated
 
+python_command="python3"
+if [[ -x .venv/bin/python ]]; then
+  python_command=".venv/bin/python"
+fi
+"$python_command" scripts/generate_publication_figures.py
+
 render_figure() {
   local svg_file="$1"
   local png_file="${svg_file%.svg}.png"

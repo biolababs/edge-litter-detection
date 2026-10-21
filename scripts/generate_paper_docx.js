@@ -11,7 +11,6 @@ const {
   ImageRun,
   LevelFormat,
   Packer,
-  PageBreak,
   PageNumber,
   Paragraph,
   ShadingType,
@@ -23,7 +22,7 @@ const {
 } = require("docx");
 
 const repoRoot = path.resolve(__dirname, "..");
-const BLUE = "4472C4";
+const HEADER_FILL = "E5E7EB";
 
 function safePath(value) {
   const resolved = path.resolve(value);
@@ -95,10 +94,9 @@ function makeImage(section) {
       children: [
         new TextRun({
           text: section.caption || alt,
-          italics: true,
-          font: "Arial",
+          font: "Times New Roman",
           size: 18,
-          color: "526077",
+          color: "111111",
         }),
       ],
     }),
@@ -140,8 +138,8 @@ function buildStyles() {
   return {
     default: {
       document: {
-        run: { font: "Arial", size: 21, color: "202838" },
-        paragraph: { spacing: { line: 276, after: 110 } },
+        run: { font: "Times New Roman", size: 20, color: "111111" },
+        paragraph: { spacing: { line: 240, after: 80 } },
       },
     },
     paragraphStyles: [
@@ -151,10 +149,15 @@ function buildStyles() {
         basedOn: "Normal",
         next: "Normal",
         quickFormat: true,
-        run: { size: 36, bold: true, font: "Arial", color: "1E2761" },
+        run: {
+          size: 28,
+          bold: true,
+          font: "Times New Roman",
+          color: "111111",
+        },
         paragraph: {
           keepNext: true,
-          spacing: { before: 300, after: 160 },
+          spacing: { before: 220, after: 100 },
           outlineLevel: 0,
         },
       },
@@ -164,10 +167,15 @@ function buildStyles() {
         basedOn: "Normal",
         next: "Normal",
         quickFormat: true,
-        run: { size: 29, bold: true, font: "Arial", color: "232F3E" },
+        run: {
+          size: 24,
+          bold: true,
+          font: "Times New Roman",
+          color: "111111",
+        },
         paragraph: {
           keepNext: true,
-          spacing: { before: 220, after: 130 },
+          spacing: { before: 180, after: 80 },
           outlineLevel: 1,
         },
       },
@@ -177,10 +185,16 @@ function buildStyles() {
         basedOn: "Normal",
         next: "Normal",
         quickFormat: true,
-        run: { size: 24, bold: true, font: "Arial", color: "333333" },
+        run: {
+          size: 21,
+          bold: true,
+          italics: true,
+          font: "Times New Roman",
+          color: "111111",
+        },
         paragraph: {
           keepNext: true,
-          spacing: { before: 180, after: 100 },
+          spacing: { before: 140, after: 65 },
           outlineLevel: 2,
         },
       },
@@ -208,7 +222,11 @@ function makeParagraph(section) {
       new TextRun({ text: line, break: index > 0 ? 1 : undefined })
     );
   });
-  return new Paragraph({ spacing: { after: 110 }, children });
+  return new Paragraph({
+    alignment: AlignmentType.JUSTIFIED,
+    spacing: { after: 80 },
+    children,
+  });
 }
 
 function makeList(section, reference) {
@@ -216,14 +234,52 @@ function makeList(section, reference) {
     item =>
       new Paragraph({
         numbering: { reference, level: 0 },
-        spacing: { after: 55 },
+        spacing: { after: 40 },
         children: [new TextRun(item)],
       })
   );
 }
 
+function makeNumberedList(section) {
+  return (section.items || []).map(
+    (item, index) =>
+      new Paragraph({
+        indent: { left: 720, hanging: 360 },
+        spacing: { after: 40 },
+        children: [
+          new TextRun({
+            text: `${index + 1}.  ${item}`,
+            font: "Times New Roman",
+            size: 20,
+          }),
+        ],
+      })
+  );
+}
+
+function makeCode(section) {
+  const lines = (section.text || "").split("\n");
+  const children = [];
+  lines.forEach((line, index) => {
+    children.push(
+      new TextRun({
+        text: line || " ",
+        break: index > 0 ? 1 : undefined,
+        font: "Courier New",
+        size: 16,
+      })
+    );
+  });
+  return new Paragraph({
+    shading: { fill: "F3F4F6", type: ShadingType.CLEAR },
+    indent: { left: 180, right: 180 },
+    spacing: { before: 60, after: 100, line: 220 },
+    children,
+  });
+}
+
 function makeTable(section) {
-  const border = { style: BorderStyle.SINGLE, size: 1, color: "C7CFDB" };
+  const border = { style: BorderStyle.SINGLE, size: 1, color: "B8B8B8" };
   const borders = {
     top: border,
     bottom: border,
@@ -244,7 +300,7 @@ function makeTable(section) {
             borders,
             width: { size: columnWidth, type: WidthType.DXA },
             shading: header
-              ? { fill: BLUE, type: ShadingType.CLEAR }
+              ? { fill: HEADER_FILL, type: ShadingType.CLEAR }
               : undefined,
             margins: { top: 42, bottom: 42, left: 72, right: 72 },
             children: [
@@ -254,9 +310,9 @@ function makeTable(section) {
                   new TextRun({
                     text: String(value),
                     bold: header,
-                    color: header ? "FFFFFF" : "202838",
-                    font: "Arial",
-                    size: 18,
+                    color: "111111",
+                    font: "Times New Roman",
+                    size: 17,
                   }),
                 ],
               }),
@@ -287,7 +343,10 @@ function buildContent(data) {
         children.push(...makeList(section, "bullets"));
         break;
       case "numbered":
-        children.push(...makeList(section, "numbers"));
+        children.push(...makeNumberedList(section));
+        break;
+      case "code":
+        children.push(makeCode(section));
         break;
       case "table":
         children.push(
@@ -318,70 +377,66 @@ async function main() {
 
   const titlePage = [
     new Paragraph({
-      alignment: AlignmentType.LEFT,
-      spacing: { before: 900, after: 260 },
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 40, after: 160 },
       children: [
         new TextRun({
           text: metadata.title || "Preprint",
           bold: true,
-          size: 48,
-          font: "Arial",
-          color: "1E2761",
+          size: 36,
+          font: "Times New Roman",
+          color: "111111",
         }),
       ],
     }),
     new Paragraph({
-      spacing: { after: 100 },
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 70 },
+      children: [
+        new TextRun({
+          text: metadata.author || "",
+          size: 22,
+          font: "Times New Roman",
+          color: "111111",
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 55 },
       children: [
         new TextRun({
           text: metadata.subtitle || "",
-          size: 27,
-          font: "Arial",
-          color: "526077",
+          size: 18,
+          font: "Times New Roman",
+          color: "333333",
         }),
       ],
     }),
     new Paragraph({
-      spacing: { after: 260 },
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 35 },
       children: [
         new TextRun({
-          text: `${metadata.date || ""}  |  ${metadata.author || ""}`,
-          size: 20,
-          font: "Arial",
-          color: "7A8495",
+          text: metadata.date || "",
+          size: 18,
+          font: "Times New Roman",
+          color: "333333",
         }),
       ],
     }),
     new Paragraph({
-      border: {
-        bottom: { style: BorderStyle.SINGLE, size: 16, color: BLUE },
-      },
-      spacing: { after: 260 },
-      children: [],
-    }),
-    new Paragraph({
-      spacing: { before: 120, after: 80 },
-      children: [
-        new TextRun({
-          text: "Open-source software and reproducibility preprint",
-          bold: true,
-          size: 22,
-          font: "Arial",
-          color: "232F3E",
-        }),
-      ],
-    }),
-    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 180 },
       children: [
         new TextRun({
           text: "Code: github.com/biolababs/edge-litter-detection",
-          size: 20,
-          font: "Arial",
-          color: "526077",
+          size: 18,
+          font: "Times New Roman",
+          color: "333333",
         }),
       ],
     }),
-    new Paragraph({ children: [new PageBreak()] }),
   ];
 
   const document = new Document({
@@ -398,7 +453,7 @@ async function main() {
         properties: {
           page: {
             size: { width: 12240, height: 15840 },
-            margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
+            margin: { top: 1080, right: 1440, bottom: 1080, left: 1440 },
           },
         },
         footers: {
@@ -407,8 +462,16 @@ async function main() {
               new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [
-                  new TextRun({ text: "Page ", size: 16 }),
-                  new TextRun({ children: [PageNumber.CURRENT], size: 16 }),
+                  new TextRun({
+                    text: "Page ",
+                    size: 17,
+                    font: "Times New Roman",
+                  }),
+                  new TextRun({
+                    children: [PageNumber.CURRENT],
+                    size: 17,
+                    font: "Times New Roman",
+                  }),
                 ],
               }),
             ],

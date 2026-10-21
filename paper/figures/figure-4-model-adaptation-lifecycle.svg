@@ -1,65 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="510" viewBox="0 0 1200 510" role="img" aria-labelledby="title desc">
   <title id="title">Public-model bootstrap and target-domain adaptation lifecycle</title>
-  <desc id="desc">Ordinary users can start with a pinned public model. The system collects review evidence. Maintainers may later build a governed target dataset, adapt a fixed-taxonomy model, evaluate it against release gates, and publish a versioned artifact without changing downstream application contracts.</desc>
+  <desc id="desc">A public checkpoint enables immediate functional use while a separate evidence-gated lifecycle produces an accepted target-domain checkpoint.</desc>
   <defs>
-    <style>
-      .title{font:700 27px Arial,sans-serif;fill:#18213d}.h{font:700 18px Arial,sans-serif;fill:#18213d}.t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}
-      .box{fill:#fff;stroke:#aeb9ca;stroke-width:2}.blue{fill:#edf3ff;stroke:#4472c4}.teal{fill:#e8f7f3;stroke:#1b998b}.amber{fill:#fff5df;stroke:#d99518}
-      .gate{fill:#f3edff;stroke:#7f5fb3}.arrow{fill:none;stroke:#5f6c83;stroke-width:2.5;marker-end:url(#a)}.loop{fill:none;stroke:#d99518;stroke-width:2.5;stroke-dasharray:8 5;marker-end:url(#b)}
-      .contract{fill:#f5f7fa;stroke:#8fa0b8;stroke-width:1.5;stroke-dasharray:7 5}
-    </style>
-    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#5f6c83"/></marker>
-    <marker id="b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#d99518"/></marker>
-    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".12"/></filter>
+
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#111827}
+    .group{fill:#ffffff;stroke:#374151;stroke-width:1.5}
+    .boundary{fill:#f8fafc;stroke:#111827;stroke-width:1.8}
+    .node{fill:#ffffff;stroke:#4b5563;stroke-width:1.35}
+    .soft{fill:#f3f4f6;stroke:#6b7280;stroke-width:1.25}
+    .accent{fill:#eaf0f8;stroke:#2f5597;stroke-width:1.5}
+    .safety{fill:#fff7ed;stroke:#9a3412;stroke-width:1.5}
+    .gate{fill:#ffffff;stroke:#111827;stroke-width:1.6}
+    .arrow{fill:none;stroke:#374151;stroke-width:1.6;marker-end:url(#arrow)}
+    .feedback{fill:none;stroke:#4b5563;stroke-width:1.4;stroke-dasharray:7 5;marker-end:url(#arrow)}
+    .blocked{fill:none;stroke:#9a3412;stroke-width:1.8;stroke-dasharray:7 5}
+    .axis{stroke:#6b7280;stroke-width:1}
+    .grid{stroke:#d1d5db;stroke-width:1}
+    .section{font-size:18px;font-weight:700;letter-spacing:.3px}
+    .label{font-size:17px}
+    .small{font-size:16.5px;fill:#374151}
+    .tiny{font-size:14px;fill:#4b5563}
+    .number{font-size:13px;font-weight:700;fill:#ffffff}
+    .metric{font-size:21px;font-weight:700}
+    .panel{font-size:20px;font-weight:700}
+    .bar1{fill:#2f5597}
+    .bar2{fill:#64748b}
+    .bar3{fill:#94a3b8}
+    .bar4{fill:#cbd5e1}
+    .bar5{fill:#e5e7eb;stroke:#9ca3af;stroke-width:.7}
+  </style>
+
+    <marker id="arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0 0 L9 3.5 L0 7 Z" fill="#374151"/>
+    </marker>
   </defs>
-  <rect width="1200" height="620" fill="#fff"/>
-  <text class="title" x="42" y="45">Model lifecycle: usable on day one, improvable with evidence</text>
-
-  <g filter="url(#s)">
-    <rect class="blue" x="42" y="120" width="196" height="120" rx="15"/>
-    <text class="h" x="140" y="154" text-anchor="middle">Pinned public model</text>
-    <text class="t" x="140" y="181" text-anchor="middle">OmDet-Turbo Tiny</text>
-    <text class="small" x="140" y="207" text-anchor="middle">no user training required</text>
-
-    <rect class="teal" x="286" y="120" width="196" height="120" rx="15"/>
-    <text class="h" x="384" y="154" text-anchor="middle">Immediate workflow</text>
-    <text class="t" x="384" y="181" text-anchor="middle">detect · review · count</text>
-    <text class="small" x="384" y="207" text-anchor="middle">software bootstrap only</text>
-
-    <rect class="amber" x="530" y="120" width="196" height="120" rx="15"/>
-    <text class="h" x="628" y="154" text-anchor="middle">Operational evidence</text>
-    <text class="t" x="628" y="181" text-anchor="middle">corrections and misses</text>
-    <text class="small" x="628" y="207" text-anchor="middle">representative target data</text>
-
-    <rect class="blue" x="774" y="120" width="196" height="120" rx="15"/>
-    <text class="h" x="872" y="154" text-anchor="middle">Maintainer adaptation</text>
-    <text class="t" x="872" y="181" text-anchor="middle">fixed taxonomy training</text>
-    <text class="small" x="872" y="207" text-anchor="middle">optional, centrally managed</text>
-
-    <rect class="gate" x="1018" y="120" width="140" height="120" rx="15"/>
-    <text class="h" x="1088" y="154" text-anchor="middle">Release gates</text>
-    <text class="small" x="1088" y="181" text-anchor="middle">accuracy</text>
-    <text class="small" x="1088" y="202" text-anchor="middle">counting · device</text>
-    <text class="small" x="1088" y="223" text-anchor="middle">security · license</text>
-  </g>
-  <path class="arrow" d="M238 180 H286"/>
-  <path class="arrow" d="M482 180 H530"/>
-  <path class="arrow" d="M726 180 H774"/>
-  <path class="arrow" d="M970 180 H1018"/>
-
-  <rect class="contract" x="156" y="322" width="888" height="100" rx="16"/>
-  <text class="h" x="600" y="354" text-anchor="middle">Stable application contracts remain unchanged</text>
-  <text class="t" x="600" y="382" text-anchor="middle">Detection schema · 16-class IDs · tracker · count semantics · SQLite · dashboard · API · outbox</text>
-  <text class="small" x="600" y="406" text-anchor="middle">Changing the checkpoint does not redefine the operational product.</text>
-  <path class="arrow" d="M384 240 V322"/>
-  <path class="arrow" d="M1088 240 V272 H860 V322"/>
-
-  <rect class="teal" x="330" y="474" width="540" height="96" rx="15"/>
-  <text class="h" x="600" y="507" text-anchor="middle">Versioned, checksum-verified release artifact</text>
-  <text class="small" x="600" y="532" text-anchor="middle">ordinary deployment users download and run</text>
-  <text class="small" x="600" y="552" text-anchor="middle">maintainers own training and acceptance evidence</text>
-  <path class="arrow" d="M600 422 V474"/>
-
-  <path class="loop" d="M1088 120 V86 H628 V120"/>
-  <text class="small" x="858" y="78" text-anchor="middle" style="fill:#a56808">failed gates return to evidence and adaptation</text>
+  <rect width="1200" height="510" fill="#ffffff"/>
+<rect class="accent" x="35" y="80" width="175" height="78" rx="0"/>
+<circle cx="47" cy="92" r="11" fill="#2f5597"/><text class="number" x="47" y="96.5" text-anchor="middle">1</text>
+<text class="small" x="122" y="111" text-anchor="middle">Pinned public</text>
+<text class="small" x="122" y="131" text-anchor="middle">checkpoint</text>
+<rect class="node" x="255" y="80" width="175" height="78" rx="0"/>
+<circle cx="267" cy="92" r="11" fill="#2f5597"/><text class="number" x="267" y="96.5" text-anchor="middle">2</text>
+<text class="small" x="342" y="111" text-anchor="middle">Bootstrap use</text>
+<text class="small" x="342" y="131" text-anchor="middle">and data capture</text>
+<rect class="node" x="475" y="80" width="175" height="78" rx="0"/>
+<circle cx="487" cy="92" r="11" fill="#2f5597"/><text class="number" x="487" y="96.5" text-anchor="middle">3</text>
+<text class="small" x="562" y="111" text-anchor="middle">Representative</text>
+<text class="small" x="562" y="131" text-anchor="middle">labelled data</text>
+<rect class="node" x="695" y="80" width="175" height="78" rx="0"/>
+<circle cx="707" cy="92" r="11" fill="#2f5597"/><text class="number" x="707" y="96.5" text-anchor="middle">4</text>
+<text class="small" x="782" y="111" text-anchor="middle">Train / adapt</text>
+<text class="small" x="782" y="131" text-anchor="middle">checkpoint</text>
+<rect class="node" x="915" y="80" width="220" height="78" rx="0"/>
+<circle cx="927" cy="92" r="11" fill="#2f5597"/><text class="number" x="927" y="96.5" text-anchor="middle">5</text>
+<text class="small" x="1025" y="111" text-anchor="middle">Frozen validation</text>
+<text class="small" x="1025" y="131" text-anchor="middle">detection · count · system</text>
+<path class="arrow" d="M210 119 L255 119"/>
+<path class="arrow" d="M430 119 L475 119"/>
+<path class="arrow" d="M650 119 L695 119"/>
+<path class="arrow" d="M870 119 L915 119"/>
+<rect class="gate" x="490" y="250" width="220" height="82" rx="0"/>
+<text class="small" x="600" y="281" text-anchor="middle">Release gate</text>
+<text class="small" x="600" y="302" text-anchor="middle">predeclared acceptance criteria</text>
+<path class="arrow" d="M1025 158 L1025 205 L600 205 L600 250"/>
+<rect class="accent" x="850" y="390" width="285" height="78" rx="0"/>
+<text class="small" x="992" y="420" text-anchor="middle">Versioned accepted checkpoint</text>
+<text class="small" x="992" y="441" text-anchor="middle">same downstream detection contract</text>
+<path class="arrow" d="M710 291 L992 291 L992 390"/>
+<text class="small" x="840" y="278" text-anchor="middle">PASS</text>
+<path class="feedback" d="M490 291 L430 291 L430 210 L782 210 L782 158"/>
+<text class="small" x="455" y="278" text-anchor="end">FAIL</text>
+<text class="tiny" x="455" y="326" text-anchor="end">revise data / prompt / model</text>
+<rect class="soft" x="35" y="390" width="320" height="78" rx="0"/>
+<text class="small" x="195" y="420" text-anchor="middle">Public model remains available</text>
+<text class="small" x="195" y="441" text-anchor="middle">for installation, review and data collection</text>
+<path class="feedback" d="M342 158 L342 350 L195 350 L195 390"/>
 </svg>
