@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/biolababs/edge-litter-detection/security/policy
+    about: Report vulnerabilities privately; do not open a public issue.
+  - name: Support and deployment questions
+    url: https://github.com/biolababs/edge-litter-detection/discussions
+    about: Ask usage and deployment questions in Discussions.
+

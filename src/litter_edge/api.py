@@ -4,8 +4,8 @@ import os
 from collections import Counter
 from contextlib import asynccontextmanager
 from pathlib import Path
-from threading import Lock
-from typing import Any
+from threading import BoundedSemaphore, Lock
+from typing import Any, Literal
 
 from . import __version__
 from .adapters import create_detector
@@ -24,11 +24,48 @@ from .storage import (
 )
 from .streaming import SerializedDetector, StreamManager
 
+
+DEFAULT_MAXIMUM_IMAGE_BYTES = 20 * 1024 * 1024
+DEFAULT_MAXIMUM_IMAGE_PIXELS = 16_777_216
+ALLOWED_IMAGE_MEDIA_TYPES = {
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+}
+
+
+def _enabled(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes"}
+
+
+def _positive_environment_integer(name: str, default: int) -> int:
+    try:
+        value = int(os.environ.get(name, str(default)))
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an integer.") from exc
+    if value <= 0:
+        raise RuntimeError(f"{name} must be positive.")
+    return value
+
+
+def _matches_image_signature(media_type: str, payload: bytes) -> bool:
+    if media_type == "image/jpeg":
+        return payload.startswith(b"\xff\xd8\xff")
+    if media_type == "image/png":
+        return payload.startswith(b"\x89PNG\r\n\x1a\n")
+    if media_type == "image/webp":
+        return (
+            len(payload) >= 12
+            and payload.startswith(b"RIFF")
+            and payload[8:12] == b"WEBP"
+        )
+    return False
+
 try:
     from fastapi import FastAPI, HTTPException, Request
     from fastapi.responses import FileResponse, Response
     from fastapi.staticfiles import StaticFiles
-    from pydantic import BaseModel
+    from pydantic import BaseModel, Field
     from starlette.concurrency import run_in_threadpool
 except ImportError as exc:
     raise RuntimeError(
@@ -78,9 +115,27 @@ class DetectorHolder:
         self.device = resolve_torch_device(
             os.environ.get("LITTER_DEVICE", str(self.settings.device))
         )
+        self.maximum_image_bytes = _positive_environment_integer(
+            "LITTER_MAX_IMAGE_BYTES",
+            DEFAULT_MAXIMUM_IMAGE_BYTES,
+        )
+        self.maximum_image_pixels = _positive_environment_integer(
+            "LITTER_MAX_IMAGE_PIXELS",
+            DEFAULT_MAXIMUM_IMAGE_PIXELS,
+        )
+        os.environ.setdefault(
+            "OPENCV_IO_MAX_IMAGE_PIXELS",
+            str(self.maximum_image_pixels),
+        )
         self._detector: Any = None
         self._load_lock = Lock()
         self._predict_lock = Lock()
+        self._image_request_slots = BoundedSemaphore(
+            _positive_environment_integer(
+                "LITTER_MAX_IMAGE_REQUESTS",
+                1,
+            )
+        )
 
     @property
     def model_configured(self) -> bool:
@@ -129,6 +184,12 @@ class DetectorHolder:
         frame = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
         if frame is None:
             raise ValueError("Request body is not a decodable image.")
+        height, width = frame.shape[:2]
+        if height * width > self.maximum_image_pixels:
+            raise ValueError(
+                "Decoded image exceeds the configured pixel limit of "
+                f"{self.maximum_image_pixels}."
+            )
         detections = self.predict_frame(frame)
         detections = [
             self.separation_policy.apply(detection) for detection in detections
@@ -150,32 +211,62 @@ class DetectorHolder:
 
 
 class ReviewDecision(BaseModel):
-    status: str
-    corrected_class_name: str | None = None
-    corrected_destination: str | None = None
-    reviewed_by: str | None = None
-    note: str | None = None
+    status: Literal["confirmed", "corrected", "rejected"]
+    corrected_class_name: str | None = Field(default=None, max_length=128)
+    corrected_destination: str | None = Field(default=None, max_length=128)
+    reviewed_by: str | None = Field(default=None, max_length=128)
+    note: str | None = Field(default=None, max_length=2000)
 
 
 class CollectionConfirmation(BaseModel):
-    run_id: str
-    class_name: str
-    quantity: int = 1
-    track_id: int | None = None
-    method: str
-    confirmed_by: str | None = None
-    external_reference: str | None = None
-    note: str | None = None
+    run_id: str = Field(min_length=1, max_length=128)
+    class_name: str = Field(min_length=1, max_length=128)
+    quantity: int = Field(default=1, ge=1, le=1_000_000)
+    track_id: int | None = Field(default=None, ge=0)
+    method: Literal["human", "arm_controller", "sensor_fusion", "import"]
+    confirmed_by: str | None = Field(default=None, max_length=128)
+    external_reference: str | None = Field(default=None, max_length=256)
+    note: str | None = Field(default=None, max_length=2000)
 
 
 class StreamStartRequest(BaseModel):
-    source: str = "0"
-    edge_device_id: str | None = None
-    vehicle_id: str | None = None
-    route_id: str | None = None
+    source: str = Field(default="0", min_length=1, max_length=2048)
+    edge_device_id: str | None = Field(default=None, max_length=128)
+    vehicle_id: str | None = Field(default=None, max_length=128)
+    route_id: str | None = Field(default=None, max_length=128)
     realtime: bool = True
-    max_frames: int = 0
+    max_frames: int = Field(default=0, ge=0, le=10_000_000)
     persist_detections: bool = False
+
+
+async def _read_limited_body(request: Any, maximum_bytes: int) -> bytes:
+    declared_length = request.headers.get("content-length")
+    if declared_length is not None:
+        try:
+            if int(declared_length) > maximum_bytes:
+                raise HTTPException(
+                    status_code=413,
+                    detail=(
+                        f"Image exceeds the {maximum_bytes}-byte request limit."
+                    ),
+                )
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Content-Length must be an integer.",
+            ) from exc
+
+    chunks: list[bytes] = []
+    received = 0
+    async for chunk in request.stream():
+        received += len(chunk)
+        if received > maximum_bytes:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Image exceeds the {maximum_bytes}-byte request limit.",
+            )
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 def create_app() -> Any:
@@ -189,6 +280,9 @@ def create_app() -> Any:
         separation_policy=holder.separation_policy,
         database=holder.database,
         maximum_active_streams=int(os.environ.get("LITTER_MAX_STREAMS", "1")),
+        maximum_retained_streams=int(
+            os.environ.get("LITTER_MAX_RETAINED_STREAMS", "100")
+        ),
     )
 
     @asynccontextmanager
@@ -198,12 +292,48 @@ def create_app() -> Any:
         finally:
             streams.close()
 
+    api_docs_enabled = _enabled("LITTER_ENABLE_API_DOCS")
     app = FastAPI(
         title="Edge Litter Detection API",
         version=__version__,
         description="Detect, classify, and count litter in an image.",
         lifespan=lifespan,
+        docs_url="/docs" if api_docs_enabled else None,
+        redoc_url="/redoc" if api_docs_enabled else None,
+        openapi_url="/openapi.json" if api_docs_enabled else None,
     )
+
+    @app.middleware("http")
+    async def security_headers(request: Request, call_next: Any) -> Any:
+        response = await call_next(request)
+        script_sources = "'self'"
+        style_sources = "'self'"
+        image_sources = "'self' data:"
+        if api_docs_enabled:
+            script_sources += " https://cdn.jsdelivr.net"
+            style_sources += " 'unsafe-inline' https://cdn.jsdelivr.net"
+            image_sources += " https://fastapi.tiangolo.com"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            f"script-src {script_sources}; "
+            f"style-src {style_sources}; "
+            f"img-src {image_sources}; "
+            "connect-src 'self'; object-src 'none'; base-uri 'none'; "
+            "form-action 'self'; frame-ancestors 'none'"
+        )
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=(), payment=()"
+        )
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Robots-Tag"] = "noindex, nofollow"
+        if request.url.path.startswith(("/v1/", "/healthz", "/readyz")):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
     dashboard_directory = Path(__file__).with_name("dashboard")
     app.mount(
         "/dashboard-assets",
@@ -261,14 +391,31 @@ def create_app() -> Any:
                 status_code=503,
                 detail="Image detection is disabled in counts-only API mode.",
             )
-        image_bytes = await request.body()
+        media_type = request.headers.get("content-type", "").split(";", 1)[0]
+        media_type = media_type.strip().lower()
+        if media_type not in ALLOWED_IMAGE_MEDIA_TYPES:
+            raise HTTPException(
+                status_code=415,
+                detail=(
+                    "Content-Type must be image/jpeg, image/png, or image/webp."
+                ),
+            )
+        image_bytes = await _read_limited_body(
+            request,
+            holder.maximum_image_bytes,
+        )
         if not image_bytes:
             raise HTTPException(status_code=400, detail="Request body is empty.")
-        maximum_bytes = int(os.environ.get("LITTER_MAX_IMAGE_BYTES", "20971520"))
-        if len(image_bytes) > maximum_bytes:
+        if not _matches_image_signature(media_type, image_bytes):
             raise HTTPException(
-                status_code=413,
-                detail=f"Image exceeds the {maximum_bytes}-byte request limit.",
+                status_code=400,
+                detail="Request body does not match its declared image type.",
+            )
+        if not holder._image_request_slots.acquire(blocking=False):
+            raise HTTPException(
+                status_code=429,
+                detail="The detector is busy. Retry after the current request.",
+                headers={"Retry-After": "1"},
             )
         try:
             return await run_in_threadpool(holder.detect, image_bytes)
@@ -276,6 +423,8 @@ def create_app() -> Any:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+        finally:
+            holder._image_request_slots.release()
 
     @app.post("/v1/streams")
     def start_stream(request: StreamStartRequest) -> dict[str, Any]:

@@ -33,7 +33,7 @@ class FakeResponse:
 class DemoVideoTests(unittest.TestCase):
     def test_downloads_verifies_and_attributes_video(self) -> None:
         video = b"\x1a\x45\xdf\xa3" + b"demo-video"
-        sha1 = hashlib.sha1(video).hexdigest()
+        sha256 = hashlib.sha256(video).hexdigest()
         url = "https://example.test/recycling.webm"
 
         with TemporaryDirectory() as temporary:
@@ -46,7 +46,7 @@ class DemoVideoTests(unittest.TestCase):
                     output,
                     timeout=2,
                     video_url=url,
-                    expected_sha1=sha1,
+                    expected_sha256=sha256,
                 )
             manifest = json.loads(
                 (output.parent / "manifest.json").read_text(encoding="utf-8")
@@ -58,7 +58,7 @@ class DemoVideoTests(unittest.TestCase):
             result["license"]["identifier"],
             "CC-BY-SA-3.0",
         )
-        self.assertEqual(manifest["sha1"], sha1)
+        self.assertEqual(manifest["sha256"], sha256)
         self.assertIn("not a labelled", manifest["purpose"])
         self.assertIn("Ireland4me", manifest["attribution"])
 
@@ -71,11 +71,11 @@ class DemoVideoTests(unittest.TestCase):
                 "litter_edge.demo_video.urlopen",
                 return_value=FakeResponse(video, url),
             ):
-                with self.assertRaisesRegex(ValueError, "SHA-1 mismatch"):
+                with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
                     prepare_demo_video(
                         output,
                         video_url=url,
-                        expected_sha1="0" * 40,
+                        expected_sha256="0" * 64,
                     )
             self.assertFalse(output.exists())
 

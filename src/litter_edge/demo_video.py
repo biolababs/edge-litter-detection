@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from . import __version__
+from .common import write_json
 
 
 VIDEO_URL = (
@@ -19,7 +20,11 @@ VIDEO_URL = (
     "Recycling_Video.webm"
 )
 SOURCE_PAGE = "https://commons.wikimedia.org/wiki/File:Recycling_Video.webm"
-EXPECTED_SHA1 = "ad3b141fdf60830572e091dd3f8e9df1cc2df6ed"
+UPSTREAM_SHA1 = "ad3b141fdf60830572e091dd3f8e9df1cc2df6ed"
+EXPECTED_SHA256 = (
+    "fce18e73dd52a5c27dac03971915b757"
+    "82cd8c6a093f630980a41f16d002d5e1"
+)
 MAX_VIDEO_BYTES = 80 * 1024 * 1024
 
 
@@ -66,7 +71,7 @@ def _manifest(target: Path, sha256: str) -> dict[str, Any]:
             "url": "https://creativecommons.org/licenses/by-sa/3.0/",
         },
         "local_file": target.name,
-        "sha1": EXPECTED_SHA1,
+        "upstream_sha1": UPSTREAM_SHA1,
         "sha256": sha256,
         "downloaded_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -85,10 +90,16 @@ def _read_cached(target: Path, manifest_path: Path) -> dict[str, Any] | None:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    if manifest.get("sha1") != EXPECTED_SHA1:
+    if manifest.get("sha256") != EXPECTED_SHA256:
         return None
-    sha1 = hashlib.sha1(target.read_bytes()).hexdigest()
-    if sha1 != EXPECTED_SHA1:
+    digest = hashlib.sha256()
+    try:
+        with target.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError:
+        return None
+    if digest.hexdigest() != EXPECTED_SHA256:
         return None
     return {
         "cached": True,
@@ -104,7 +115,7 @@ def prepare_demo_video(
     timeout: float = 60.0,
     refresh: bool = False,
     video_url: str = VIDEO_URL,
-    expected_sha1: str = EXPECTED_SHA1,
+    expected_sha256: str = EXPECTED_SHA256,
 ) -> dict[str, Any]:
     if timeout <= 0:
         raise ValueError("timeout must be positive.")
@@ -114,7 +125,7 @@ def prepare_demo_video(
     target = Path(output).expanduser().resolve()
     target.parent.mkdir(parents=True, exist_ok=True)
     manifest_path = target.parent / "manifest.json"
-    if not refresh and expected_sha1 == EXPECTED_SHA1:
+    if not refresh and expected_sha256 == EXPECTED_SHA256:
         cached = _read_cached(target, manifest_path)
         if cached is not None:
             return cached
@@ -124,12 +135,12 @@ def prepare_demo_video(
         headers={"User-Agent": f"edge-litter-detection/{__version__}"},
     )
     temporary_path: Path | None = None
-    sha1 = hashlib.sha1()
     sha256 = hashlib.sha256()
     written = 0
     prefix = b""
     try:
-        with urlopen(request, timeout=timeout) as response:
+        # HTTPS was validated above and is revalidated after redirects.
+        with urlopen(request, timeout=timeout) as response:  # nosec B310
             final_url = urlsplit(response.geturl())
             if final_url.scheme != "https":
                 raise ValueError("The demo video redirected away from HTTPS.")
@@ -155,29 +166,26 @@ def prepare_demo_video(
                         )
                     if len(prefix) < 32:
                         prefix += chunk[: 32 - len(prefix)]
-                    sha1.update(chunk)
                     sha256.update(chunk)
                     temporary.write(chunk)
         if not _is_supported_video(prefix):
             raise ValueError(
                 "Downloaded demo content is not a supported WebM or MP4 file."
             )
-        observed_sha1 = sha1.hexdigest()
-        if observed_sha1.lower() != expected_sha1.lower():
+        observed_sha256 = sha256.hexdigest()
+        if observed_sha256.lower() != expected_sha256.lower():
             raise ValueError(
-                "Demo video SHA-1 mismatch: "
-                f"expected {expected_sha1}, observed {observed_sha1}."
+                "Demo video SHA-256 mismatch: "
+                f"expected {expected_sha256}, observed {observed_sha256}."
             )
-        assert temporary_path is not None
+        if temporary_path is None:
+            raise RuntimeError("The demo video download did not create a file.")
         os.replace(temporary_path, target)
         temporary_path = None
-        manifest = _manifest(target, sha256.hexdigest())
+        manifest = _manifest(target, observed_sha256)
         manifest["download_url"] = video_url
-        manifest["sha1"] = expected_sha1.lower()
-        manifest_path.write_text(
-            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        manifest["sha256"] = expected_sha256.lower()
+        write_json(manifest_path, manifest)
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)

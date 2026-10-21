@@ -1,0 +1,40 @@
+name: Feature request
+description: Propose a reusable product or deployment improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Operational outcome
+      description: What cleanup, sorting, counting, or integration problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: users
+    attributes:
+      label: Users and environment
+      description: Describe the operator, device class, input source, and deployment constraints.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: State how the outcome should be verified without comparing model families.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Scope check
+      options:
+        - label: This does not ask the perception software to directly actuate machinery.
+          required: true
+

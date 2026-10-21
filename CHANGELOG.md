@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Reworked the GitHub landing page around outcomes, five-minute setup, input
+  sources, durable outputs, architecture, deployment, and minimum/recommended
+  hardware tiers.
+- Added hardware requirements, a documentation index, support policy, code of
+  conduct, issue forms, pull-request guidance, Dependabot, dependency review,
+  and CodeQL.
+- Changed the unauthenticated API and Compose defaults to private-by-default
+  loopback exposure and documented SSH-tunnel and authenticated-gateway access.
+- Added bounded and type-checked image uploads, request concurrency limits,
+  retained-stream limits, security response headers, and stricter API payload
+  validation.
+- Pinned public Hugging Face models to immutable revisions, required
+  SafeTensors, disabled remote model code, and upgraded Pillow to 13 on Python
+  3.11 and later.
+- Replaced SHA-1 demo verification with SHA-256, removed dynamic SQL assembly,
+  made JSON output atomic, and added API security regression tests.
 - Added a complete optional custom-data training guide covering class
   contracts, COCO layout, representative collection, leakage-resistant splits,
   smoke training, held-out evaluation, runtime testing, and checkpoint release.

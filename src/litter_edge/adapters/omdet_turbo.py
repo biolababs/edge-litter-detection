@@ -5,6 +5,7 @@ from numbers import Integral
 from typing import Any
 
 from ..schema import Detection
+from ..settings import resolve_transformers_model_reference
 from .grounding_dino import (
     _class_agnostic_nms,
     _normalize_label,
@@ -67,9 +68,20 @@ class OmDetTurboDetector:
         self.max_detections = max_detections
         self.use_autocast = optimize and device.startswith("cuda")
 
-        self.processor = AutoProcessor.from_pretrained(model_reference)
+        model_id, revision = resolve_transformers_model_reference(
+            self.backend_name,
+            model_reference,
+        )
+        self.processor = AutoProcessor.from_pretrained(
+            model_id,
+            revision=revision,
+            trust_remote_code=False,
+        )
         self.model = OmDetTurboForObjectDetection.from_pretrained(
-            model_reference
+            model_id,
+            revision=revision,
+            use_safetensors=True,
+            trust_remote_code=False,
         )
         self.model.to(device)
         self.model.eval()
@@ -157,7 +169,12 @@ class OmDetTurboDetector:
         raw_labels = _to_list(labels)
 
         detections: list[Detection] = []
-        for box, score, label in zip(boxes, scores, raw_labels):
+        for box, score, label in zip(
+            boxes,
+            scores,
+            raw_labels,
+            strict=True,
+        ):
             class_id = self._class_id_for_label(label)
             confidence = float(score.item() if hasattr(score, "item") else score)
             detections.append(

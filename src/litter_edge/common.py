@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import platform
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -18,7 +20,7 @@ def package_version(name: str) -> str | None:
         from importlib.metadata import version
 
         return version(name)
-    except Exception:
+    except (ImportError, ValueError):
         return None
 
 
@@ -32,7 +34,7 @@ def git_revision(root: Path) -> str | None:
             text=True,
         )
         return completed.stdout.strip()
-    except Exception:
+    except (OSError, subprocess.CalledProcessError):
         return None
 
 
@@ -88,7 +90,25 @@ def memory_snapshot() -> dict[str, float | None]:
 def write_json(path: str | Path, payload: dict[str, Any]) -> Path:
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=output.parent,
+            prefix=f".{output.name}.",
+            delete=False,
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            json.dump(payload, temporary, indent=2, sort_keys=True)
+            temporary.write("\n")
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        os.replace(temporary_path, output)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
     return output
 
 

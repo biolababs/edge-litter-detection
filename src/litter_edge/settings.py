@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,13 @@ DEFAULT_MODEL_REFERENCES = {
     "omdet_turbo": "omlab/omdet-turbo-swin-tiny-hf",
     "rfdetr": "models/rfdetr-nano-litter.pth",
 }
+
+DEFAULT_MODEL_REVISIONS = {
+    "grounding_dino": "a2bb814dd30d776dcf7e30523b00659f4f141c71",
+    "omdet_turbo": "7fe93cecfb770c4d76cf71163956221249cab566",
+}
+
+_HUGGING_FACE_COMMIT = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 
 
 def normalize_backend(value: str) -> str:
@@ -45,6 +53,43 @@ def resolve_model_reference(
         raise ValueError(
             f"No default model is registered for backend: {backend}"
         ) from exc
+
+
+def resolve_transformers_model_reference(
+    backend: str,
+    model_reference: str,
+) -> tuple[str, str | None]:
+    """Return a local path or an immutable Hugging Face model revision."""
+    reference = model_reference.strip()
+    if not reference:
+        raise ValueError("Model reference cannot be empty.")
+
+    local_path = Path(reference).expanduser()
+    if local_path.exists():
+        return str(local_path), None
+
+    normalized_backend = normalize_backend(backend)
+    model_id = reference
+    revision: str | None = None
+    if "@" in reference:
+        model_id, revision = reference.rsplit("@", 1)
+        model_id = model_id.strip()
+        revision = revision.strip().lower()
+    elif reference == DEFAULT_MODEL_REFERENCES.get(normalized_backend):
+        revision = DEFAULT_MODEL_REVISIONS.get(normalized_backend)
+
+    if not model_id or "/" not in model_id:
+        raise ValueError(
+            "Remote model references must use the Hugging Face "
+            "'owner/model' format."
+        )
+    if revision is None or _HUGGING_FACE_COMMIT.fullmatch(revision) is None:
+        raise ValueError(
+            "Remote model references must be pinned to a 40-character commit "
+            "SHA as 'owner/model@commit'. The built-in defaults are pinned "
+            "automatically."
+        )
+    return model_id, revision
 
 
 @dataclass(frozen=True)

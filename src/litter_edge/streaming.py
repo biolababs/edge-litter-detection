@@ -209,7 +209,8 @@ class StreamSession:
                 flush_frames=self.settings.storage_flush_frames,
                 persist_detections=self.persist_detections,
             )
-            assert self._started_at is not None
+            if self._started_at is None:
+                raise RuntimeError("Stream session has no start timestamp.")
             self._store.start_run(
                 run_id=self.run_id,
                 started_at=self._started_at,
@@ -250,7 +251,8 @@ class StreamSession:
                 timestamp_msec = float(capture.get(0) or 0.0)
                 timestamp = timestamp_msec / 1000.0 if timestamp_msec >= 0 else None
                 outcome = pipeline.process(frame, frame_index, timestamp)
-                assert self._store is not None
+                if self._store is None:
+                    raise RuntimeError("Stream observation store is unavailable.")
                 self._store.record_frame(self.run_id, outcome)
                 rendered = self.renderer(frame, outcome)
 
@@ -309,7 +311,8 @@ class StreamSession:
             else None
         )
         try:
-            assert self._store is not None
+            if self._store is None:
+                raise RuntimeError("Stream observation store is unavailable.")
             self._store.finish_run(
                 run_id=self.run_id,
                 completed_at=completed_at,
@@ -415,9 +418,15 @@ class StreamManager:
         separation_policy: SeparationPolicy,
         database: str | Path,
         maximum_active_streams: int = 1,
+        maximum_retained_streams: int = 100,
     ) -> None:
         if maximum_active_streams <= 0:
             raise ValueError("maximum_active_streams must be positive.")
+        if maximum_retained_streams < maximum_active_streams:
+            raise ValueError(
+                "maximum_retained_streams must be at least "
+                "maximum_active_streams."
+            )
         self.detector = detector
         self.backend = backend
         self.model = model
@@ -426,8 +435,21 @@ class StreamManager:
         self.separation_policy = separation_policy
         self.database = Path(database)
         self.maximum_active_streams = maximum_active_streams
+        self.maximum_retained_streams = maximum_retained_streams
         self._lock = threading.Lock()
         self._sessions: dict[str, StreamSession] = {}
+
+    def _prune_finished_locked(self) -> None:
+        finished = [
+            session_id
+            for session_id, session in self._sessions.items()
+            if not session.active
+        ]
+        while (
+            len(self._sessions) >= self.maximum_retained_streams
+            and finished
+        ):
+            self._sessions.pop(finished.pop(0), None)
 
     def start(
         self,
@@ -449,6 +471,7 @@ class StreamManager:
                     "The edge device is already processing the maximum "
                     "number of live streams."
                 )
+            self._prune_finished_locked()
             session = StreamSession(
                 source=source,
                 detector=self.detector,

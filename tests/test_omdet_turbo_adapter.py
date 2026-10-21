@@ -26,10 +26,17 @@ class FakeInputs(dict):
 
 
 class FakeProcessor:
+    load_options: dict[str, object] = {}
+
     @classmethod
-    def from_pretrained(cls, model_reference: str) -> "FakeProcessor":
+    def from_pretrained(
+        cls,
+        model_reference: str,
+        **kwargs: object,
+    ) -> "FakeProcessor":
         instance = cls()
         instance.model_reference = model_reference
+        cls.load_options = dict(kwargs)
         return instance
 
     def __call__(
@@ -76,10 +83,17 @@ class FakeProcessor:
 
 
 class FakeModel:
+    load_options: dict[str, object] = {}
+
     @classmethod
-    def from_pretrained(cls, model_reference: str) -> "FakeModel":
+    def from_pretrained(
+        cls,
+        model_reference: str,
+        **kwargs: object,
+    ) -> "FakeModel":
         instance = cls()
         instance.model_reference = model_reference
+        cls.load_options = dict(kwargs)
         return instance
 
     def to(self, device: str) -> None:
@@ -138,6 +152,12 @@ class OmDetTurboAdapterTests(unittest.TestCase):
         self.assertEqual(detector.processor.max_num_det, 100)
         self.assertEqual(detector.model.device, "cpu")
         self.assertTrue(detector.model.eval_called)
+        self.assertEqual(
+            FakeProcessor.load_options["revision"],
+            "7fe93cecfb770c4d76cf71163956221249cab566",
+        )
+        self.assertFalse(FakeModel.load_options["trust_remote_code"])
+        self.assertTrue(FakeModel.load_options["use_safetensors"])
 
 
 if __name__ == "__main__":

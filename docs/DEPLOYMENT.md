@@ -57,6 +57,15 @@ changing a shared device unexpectedly.
 Open `http://127.0.0.1:8088` locally. For remote administration, forward that
 localhost port through a secure tunnel or authenticated gateway.
 
+Temporary SSH tunnel:
+
+```bash
+ssh -L 8088:127.0.0.1:8088 user@edge-device
+```
+
+Then open `http://127.0.0.1:8088` on the administrator's computer. Do not add a
+public security-group or firewall rule for port 8088.
+
 Health and readiness:
 
 ```bash
@@ -109,6 +118,10 @@ outbox.
 docker compose build
 docker compose up
 ```
+
+Compose listens inside the container on `0.0.0.0`, but publishes the host port
+only as `127.0.0.1:8088`. Keep that loopback mapping unless an authenticated
+gateway provides the network boundary.
 
 The Compose file persists:
 

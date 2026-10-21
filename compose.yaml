@@ -10,9 +10,10 @@ services:
       LITTER_DATABASE: /app/state/litter-edge.db
       LITTER_EDGE_DEVICE_ID: container-edge
       LITTER_HOST: 0.0.0.0
+      LITTER_CONTAINER_INTERNAL_BIND: "true"
       LITTER_PORT: "8088"
     ports:
-      - "8088:8088"
+      - "127.0.0.1:8088:8088"
     volumes:
       - litter-state:/app/state
       - litter-model-cache:/home/litter/.cache

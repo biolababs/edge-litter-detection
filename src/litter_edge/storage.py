@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import uuid
 from pathlib import Path
@@ -20,6 +21,10 @@ def _json(value: Any) -> str:
 
 def _open_database(path: str | Path) -> sqlite3.Connection:
     connection = sqlite3.connect(str(path), timeout=10.0)
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys = ON")
     connection.execute("PRAGMA busy_timeout = 10000")
@@ -486,24 +491,19 @@ def _read_connection(path: str | Path) -> sqlite3.Connection | None:
     return connection
 
 
-def _run_filters(
-    *,
-    status_clause: str,
+def _filter_values(
     vehicle_id: str | None,
     route_id: str | None,
     edge_device_id: str | None,
-) -> tuple[str, list[Any]]:
-    clauses = [status_clause]
-    values: list[Any] = []
-    for column, value in (
-        ("vehicle_id", vehicle_id),
-        ("route_id", route_id),
-        ("edge_device_id", edge_device_id),
-    ):
-        if value is not None:
-            clauses.append(f"r.{column} = ?")
-            values.append(value)
-    return " AND ".join(clauses), values
+) -> tuple[str | None, ...]:
+    return (
+        vehicle_id,
+        vehicle_id,
+        route_id,
+        route_id,
+        edge_device_id,
+        edge_device_id,
+    )
 
 
 def summarize_counts(
@@ -535,38 +535,24 @@ def summarize_counts(
             "count_scope": "observed_litter_not_confirmed_collected_material",
         }
 
-    where, values = _run_filters(
-        status_clause="r.status IN ('completed', 'interrupted')",
-        vehicle_id=vehicle_id,
-        route_id=route_id,
-        edge_device_id=edge_device_id,
-    )
-    active_where, active_values = _run_filters(
-        status_clause="r.status = 'running'",
-        vehicle_id=vehicle_id,
-        route_id=route_id,
-        edge_device_id=edge_device_id,
-    )
-    collection_where, collection_values = _run_filters(
-        status_clause="r.status IN ('running', 'completed', 'interrupted')",
-        vehicle_id=vehicle_id,
-        route_id=route_id,
-        edge_device_id=edge_device_id,
-    )
+    filter_values = _filter_values(vehicle_id, route_id, edge_device_id)
     try:
         run_row = connection.execute(
-            f"""
+            """
             SELECT COUNT(*) AS run_count,
                    COALESCE(SUM(r.frames), 0) AS frame_count,
                    MIN(r.started_at) AS first_started_at,
                    MAX(r.completed_at) AS last_completed_at
             FROM runs r
-            WHERE {where}
+            WHERE r.status IN ('completed', 'interrupted')
+              AND (? IS NULL OR r.vehicle_id = ?)
+              AND (? IS NULL OR r.route_id = ?)
+              AND (? IS NULL OR r.edge_device_id = ?)
             """,
-            values,
+            filter_values,
         ).fetchone()
         class_rows = connection.execute(
-            f"""
+            """
             SELECT c.class_name,
                    COALESCE(SUM(c.unique_detected_count), 0)
                        AS run_unique_detected_count,
@@ -574,36 +560,45 @@ def summarize_counts(
                        AS maximum_simultaneously_visible
             FROM run_class_counts c
             JOIN runs r ON r.run_id = c.run_id
-            WHERE {where}
+            WHERE r.status IN ('completed', 'interrupted')
+              AND (? IS NULL OR r.vehicle_id = ?)
+              AND (? IS NULL OR r.route_id = ?)
+              AND (? IS NULL OR r.edge_device_id = ?)
             GROUP BY c.class_name
             ORDER BY c.class_name
             """,
-            values,
+            filter_values,
         ).fetchall()
         active_rows = connection.execute(
-            f"""
+            """
             SELECT fo.visible_counts_json, fo.unique_detected_counts_json
             FROM runs r
             JOIN frame_observations fo ON fo.run_id = r.run_id
-            WHERE {active_where}
+            WHERE r.status = 'running'
+              AND (? IS NULL OR r.vehicle_id = ?)
+              AND (? IS NULL OR r.route_id = ?)
+              AND (? IS NULL OR r.edge_device_id = ?)
               AND fo.frame_index = (
                   SELECT MAX(latest.frame_index)
                   FROM frame_observations latest
                   WHERE latest.run_id = r.run_id
               )
             """,
-            active_values,
+            filter_values,
         ).fetchall()
         collected_rows = connection.execute(
-            f"""
+            """
             SELECT c.class_name, COALESCE(SUM(c.quantity), 0) AS quantity
             FROM collection_confirmations c
             JOIN runs r ON r.run_id = c.run_id
-            WHERE {collection_where}
+            WHERE r.status IN ('running', 'completed', 'interrupted')
+              AND (? IS NULL OR r.vehicle_id = ?)
+              AND (? IS NULL OR r.route_id = ?)
+              AND (? IS NULL OR r.edge_device_id = ?)
             GROUP BY c.class_name
             ORDER BY c.class_name
             """,
-            collection_values,
+            filter_values,
         ).fetchall()
         current_visible: dict[str, int] = {}
         active_unique: dict[str, int] = {}
@@ -666,25 +661,25 @@ def list_runs(
     connection = _read_connection(path)
     if connection is None:
         return []
-    clauses = ["1 = 1"]
-    values: list[Any] = []
-    for column, value in (
-        ("vehicle_id", vehicle_id),
-        ("route_id", route_id),
-        ("edge_device_id", edge_device_id),
-    ):
-        if value is not None:
-            clauses.append(f"{column} = ?")
-            values.append(value)
-    values.append(limit)
+    values = (
+        vehicle_id,
+        vehicle_id,
+        route_id,
+        route_id,
+        edge_device_id,
+        edge_device_id,
+        limit,
+    )
     try:
         rows = connection.execute(
-            f"""
+            """
             SELECT run_id, started_at, completed_at, status, source,
                    edge_device_id, vehicle_id, route_id, frames,
                    source_to_result_fps
             FROM runs
-            WHERE {' AND '.join(clauses)}
+            WHERE (? IS NULL OR vehicle_id = ?)
+              AND (? IS NULL OR route_id = ?)
+              AND (? IS NULL OR edge_device_id = ?)
             ORDER BY started_at DESC
             LIMIT ?
             """,
@@ -866,18 +861,17 @@ def list_outbox_events(
     connection = _read_connection(path)
     if connection is None:
         return []
-    where = "" if include_acknowledged else "WHERE acknowledged_at IS NULL"
     try:
         rows = connection.execute(
-            f"""
+            """
             SELECT event_id, event_type, aggregate_id, payload_json,
                    created_at, acknowledged_at
             FROM integration_outbox
-            {where}
+            WHERE (? = 1 OR acknowledged_at IS NULL)
             ORDER BY created_at
             LIMIT ?
             """,
-            (limit,),
+            (int(include_acknowledged), limit),
         ).fetchall()
         output = []
         for row in rows:

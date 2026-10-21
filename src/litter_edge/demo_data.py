@@ -76,7 +76,8 @@ def _read_url(url: str, timeout: float, maximum_bytes: int) -> bytes:
         _https_url(url, allow_upgrade=True),
         headers={"User-Agent": f"edge-litter-detection/{__version__}"},
     )
-    with urlopen(request, timeout=timeout) as response:
+    # HTTPS is validated before the request and again after redirects.
+    with urlopen(request, timeout=timeout) as response:  # nosec B310
         final_url = response.geturl()
         _https_url(final_url)
         declared_size = response.headers.get("Content-Length")

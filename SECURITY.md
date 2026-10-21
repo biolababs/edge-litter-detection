@@ -1,48 +1,97 @@
 # Security policy
 
-## Secrets
+## Supported versions
 
-- Never place Roboflow, NGC, cloud, or repository tokens in source files,
-  notebooks, command history, screenshots, or model metadata.
-- Use environment variables or a local `.env` file that is excluded by
-  `.gitignore`.
-- Revoke the historical Roboflow key before publishing any legacy artifact.
+Security fixes are applied to the latest release on `main`. Older tags are not
+maintained unless a release note explicitly says otherwise.
 
-## Model and data safety
+## Report a vulnerability
 
-- Treat downloaded model checkpoints as executable-like artifacts. Obtain them
-  from an official source and record a checksum.
-- Do not collect identifiable faces, license plates, private-property imagery,
-  or location metadata unless the approved research protocol requires it.
-- Keep raw data private by default. Publish only a reviewed, licensed,
-  de-identified release.
+Use GitHub private vulnerability reporting from the repository **Security**
+tab when available. Otherwise contact the repository owner privately through
+their verified GitHub profile.
 
-## API deployment
+Do not disclose a vulnerability, credential, private image, stream URL, device
+inventory, or location record in a public issue. Include a minimal
+reproduction, affected revision, impact, and suggested mitigation. You should
+receive an acknowledgement within seven days.
 
-- The API binds to `127.0.0.1` by default and has no built-in authentication.
-- Do not expose it directly to the public internet. Use a firewall and an
-  authenticated reverse proxy if remote access is required.
-- Keep the request-size limit enabled to reduce accidental or malicious memory
-  pressure.
-- Run the service as a dedicated non-root user with read-only model/config
-  mounts.
-- Stream credentials and URL query parameters are removed from generated event
-  and summary evidence. Do not place secrets in local filenames or model paths.
-- Protect the SQLite database because it can contain operational route,
-  vehicle, review, and collection records.
+## Deployment boundary
 
-## Vehicle and machinery integration
+The dashboard and API have no built-in user authentication. They bind to
+loopback by default, and the Compose port is published only on
+`127.0.0.1`.
 
-- Detection events are advisory and must not directly actuate a collection arm.
-- Keep final motion authority in a safety-rated controller with emergency-stop,
-  exclusion-zone, limit, and stale-signal interlocks.
-- Treat `litter.object.confirmed` as an observed-object candidate, not a
-  collection confirmation.
-- Write `litter.collection.confirmed` only from an authenticated human or
-  controller workflow that has positive pickup evidence.
+- Do not bind the service directly to a public or shared network interface.
+- Use an SSH tunnel for temporary remote testing.
+- Use an authenticated, TLS-terminating reverse proxy or private service mesh
+  for a managed deployment.
+- `LITTER_CONTAINER_INTERNAL_BIND=true` is only for an internal container
+  listener whose host port remains private.
+- Keep firewall and cloud security-group rules closed to the API port.
 
-## Reporting
+Interactive OpenAPI documentation is disabled by default. A trusted local
+developer may enable it with `LITTER_ENABLE_API_DOCS=true`.
 
-Do not publish a vulnerability, credential, or private dataset sample in a
-public issue. Contact the repository owner privately.
+## Implemented controls
+
+- JPEG, PNG, and WebP are the only accepted image-upload types.
+- Image request bytes, decoded pixels, and concurrent image requests are
+  bounded.
+- Active and retained stream sessions are bounded.
+- Security response headers deny framing, content-type sniffing, indexing, and
+  unnecessary browser capabilities.
+- Downloaded default Hugging Face models use immutable commit revisions,
+  SafeTensors, and `trust_remote_code=False`.
+- The attributed demonstration video is HTTPS-only, size-bounded, format
+  checked, and SHA-256 verified before publication.
+- SQLite values are parameterized and the database is restricted to the
+  service account where the operating system permits it.
+- Generated JSON files are written atomically.
+- CI actions are pinned to complete commit SHAs; CodeQL, dependency review,
+  Dependabot, Ruff, and Bandit checks are configured.
+
+## Secrets and operational data
+
+- Keep tokens and stream credentials in environment variables or a secret
+  manager, never in source, arguments recorded by another process, screenshots,
+  notebooks, or model metadata.
+- Prefer credential-free camera network paths or a protected local proxy.
+- Protect `state/litter-edge.db`; it can contain vehicle, route, review, and
+  collection information.
+- Do not commit raw camera media, datasets, model weights, generated reports,
+  or device inventories.
+- Apply a retention policy to annotated media and per-detection records.
+
+## Model and dependency safety
+
+Treat checkpoints as executable-like supply-chain artifacts. Use project
+defaults, immutable revisions, or a reviewed local artifact. Custom remote
+Transformers references must use `owner/model@40-character-commit`.
+
+Python 3.11 and later install Pillow 13. JetPack vendor environments that remain
+on Python 3.10 use the latest compatible Pillow 12 release and must keep the API
+private with upload limits enabled. Prefer a validated Python 3.11 device
+runtime when the vendor PyTorch stack supports it.
+
+Run:
+
+```bash
+python -m pip install -e ".[dev]"
+make security
+```
+
+Review tool output before release; automated scanners do not prove that an
+application is vulnerability-free.
+
+## Vehicle and machinery safety
+
+Detection and separation events are advisory. This software must never directly
+energize a hydraulic, pneumatic, or electric arm. A safety-rated controller
+must retain final authority with emergency-stop, exclusion-zone, proximity,
+motion-limit, stale-signal, and fail-safe interlocks.
+
+`litter.object.confirmed` means a tracked observation. Only an authenticated
+human or controller workflow with positive pickup evidence may create
+`litter.collection.confirmed`.
 

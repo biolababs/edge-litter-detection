@@ -27,11 +27,17 @@ class FakeInputs(dict):
 
 class FakeProcessor:
     model_reference: str | None = None
+    load_options: dict[str, object] = {}
 
     @classmethod
-    def from_pretrained(cls, model_reference: str) -> "FakeProcessor":
+    def from_pretrained(
+        cls,
+        model_reference: str,
+        **kwargs: object,
+    ) -> "FakeProcessor":
         instance = cls()
         instance.model_reference = model_reference
+        cls.load_options = dict(kwargs)
         return instance
 
     def __call__(
@@ -78,11 +84,17 @@ class FakeProcessor:
 
 class FakeModel:
     model_reference: str | None = None
+    load_options: dict[str, object] = {}
 
     @classmethod
-    def from_pretrained(cls, model_reference: str) -> "FakeModel":
+    def from_pretrained(
+        cls,
+        model_reference: str,
+        **kwargs: object,
+    ) -> "FakeModel":
         instance = cls()
         instance.model_reference = model_reference
+        cls.load_options = dict(kwargs)
         return instance
 
     def to(self, device: str) -> None:
@@ -154,6 +166,12 @@ class GroundingDINOAdapterTests(unittest.TestCase):
         )
         self.assertEqual(detector.model.device, "cpu")
         self.assertTrue(detector.model.eval_called)
+        self.assertEqual(
+            FakeProcessor.load_options["revision"],
+            "a2bb814dd30d776dcf7e30523b00659f4f141c71",
+        )
+        self.assertFalse(FakeModel.load_options["trust_remote_code"])
+        self.assertTrue(FakeModel.load_options["use_safetensors"])
 
 
 if __name__ == "__main__":

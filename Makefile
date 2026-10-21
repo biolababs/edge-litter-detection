@@ -1,4 +1,4 @@
-.PHONY: install test validate cameras docx
+.PHONY: install test validate security cameras docx
 
 install:
 	python3 -m pip install -e ".[runtime,public-model,api]"
@@ -24,6 +24,11 @@ validate: test
 	python3 export_model.py --help >/dev/null
 	python3 benchmark.py --help >/dev/null
 	python3 serve.py --help >/dev/null
+
+security:
+	ruff check src tests scripts *.py
+	bandit -q -r src scripts -ll
+	pip-audit
 
 cameras:
 	python3 discover_sources.py --list-cameras
