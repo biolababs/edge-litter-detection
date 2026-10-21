@@ -19,6 +19,21 @@ dashboard; and stores durable evidence in SQLite.
 > sustained throughput, power, and thermal acceptance must still be measured on
 > representative data and the intended edge device.
 
+## Research preprint
+
+The accompanying systems and reproducibility paper documents the architecture,
+count semantics, human and machinery-safety boundaries, preliminary engineering
+evidence, and the frozen protocol for target-domain and edge-device validation:
+
+- [PDF preprint](paper/Edge_Litter_Detection_Preprint.pdf)
+- [editable manuscript](paper/edge_litter_detection_preprint.md)
+- [ResearchGate submission record](paper/RESEARCHGATE_SUBMISSION.md)
+
+The manuscript cites software version `0.10.1` at Git commit
+`0624677b72cf1d16b59a335b78d9003f2b479786`. It is a preprint and must not be
+described as peer reviewed. Accuracy, count-error, Jetson, AMD, power, thermal,
+and field-outcome results remain pending their declared evaluations.
+
 ## What the solution provides
 
 - detection boxes, stable litter class names, and confidence scores;

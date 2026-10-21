@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "status": "preliminary_transcribed_evidence",
+  "created_at": "2026-10-21",
+  "provenance": {
+    "description": "Transcribed from the benchmark command output produced by the author on the AWS instance and documented in docs/HARDWARE_REQUIREMENTS.md.",
+    "original_remote_output": "reports/generated/t4-omdet-benchmark.json",
+    "original_remote_output_archived_in_repository": false,
+    "limitation": "Import and checksum the original JSON before treating this record as an archival benchmark artifact."
+  },
+  "platform": {
+    "cloud": "AWS",
+    "instance_type": "g4dn.xlarge",
+    "accelerator": "NVIDIA Tesla T4",
+    "accelerator_memory_gib_reported": 14.56317138671875
+  },
+  "software": {
+    "backend": "omdet_turbo",
+    "model": "omlab/omdet-turbo-swin-tiny-hf",
+    "device": "cuda"
+  },
+  "protocol": {
+    "source": "media/taco-demo/taco-000866.jpg",
+    "warmup_calls": 10,
+    "image_repeats": 50,
+    "samples": 50,
+    "scope": "model benchmark using a repeated still image"
+  },
+  "measurements": {
+    "observed_throughput_fps": 16.52790055124891,
+    "inference_ms": {
+      "count": 50,
+      "minimum": 56.61954299966965,
+      "mean": 58.97948147999159,
+      "median": 57.73032849992887,
+      "p95": 61.03192199998375,
+      "maximum": 93.92835500011643
+    },
+    "accelerator_memory_gib": {
+      "peak_allocated": 0.5480217933654785,
+      "maximum_allocated": 0.44761133193969727,
+      "peak_reserved": 0.623046875,
+      "maximum_reserved": 0.623046875,
+      "minimum_free": 13.80645751953125
+    }
+  },
+  "exclusions": [
+    "target-domain accuracy",
+    "counting accuracy",
+    "sustained camera capture",
+    "full application throughput",
+    "database and dashboard overhead",
+    "Jetson performance",
+    "AMD performance",
+    "power and thermal behavior"
+  ]
+}

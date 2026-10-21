@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "paper": {
+    "title": "An Open and Reproducible Edge-AI System for Litter Detection, Multiclass Classification, Tracking, and Counting",
+    "version": "preprint-1.0",
+    "date": "2026-10-21"
+  },
+  "software": {
+    "name": "Edge Litter Detection, Multiclass Classification, Tracking, and Counting",
+    "version": "0.10.1",
+    "repository": "https://github.com/biolababs/edge-litter-detection",
+    "git_revision": "0624677b72cf1d16b59a335b78d9003f2b479786",
+    "license": "Apache-2.0"
+  },
+  "verified_scope": [
+    "clean-clone launcher and isolated environment workflow",
+    "public OmDet-Turbo model loading and real image inference",
+    "camera, image, video, HTTP, and RTSP source paths in the application design",
+    "normalized detections, tracking, count semantics, JSON evidence, and SQLite persistence",
+    "browser dashboard and private API paths",
+    "73 automated software tests at the cited revision",
+    "preliminary repeated-image model benchmark on NVIDIA Tesla T4",
+    "preliminary repeated-image model benchmark on Apple MPS",
+    "read-only inventory of the target Jetson Orin Nano 8 GB device"
+  ],
+  "not_yet_claimed": [
+    "target-domain detection or classification accuracy",
+    "video counting accuracy",
+    "Jetson inference throughput, memory, power, thermals, or sustained stability",
+    "AMD ROCm or Strix Halo inference throughput, memory, power, thermals, or sustained stability",
+    "field productivity, collection-rate, sorting-quality, cost, or environmental benefit"
+  ],
+  "preliminary_benchmarks": [
+    {
+      "evidence": "paper/evidence/t4_omdet_preliminary.json",
+      "platform": "AWS g4dn.xlarge / NVIDIA Tesla T4",
+      "backend": "omdet_turbo",
+      "scope": "repeated-image model benchmark"
+    },
+    {
+      "evidence": "reports/generated/mps-omdet-benchmark.json",
+      "platform": "Apple silicon / MPS",
+      "backend": "omdet_turbo",
+      "scope": "repeated-image model benchmark"
+    }
+  ],
+  "notice": "All manuscript claims and references require independent author verification before publication."
+}

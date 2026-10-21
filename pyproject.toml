@@ -67,6 +67,7 @@ api = [
 ]
 dev = [
   "bandit==1.9.4",
+  "defusedxml>=0.7,<1",
   "httpx>=0.27,<1",
   "pip-audit==2.10.1",
   "ruff==0.17.1",
