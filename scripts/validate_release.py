@@ -86,6 +86,7 @@ REQUIRED = [
     "paper/figures/figure-4-model-adaptation-lifecycle.svg",
     "paper/figures/figure-5-evaluation-evidence-workflow.svg",
     "paper/figures/figure-6-jetson-latency-profile.svg",
+    "paper/figures/figure-7-taco-confusions.svg",
     "deploy/systemd/litter-edge-truck.service.example",
     "query_counts.py",
     "state/README.md",

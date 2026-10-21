@@ -2,7 +2,7 @@
 
 Abiola A. Babsalaam  
 Independent Researcher  
-Preprint version 1.3 — 21 October 2026
+Preprint version 1.4 — 21 October 2026
 
 ## Abstract
 
@@ -521,7 +521,7 @@ pickup confirmation returns to the evidence store separately.*
 
 The implementation described in this preprint is Edge Litter Detection version
 0.11.0 at Git commit
-`864308395b5c9515f7c8cbc55c82014d245a0e3c` [7]. Code and project
+`9f0c651ae455dabc8e5a3ebcf18f43a1639bae32` [7]. Code and project
 documentation are released under Apache License 2.0. Model checkpoints and
 datasets retain their own licenses and are not relicensed by the repository.
 
@@ -592,7 +592,7 @@ device's JetPack system packages.
 
 ### 5.4 Software verification and secure development
 
-At the reported revision, 86 automated tests cover configuration, model
+At the reported revision, 87 automated tests cover configuration, model
 adapters, tracking, storage, streaming, benchmark output, training-data
 preparation, evaluation, and API security behavior. The release workflow also
 checks command-line help paths, shell syntax, package structure, startup
@@ -726,7 +726,7 @@ performance on every supported hardware family.
 The clean-clone workflow has completed real OmDet-Turbo image inference through
 the normal launcher, produced normalized detections, written JSON and annotated
 output, and persisted run and count data in SQLite. The dashboard, API,
-tracking, review, storage, benchmark, and preparation paths are covered by 86
+tracking, review, storage, benchmark, and preparation paths are covered by 87
 automated tests at the reported revision.
 
 One TACO demonstration image produced six unique-session detections in a
@@ -757,9 +757,28 @@ The evaluated configuration used the public
 `7fe93cecfb770c4d76cf71163956221249cab566`, without project fine-tuning.
 The confidence threshold was 0.25, non-maximum-suppression IoU was 0.45, and
 the maximum was 100 detections per image. Evaluation ran at Git revision
-`864308395b5c9515f7c8cbc55c82014d245a0e3c` on Apple MPS using
+`9f0c651ae455dabc8e5a3ebcf18f43a1639bae32` on Apple MPS using
 PyTorch 2.14.1 and Transformers 5.20.2. The annotation and evaluated-image
 sets are checksum-recorded in the evidence file.
+
+The exact text prompts were frozen before the test run and are recorded in the
+machine-readable result:
+
+| Operational class | OmDet-Turbo prompt | Operational class | OmDet-Turbo prompt |
+|---|---|---|---|
+| plastic_bottle | clear plastic bottle | glass_bottle | glass bottle |
+| metal_can | drink can | paper | sheet of paper |
+| cardboard | cardboard litter | plastic_bag | plastic carrier bag |
+| food_wrapper | plastic wrapper | disposable_cup | disposable cup |
+| cigarette_butt | cigarette butt | food_waste | food waste |
+| textile | discarded clothing | tire | tire |
+| battery | battery | electronic_waste | discarded electronic device |
+| broken_glass | broken glass | other_litter | small piece of trash |
+
+No prompt ablation was performed. Future prompt development must use a
+training or validation partition and then be frozen before test evaluation;
+selecting prompts from test performance would leak test information into the
+operating point.
 
 The aggregate COCO bounding-box results were:
 
@@ -802,12 +821,56 @@ or safety-relevant classes show none under this mapping and threshold.
 difficult. Classes with no ground-truth instances are displayed rather than
 silently included in a macro claim.
 
+To distinguish failure to localize from failure to assign the mapped class, a
+separate diagnostic matches predictions greedily to ground-truth boxes across
+all classes at IoU 0.50. This diagnostic is not a replacement for COCO AP. It
+found 249 localized matches: 53 with the correct class and 196 with a different
+class. The ten most frequent wrong-class pairs were:
+
+| Ground-truth class | Predicted class | Count |
+|---|---|---:|
+| other_litter | food_wrapper | 31 |
+| other_litter | metal_can | 18 |
+| other_litter | plastic_bag | 17 |
+| other_litter | disposable_cup | 15 |
+| other_litter | plastic_bottle | 10 |
+| disposable_cup | metal_can | 9 |
+| cardboard | food_wrapper | 9 |
+| cardboard | metal_can | 6 |
+| food_wrapper | plastic_bag | 6 |
+| glass_bottle | plastic_bottle | 6 |
+
+![Top class-confusion pairs](figures/figure-7-taco-confusions.svg)
+
+*Figure 7. Top diagnostic class-confusion pairs after greedy all-class
+matching at IoU 0.50. An arrow denotes ground truth → prediction. The
+catch-all `other_litter` mapping dominates the largest pairs.*
+
+The zero-AP classes do not all support the same causal conclusion.
+`cigarette_butt` has 129 small-object annotations, but the frozen detector
+emitted no `cigarette_butt` predictions above the operating threshold; prompt
+sensitivity, small-object recall, and domain transfer remain candidate causes
+that cannot be separated without a validation-set ablation. `cardboard` has
+31 instances and one emitted prediction, with common localized errors assigned
+to `food_wrapper`, `metal_can`, and `plastic_bag`; this is consistent with
+appearance and taxonomy confusion but does not identify one cause.
+`broken_glass` has only four instances, no correct prediction, and one
+localized `metal_can` assignment, so the sample is too small for a stable
+class-level conclusion. Finally, `other_litter` collapses many source labels
+into one catch-all class while using the single prompt `small piece of trash`;
+its 343-instance support and dominant outgoing confusion pairs expose an
+ontology-and-prompt mismatch rather than a narrowly defined material class.
+
 This evaluation closes the absence of any accuracy number, but its boundary is
 strict: it is a project-defined grouped TACO split, a mapped operational
-taxonomy, one public model, and no prompt or threshold comparison. It is not
-roadside, vehicle, sorting-floor, or counting validation. The result supports
-using the checkpoint for software bring-up and data collection; it does not
-support production classification or automated separation decisions.
+taxonomy, one public model, and no prompt or threshold comparison. A repeat on
+the same MPS host produced byte-identical prediction JSON and unchanged
+accuracy metrics, but this observed repeat does not establish reproducibility
+across accelerator types. The frozen evaluation should be repeated on CUDA
+before platform-independent accuracy is claimed. It is not roadside, vehicle,
+sorting-floor, or counting validation. The result supports using the
+checkpoint for software bring-up and data collection; it does not support
+production classification or automated separation decisions.
 
 ### 7.4 Preliminary systems measurements
 
@@ -815,7 +878,7 @@ support production classification or automated separation decisions.
 |---|---:|---:|---:|---:|---|
 | AWS g4dn.xlarge, Tesla T4, detector benchmark | 50 repeated images after 10 warm-up calls | 16.53 FPS | 58.98 ms | 61.03 ms | 0.55 GiB peak GPU allocation |
 | Jetson Orin Nano 8 GB, detector benchmark | 50 repeated images after 10 warm-up calls | 5.54 FPS | 174.30 ms | 175.65 ms | 0.70 GiB peak GPU allocation |
-| Apple silicon, MPS, public-data evaluation | 212 varied images | 5.70 source-to-result FPS | 172.44 ms | 228.32 ms | 29.44 ms standard deviation; 255.48 ms p99 |
+| Apple silicon, MPS, public-data evaluation rerun | 212 varied images | 3.85 source-to-result FPS | 253.78 ms | 463.24 ms | 96.98 ms standard deviation; 625.60 ms p99 |
 
 The T4 and Jetson measurements used a repeated image and measured the detector
 benchmark path rather than sustained video capture, annotation rendering,
@@ -823,7 +886,10 @@ database writing, and dashboard delivery. The original T4 output was produced
 on the AWS instance; the public repository currently retains a transcribed
 evidence record and the documented values, not the original remote JSON file.
 The Jetson and Apple measurements are retained as repository JSON artifacts.
-None of these measurements evaluates accuracy.
+The MPS rerun produced the same predictions and accuracy as the prior
+5.70-FPS execution but materially different latency, so neither single
+execution is treated as an MPS performance acceptance benchmark. None of
+these systems measurements evaluates accuracy.
 
 The T4 result demonstrates that the current public-model path can exceed the
 provisional 15 FPS engineering target in one discrete-GPU, model-only
@@ -1007,6 +1073,11 @@ instance output was summarized. The Jetson evidence adds a complete
 3,622-frame run and three warmed 300-frame profiles, but all use one
 unlabelled video, one device, and one coexistence condition.
 
+The public-data accuracy result was generated on Apple MPS. A repeated run on
+the same host produced byte-identical predictions, but cross-device numerical
+stability has not been established. CUDA reproduction is therefore required
+before claiming that the frozen zero-shot result is platform independent.
+
 Third, the built-in tracker is intentionally compact. It may duplicate,
 merge, or lose identities under fast camera motion, long occlusion, dense
 overlap, abrupt scene cuts, or repeated routes. Counting claims require
@@ -1080,7 +1151,7 @@ are available at:
 
 This paper describes version 0.11.0 at implementation commit:
 
-`864308395b5c9515f7c8cbc55c82014d245a0e3c`
+`9f0c651ae455dabc8e5a3ebcf18f43a1639bae32`
 
 The repository includes attributed TACO demonstration preparation and a
 license-aware sorting-floor demonstration downloader. Downloaded media,
@@ -1093,9 +1164,10 @@ Jetson profile summaries, their aggregate, `tegrastats` captures, checksums,
 and interpretation boundaries. The warmed Jetson profiles were executed at
 commit `618954e5921305addbd147ccc96ea1d78fe34c6e`. The final portable
 TACO evaluation and offline Jetson smoke were executed at implementation
-commit `864308395b5c9515f7c8cbc55c82014d245a0e3c`; the TACO result JSON
+commits `9f0c651ae455dabc8e5a3ebcf18f43a1639bae32` and
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`, respectively. The TACO result JSON
 has SHA-256
-`e95e4eb1cd611b871345ec6a036d6cc155aabe7692b57b30bdefa2a1de793d24`.
+`c417ce31d48759e2d40a113395c7c4f18241164546be16d79df1968564c27e26`.
 Runtime-generated records normally appear under `reports/generated/`, and the
 SQLite store appears under `state/litter-edge.db`. Transient media, private
 data, credentials, and raw device inventories are excluded from version
@@ -1170,9 +1242,6 @@ and document rendering. The author selected the design, executed and inspected
 the reported software and experiments, verified sources and evidence, and
 retains responsibility for the manuscript. This disclosure should be adapted
 to the policy of any destination venue.
-
-⚠️ AI & Data Notice: All output is AI-generated and must be independently
-verified before sharing with customers or taking action.
 
 ## References
 
@@ -1294,7 +1363,8 @@ and an app-based citizen science approach. *Environmental Science: Advances,
 
 [26] Kunwar, S. (2026). DWaste: Greener AI for waste sorting using mobile and
 edge devices. *Journal on Artificial Intelligence, 8*(1), 39–49.
-https://doi.org/10.32604/jai.2026.076674
+https://doi.org/10.32604/jai.2026.076674. Preprint:
+arXiv:2510.18513.
 
 [27] Arora, N. (2026). Real time detection of trash and faces for smart city
 environmental monitoring. *Discover Cities, 3*, 93.

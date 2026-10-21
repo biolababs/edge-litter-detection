@@ -3,6 +3,24 @@
   "annotations": "data/taco-operational-v1/test/_annotations.coco.json",
   "annotations_sha256": "0f5fb491437b680f47dfe525efa8dd9543b8e46798a5c196b1730099635bf2dc",
   "backend": "omdet_turbo",
+  "class_prompts": {
+    "battery": "battery",
+    "broken_glass": "broken glass",
+    "cardboard": "cardboard litter",
+    "cigarette_butt": "cigarette butt",
+    "disposable_cup": "disposable cup",
+    "electronic_waste": "discarded electronic device",
+    "food_waste": "food waste",
+    "food_wrapper": "plastic wrapper",
+    "glass_bottle": "glass bottle",
+    "metal_can": "drink can",
+    "other_litter": "small piece of trash",
+    "paper": "sheet of paper",
+    "plastic_bag": "plastic carrier bag",
+    "plastic_bottle": "clear plastic bottle",
+    "textile": "discarded clothing",
+    "tire": "tire"
+  },
   "coco_bbox": {
     "aggregate": {
       "ap_50": 0.10164885740154161,
@@ -124,29 +142,270 @@
     }
   },
   "confidence_threshold": 0.25,
-  "created_at": "2026-10-21T04:45:10.934210+00:00",
+  "created_at": "2026-10-21T05:19:50.781142+00:00",
   "dataset": "data/taco-operational-v1",
   "dataset_manifest": "data/taco-operational-v1/manifest.json",
   "dataset_manifest_sha256": "64af15f1d9bcaff9b4fd527581d6866b35b0eae41e41f4ddf8054b9e75ce2d4e",
   "dataset_name": "TACO operational mapping",
   "detector_call_ms": {
     "count": 212,
-    "max": 451.1745829950087,
-    "mean": 172.44181619657266,
-    "median": 161.61495851702057,
-    "min": 152.38924999721348,
-    "p95": 228.31608302658424,
-    "p99": 255.475000012666,
-    "standard_deviation": 29.43909049166107
+    "max": 653.2907079672441,
+    "mean": 253.7782425231098,
+    "median": 221.64856249582954,
+    "min": 159.64962501311675,
+    "p95": 463.2407500175759,
+    "p99": 625.5968749755993,
+    "standard_deviation": 96.97912362754715
   },
   "device": "mps",
+  "diagnostic_class_confusion_iou_50": {
+    "correct_class_matches": 53,
+    "correct_class_share_of_localized_matches": 0.21285140562248997,
+    "crowd_annotations": "excluded",
+    "iou_threshold": 0.5,
+    "localized_matches": 249,
+    "matching": "score-ordered greedy one-to-one matching within image across all classes",
+    "nonzero_confusion_pair_count": 45,
+    "purpose": "diagnostic cross-class analysis after localization; not a replacement for COCO AP",
+    "top_confusions": [
+      {
+        "count": 31,
+        "ground_truth": "other_litter",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 18,
+        "ground_truth": "other_litter",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 17,
+        "ground_truth": "other_litter",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 15,
+        "ground_truth": "other_litter",
+        "predicted": "disposable_cup"
+      },
+      {
+        "count": 10,
+        "ground_truth": "other_litter",
+        "predicted": "plastic_bottle"
+      },
+      {
+        "count": 9,
+        "ground_truth": "disposable_cup",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 9,
+        "ground_truth": "cardboard",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 6,
+        "ground_truth": "cardboard",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 6,
+        "ground_truth": "food_wrapper",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 6,
+        "ground_truth": "glass_bottle",
+        "predicted": "plastic_bottle"
+      },
+      {
+        "count": 5,
+        "ground_truth": "paper",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 5,
+        "ground_truth": "other_litter",
+        "predicted": "paper"
+      },
+      {
+        "count": 5,
+        "ground_truth": "plastic_bottle",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 4,
+        "ground_truth": "metal_can",
+        "predicted": "plastic_bottle"
+      },
+      {
+        "count": 4,
+        "ground_truth": "disposable_cup",
+        "predicted": "plastic_bottle"
+      },
+      {
+        "count": 4,
+        "ground_truth": "glass_bottle",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 3,
+        "ground_truth": "cardboard",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 3,
+        "ground_truth": "plastic_bottle",
+        "predicted": "disposable_cup"
+      },
+      {
+        "count": 3,
+        "ground_truth": "paper",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 3,
+        "ground_truth": "metal_can",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 2,
+        "ground_truth": "cardboard",
+        "predicted": "plastic_bottle"
+      },
+      {
+        "count": 2,
+        "ground_truth": "disposable_cup",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 2,
+        "ground_truth": "plastic_bottle",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 2,
+        "ground_truth": "plastic_bottle",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 2,
+        "ground_truth": "food_wrapper",
+        "predicted": "plastic_bottle"
+      },
+      {
+        "count": 1,
+        "ground_truth": "metal_can",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 1,
+        "ground_truth": "other_litter",
+        "predicted": "tire"
+      },
+      {
+        "count": 1,
+        "ground_truth": "food_wrapper",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 1,
+        "ground_truth": "metal_can",
+        "predicted": "glass_bottle"
+      },
+      {
+        "count": 1,
+        "ground_truth": "other_litter",
+        "predicted": "battery"
+      },
+      {
+        "count": 1,
+        "ground_truth": "other_litter",
+        "predicted": "electronic_waste"
+      },
+      {
+        "count": 1,
+        "ground_truth": "plastic_bottle",
+        "predicted": "glass_bottle"
+      },
+      {
+        "count": 1,
+        "ground_truth": "plastic_bag",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 1,
+        "ground_truth": "food_wrapper",
+        "predicted": "disposable_cup"
+      },
+      {
+        "count": 1,
+        "ground_truth": "plastic_bag",
+        "predicted": "disposable_cup"
+      },
+      {
+        "count": 1,
+        "ground_truth": "cardboard",
+        "predicted": "other_litter"
+      },
+      {
+        "count": 1,
+        "ground_truth": "cardboard",
+        "predicted": "paper"
+      },
+      {
+        "count": 1,
+        "ground_truth": "broken_glass",
+        "predicted": "metal_can"
+      },
+      {
+        "count": 1,
+        "ground_truth": "cigarette_butt",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 1,
+        "ground_truth": "plastic_bag",
+        "predicted": "textile"
+      },
+      {
+        "count": 1,
+        "ground_truth": "paper",
+        "predicted": "disposable_cup"
+      },
+      {
+        "count": 1,
+        "ground_truth": "paper",
+        "predicted": "electronic_waste"
+      },
+      {
+        "count": 1,
+        "ground_truth": "disposable_cup",
+        "predicted": "plastic_bag"
+      },
+      {
+        "count": 1,
+        "ground_truth": "glass_bottle",
+        "predicted": "food_wrapper"
+      },
+      {
+        "count": 1,
+        "ground_truth": "cardboard",
+        "predicted": "disposable_cup"
+      }
+    ],
+    "unmatched_ground_truth": 431,
+    "unmatched_predictions": 486,
+    "wrong_class_matches": 196
+  },
   "evaluated_image_records_in_manifest": 212,
   "evaluated_image_set_sha256": "c515d366897a7ea9a5dad44626680c472964ff8a526b2c84b7523ecfdce8d2e5",
-  "git_revision": "864308395b5c9515f7c8cbc55c82014d245a0e3c",
+  "git_revision": "9f0c651ae455dabc8e5a3ebcf18f43a1639bae32",
   "image_count": 212,
   "interpretation": {
     "claim_boundary": "preliminary public-data zero-shot accuracy only; not target-domain, vehicle, sorting-floor, or counting validation",
     "model_status": "public pretrained open-vocabulary checkpoint; no project litter fine-tuning",
+    "prompt_status": "exact prompt strings are recorded; no prompt ablation or test-set prompt tuning was performed",
     "split_status": "deterministic project-defined group split because TACO does not publish an official train/test partition",
     "taxonomy_status": "TACO source categories mapped to the 16-class operational taxonomy; unsupported distinctions collapse to other_litter"
   },
@@ -338,12 +597,13 @@
   "operation": "public_zero_shot_detection_evaluation",
   "platform": "macOS-26.7.1-arm64-arm-64bit",
   "prediction_count": 735,
-  "predictions_output": "reports/generated/taco-omdet-zero-shot-final-predictions.json",
+  "predictions_output": "reports/generated/taco-omdet-zero-shot-v14-predictions.json",
   "predictions_sha256": "b349dc3fbfa1afbd26dc4a6386ec92cc048fc3e17569a6c9e4878292413aaea6",
+  "prompt_profile": "omdet_turbo_prompts",
   "python": "3.12.15 (main, Sep 30 2026, 22:04:19) [Clang 21.0.0 (clang-2100.3.34.2)]",
   "rfdetr": null,
   "scope": "single_model_use_case_evaluation_not_model_comparison",
-  "source_to_result_fps": 5.704524916044629,
+  "source_to_result_fps": 3.854817449835108,
   "split": "test",
   "split_policy": "grouped_by_taco_batch_or_original_source_group",
   "split_seed": 42,
@@ -351,5 +611,5 @@
   "torch": "2.14.1",
   "torchvision": "0.29.1",
   "transformers": "5.20.2",
-  "wall_seconds": 37.16348041599849
+  "wall_seconds": 54.996119208983146
 }

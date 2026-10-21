@@ -2,14 +2,14 @@
   "schema_version": "1.0",
   "paper": {
     "title": "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
-    "version": "preprint-1.3",
+    "version": "preprint-1.4",
     "date": "2026-10-21"
   },
   "software": {
     "name": "Edge Litter Detection, Multiclass Classification, Tracking, and Counting",
     "version": "0.11.0",
     "repository": "https://github.com/biolababs/edge-litter-detection",
-    "git_revision": "864308395b5c9515f7c8cbc55c82014d245a0e3c",
+    "git_revision": "9f0c651ae455dabc8e5a3ebcf18f43a1639bae32",
     "license": "Apache-2.0"
   },
   "verified_scope": [
@@ -18,8 +18,8 @@
     "camera, image, video, HTTP, and RTSP source paths in the application design",
     "normalized detections, tracking, count semantics, JSON evidence, and SQLite persistence",
     "browser dashboard and private API paths",
-    "86 automated software tests at the cited revision",
-    "preliminary grouped TACO zero-shot accuracy with COCO and operating-point metrics",
+    "87 automated software tests at the cited revision",
+    "preliminary grouped TACO zero-shot accuracy with COCO, operating-point, exact-prompt, and diagnostic class-confusion evidence",
     "preliminary repeated-image model benchmark on NVIDIA Tesla T4",
     "preliminary repeated-image model benchmark on Apple MPS",
     "preliminary repeated-image detector benchmark on the target Jetson Orin Nano 8 GB device",

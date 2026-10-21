@@ -185,7 +185,7 @@ function main() {
       title:
         "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
       subtitle:
-        "Preprint version 1.3 — architecture figures, public-data accuracy, and warmed Jetson profiling",
+        "Preprint version 1.4 — prompts, class-confusion analysis, and warmed Jetson profiling",
       date: "21 October 2026",
       author: "Abiola A. Babsalaam — Independent Researcher",
       confidential: false,

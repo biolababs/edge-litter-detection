@@ -1,38 +1,40 @@
 .PHONY: install test validate security cameras docx paper
 
+PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
+
 install:
-	python3 -m pip install -e ".[runtime,public-model,api]"
+	$(PYTHON) -m pip install -e ".[runtime,public-model,api]"
 
 test:
-	PYTHONPATH=src python3 -m unittest discover -s tests -v
+	PYTHONPATH=src $(PYTHON) -m unittest discover -s tests -v
 
 validate: test
-	python3 scripts/validate_release.py
+	$(PYTHON) scripts/validate_release.py
 	bash -n startup.sh
 	bash tests/test_startup.sh
 	./startup.sh --help >/dev/null
-	python3 infer.py --help >/dev/null
-	python3 discover_sources.py --help >/dev/null
-	python3 prepare_test_data.py --help >/dev/null
-	python3 prepare_demo_video.py --help >/dev/null
-	python3 prepare_training_data.py --help >/dev/null
-	python3 download_model.py --help >/dev/null
-	python3 query_counts.py --help >/dev/null
-	python3 train.py --help >/dev/null
-	python3 evaluate.py --help >/dev/null
-	python3 evaluate_public.py --help >/dev/null
-	python3 evaluate_counts.py --help >/dev/null
-	python3 export_model.py --help >/dev/null
-	python3 benchmark.py --help >/dev/null
-	python3 serve.py --help >/dev/null
+	$(PYTHON) infer.py --help >/dev/null
+	$(PYTHON) discover_sources.py --help >/dev/null
+	$(PYTHON) prepare_test_data.py --help >/dev/null
+	$(PYTHON) prepare_demo_video.py --help >/dev/null
+	$(PYTHON) prepare_training_data.py --help >/dev/null
+	$(PYTHON) download_model.py --help >/dev/null
+	$(PYTHON) query_counts.py --help >/dev/null
+	$(PYTHON) train.py --help >/dev/null
+	$(PYTHON) evaluate.py --help >/dev/null
+	$(PYTHON) evaluate_public.py --help >/dev/null
+	$(PYTHON) evaluate_counts.py --help >/dev/null
+	$(PYTHON) export_model.py --help >/dev/null
+	$(PYTHON) benchmark.py --help >/dev/null
+	$(PYTHON) serve.py --help >/dev/null
 
 security:
-	ruff check src tests scripts *.py
-	bandit -q -r src scripts -ll
-	pip-audit
+	$(PYTHON) -m ruff check src tests scripts *.py
+	$(PYTHON) -m bandit -q -r src scripts -ll
+	$(PYTHON) -m pip_audit
 
 cameras:
-	python3 discover_sources.py --list-cameras
+	$(PYTHON) discover_sources.py --list-cameras
 
 docx:
 	npm run thesis:docx

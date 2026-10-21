@@ -25,7 +25,7 @@ Independent Researcher
 
 ## Manuscript version
 
-Preprint 1.3
+Preprint 1.4
 
 ## Abstract
 
@@ -76,7 +76,7 @@ recycling; reproducible software
 
 - Code: `https://github.com/biolababs/edge-litter-detection`
 - Software revision:
-  `864308395b5c9515f7c8cbc55c82014d245a0e3c`
+  `9f0c651ae455dabc8e5a3ebcf18f43a1639bae32`
 - Software version: `0.11.0`
 
 The manuscript has no DOI at this stage. Do not invent one. A DOI can be added
@@ -102,9 +102,9 @@ in the linked GitHub repository.
    author source outside the public item.
 3. Link the GitHub repository in the description and project links.
 
-The V1.3 PDF contains six publication figures covering architecture, count
-semantics, the machinery-safety boundary, model adaptation, evaluation, and
-the measured Jetson latency profile.
+The V1.4 PDF contains seven publication figures covering architecture, count
+semantics, the machinery-safety boundary, model adaptation, evaluation, the
+measured Jetson latency profile, and the leading TACO class-confusion pairs.
 
 ## Rights and quality checks before upload
 
@@ -133,8 +133,3 @@ the measured Jetson latency profile.
 6. After target-domain labeling, count evaluation, endurance, optimization,
    and field testing, publish a revised manuscript with operational accuracy,
    reliability, and outcome results.
-
-## Notice
-
-⚠️ AI & Data Notice: All output is AI-generated and must be independently
-verified before sharing with customers or taking action.

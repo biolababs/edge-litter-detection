@@ -34,7 +34,7 @@ software.
 - `evidence/jetson_offline_omdet_smoke_summary.json`: cached, network-disabled
   Jetson model-loading and CUDA-inference smoke evidence;
 - `evidence/taco_omdet_zero_shot_accuracy.json`: grouped public-data accuracy
-  result and evidence boundary; and
+  result, exact prompts, diagnostic confusion pairs, and evidence boundary; and
 - `evidence/taco_omdet_zero_shot_predictions.json`: COCO-format model
   predictions used for the reported evaluation.
 
@@ -59,7 +59,7 @@ manuscript license.
 The paper references Edge Litter Detection version 0.11.0 at implementation
 commit:
 
-`864308395b5c9515f7c8cbc55c82014d245a0e3c`
+`9f0c651ae455dabc8e5a3ebcf18f43a1639bae32`
 
 The principal warmed Jetson profile was executed at:
 
@@ -78,8 +78,3 @@ Run `make paper` from the repository root. The build validates and renders the
 SVG figures to PNG, converts the Markdown manuscript into a figure-aware DOCX,
 and exports the publication PDF with LibreOffice. Generated artifacts should
 be reviewed after every substantive manuscript or figure change.
-
-## Notice
-
-⚠️ AI & Data Notice: All output is AI-generated and must be independently
-verified before sharing with customers or taking action.

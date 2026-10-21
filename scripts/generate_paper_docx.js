@@ -236,6 +236,8 @@ function makeTable(section) {
 
   function row(values, header = false) {
     return new TableRow({
+      tableHeader: header,
+      cantSplit: true,
       children: values.map(
         value =>
           new TableCell({

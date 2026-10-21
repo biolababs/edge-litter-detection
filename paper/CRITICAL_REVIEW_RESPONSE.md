@@ -2,17 +2,21 @@
 
 Review incorporated: 21 October 2026
 
-Manuscript revision: preprint 1.3
+Manuscript revision: preprint 1.4
 
 ## Overall response
 
 The second review correctly identified preliminary accuracy and Jetson
 component timing as the two highest-impact gaps. Revision 1.2 addressed both
-with traceable evidence; revision 1.3 preserves that evidence and adds the
-publication-quality visual architecture. It does not convert those results
-into a production claim: the measured public checkpoint accuracy is low,
-count accuracy remains unmeasured, and the Jetson path remains below the
-15 FPS target.
+with traceable evidence, and revision 1.3 added the publication-quality visual
+architecture. Revision 1.4 responds to the third review by recording exact
+prompts, adding reproducible cross-class diagnostics and a seventh figure,
+analyzing zero-AP classes without assigning unsupported causes, separating MPS
+accuracy repeatability from performance evidence, verifying the DWaste
+published record, and removing the duplicate editorial AI banner. It does not
+convert those results into a production claim: the measured public checkpoint
+accuracy is low, count accuracy remains unmeasured, and the Jetson path remains
+below the 15 FPS target.
 
 ## Point-by-point disposition
 
@@ -30,6 +34,12 @@ count accuracy remains unmeasured, and the Jetson path remains below the
 | Unusual AI banner | Replaced the standalone editorial banner with a “Use of AI tools” declaration. | Addressed subject to destination-venue policy |
 | Insufficient or poorly rendered diagrams | Added six editable SVG publication figures covering the system architecture, count semantics, machinery-safety boundary, model lifecycle, evaluation workflow, and measured Jetson latency profile. The same figures are embedded in the regenerated DOCX/PDF and relevant GitHub documentation. | Addressed |
 | Public-model dependency security | Moved the maintained public-model path to Transformers 5.20+, declared the PyTorch 2.6+/torchvision 0.21+ floor, added an incompatibility guard, and repeated Jetson profiling with PyTorch 2.7.0 and Transformers 5.20.2 in an isolated digest-pinned container. A later network-disabled Jetson smoke passed with a read-only model cache. | Addressed for the maintained dependency line |
+| Exact evaluation prompts not disclosed | Added all 16 frozen OmDet-Turbo prompt strings to the manuscript and machine-readable accuracy evidence. | Addressed |
+| Zero-AP classes insufficiently analyzed | Added class-specific analysis for `cigarette_butt`, `cardboard`, `broken_glass`, and `other_litter`, while separating observed evidence from candidate causes that require ablation. | Addressed without unsupported causal claims |
+| No class-confusion analysis | Added score-ordered greedy all-class matching at IoU 0.50, the top ten confusion pairs, machine-readable full pair counts, a unit test, and Figure 7. | Addressed as a diagnostic, not a replacement for COCO AP |
+| MPS reproducibility caveat | Repeated the frozen evaluation on the same MPS host. Predictions were byte-identical and accuracy was unchanged, while latency differed materially. The paper now requires CUDA reproduction before a platform-independent accuracy claim. | Addressed within available hardware; CUDA accuracy cross-validation remains open |
+| DWaste published-record verification | Confirmed that DOI `10.32604/jai.2026.076674` resolves to the 2026 Journal on Artificial Intelligence article and retained the arXiv identifier as the preprint record. | Addressed |
+| Residual AI warning banner | Removed the duplicate warning banner from the manuscript and publication-package documents; the venue-adaptable “Use of AI tools” declaration remains. | Addressed |
 
 ## Evidence interpretation
 
@@ -61,11 +71,8 @@ functionality while addressing less than 1% of the measured runtime.
 
 ## Publication decision
 
-Preprint 1.2 is a stronger systems and reproducibility paper because it now
-contains an accuracy signal and a replicated component profile. It remains
-unsuitable as a completed production-efficacy paper. The low zero-shot result
-and sub-target Jetson throughput are reported as findings, not hidden as
-limitations.
-
-⚠️ AI & Data Notice: All output is AI-generated and must be independently
-verified before sharing with customers or taking action.
+Preprint 1.4 is a stronger systems and reproducibility paper because it
+contains an accuracy signal, explicit prompts, class-confusion evidence, and a
+replicated component profile. It remains unsuitable as a completed
+production-efficacy paper. The low zero-shot result and sub-target Jetson
+throughput are reported as findings, not hidden as limitations.
