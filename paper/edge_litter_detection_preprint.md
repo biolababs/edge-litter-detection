@@ -2,7 +2,7 @@
 
 Abiola A. Babsalaam  
 Independent Researcher  
-Preprint version 1.6 — 21 October 2026
+Preprint version 1.7 — 21 October 2026
 
 ## Abstract
 
@@ -142,10 +142,12 @@ The principal contributions are:
 TACO introduced a publicly available dataset of waste “in the wild,” with
 object annotations and a detailed material-oriented taxonomy [3]. It is useful
 for bootstrapping because it contains varied contexts rather than only
-controlled conveyor imagery. Studies based on TACO have also highlighted the
+controlled conveyor imagery. A comparative TACO study highlighted the
 difficulty of small objects, class imbalance, and the risk of reporting one
 aggregate metric without examining precision, recall, F1, object size, and
-scene conditions [4,5].
+scene conditions [4]. Earlier street-waste systems separately demonstrated the
+practical task of localizing and classifying discarded objects in public
+scenes [5].
 
 ZeroWaste focuses on industrial waste sorting and emphasizes dense,
 overlapping objects and material recovery facility conditions [6]. It
@@ -1267,8 +1269,8 @@ https://doi.org/10.1007/978-3-319-68345-4_18
 Ablavsky, V., Calli, B., Adel Bargal, S., & Saenko, K. (2022). ZeroWaste
 dataset: Towards deformable object segmentation in cluttered scenes. In
 *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern
-Recognition*.
-https://doi.org/10.48550/arXiv.2106.02740
+Recognition* (pp. 21147–21157).
+https://openaccess.thecvf.com/content/CVPR2022/html/Bashkirova_ZeroWaste_Dataset_Towards_Deformable_Object_Segmentation_in_Cluttered_Scenes_CVPR_2022_paper.html
 
 [7] Babsalaam, A. A. (2026). *Edge Litter Detection, Multiclass
 Classification, Tracking, and Counting* (Version 0.11.0) [Computer software].
@@ -1276,8 +1278,9 @@ GitHub. https://github.com/biolababs/edge-litter-detection
 
 [8] Wu, T., Xu, Q., He, X., Weekes, O., Brown, J., & Duan, W. (2026).
 RoLID-11K: A dashcam dataset for small-object roadside litter detection.
-arXiv:2601.00398.
-https://doi.org/10.48550/arXiv.2601.00398
+In *Proceedings of the IEEE/CVF Winter Conference on Applications of Computer
+Vision Workshops* (pp. 568–575).
+https://openaccess.thecvf.com/content/WACV2026W/WasteVision/html/Wu_RoLID-11K_A_Dashcam_Dataset_for_Small-Object_Roadside_Litter_Detection_WACVW_2026_paper.html
 
 [9] Lin, T.-Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D.,
 Dollár, P., & Zitnick, C. L. (2014). Microsoft COCO: Common objects in context.
@@ -1290,9 +1293,10 @@ Zagoruyko, S. (2020). End-to-end object detection with transformers. In
 https://doi.org/10.1007/978-3-030-58452-8_13
 
 [11] Zhang, H., Li, F., Liu, S., Zhang, L., Su, H., Zhu, J., Ni, L. M., &
-Shum, H.-Y. (2022). DINO: DETR with improved denoising anchor boxes for
-end-to-end object detection. arXiv:2203.03605.
-https://doi.org/10.48550/arXiv.2203.03605
+Shum, H.-Y. (2023). DINO: DETR with improved denoising anchor boxes for
+end-to-end object detection. In *International Conference on Learning
+Representations (ICLR 2023)*.
+https://openreview.net/forum?id=3mRwyG5one
 
 [12] Liu, S., Zeng, Z., Ren, T., Li, F., Zhang, H., Yang, J., Jiang, Q., Li,
 C., Yang, J., Su, H., Zhu, J., & Zhang, L. (2024). Grounding DINO: Marrying
@@ -1322,7 +1326,8 @@ https://doi.org/10.1007/978-3-031-20047-2_1
 [17] Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G.,
 Killeen, T., Lin, Z., Gimelshein, N., Antiga, L., et al. (2019). PyTorch: An
 imperative style, high-performance deep learning library. In *Advances in
-Neural Information Processing Systems 32*.
+Neural Information Processing Systems 32* (pp. 8024–8035).
+https://proceedings.neurips.cc/paper/2019/hash/bdbca288fee7f92f2bfa9f7012727740-Abstract.html
 
 [18] Wolf, T., Debut, L., Sanh, V., Chaumond, J., Delangue, C., Moi, A.,
 Cistac, P., Rault, T., Louf, R., Funtowicz, M., et al. (2020). Transformers:
@@ -1338,8 +1343,8 @@ Development Framework (SSDF) Version 1.1: Recommendations for Mitigating the
 Risk of Software Vulnerabilities* (NIST SP 800-218).
 https://doi.org/10.6028/NIST.SP.800-218
 
-[21] OWASP Foundation. (2021). *Application Security Verification Standard
-4.0.3*. https://owasp.org/www-project-application-security-verification-standard/
+[21] OWASP Foundation. (2025). *Application Security Verification Standard
+5.0.0*. https://owasp.org/www-project-application-security-verification-standard/
 
 [22] Litterati. (2026). *Analyze: Identify litter trends and measure impact*.
 https://www.litterati.org/analyze

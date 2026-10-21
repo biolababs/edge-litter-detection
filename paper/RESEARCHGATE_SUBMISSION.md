@@ -25,46 +25,41 @@ Independent Researcher
 
 ## Manuscript version
 
-Preprint 1.6
+Preprint 1.7
 
 ## Abstract
 
-Litter monitoring is often treated as an object-detection exercise, although a
-deployable solution must also ingest operational video, maintain stable class
-contracts, avoid repeated counting, persist evidence, support human review, and
-integrate safely with collection or sorting workflows. This paper presents an
-open and reproducible edge-AI software architecture that addresses those
-requirements as one portable application. The software accepts cameras,
-images, recorded video, HTTP media, and RTSP streams; normalizes public or
-custom detector output; applies duplicate suppression and class-stabilized
-tracking; reports visible and unique-session counts; and stores auditable
-SQLite and JSON evidence. A browser interface exposes annotated video, counts,
-review tasks, and source controls. The default 16-class operational taxonomy
-supports human review and configurable separation guidance.
+Deployable litter monitoring requires more than object detection: it must
+ingest operational video, maintain stable class contracts, avoid repeated
+counting, persist evidence, support human review, and integrate safely with
+collection or sorting workflows. This paper presents an open and reproducible
+edge-AI software architecture that packages these functions as one portable
+application. It accepts cameras, images, recorded video, HTTP media, and RTSP
+streams; normalizes public or custom detector output; performs duplicate
+suppression and class-stabilized tracking; reports visible and unique-session
+counts; stores auditable SQLite and JSON evidence; and provides a browser
+interface for annotated video, counts, review, and source control.
 
 The detector is interchangeable rather than the product boundary. A clean
-clone runs with the public OmDet-Turbo Tiny open-vocabulary checkpoint, while a
-validated litter-specific checkpoint can be introduced later without changing
-downstream contracts. A preliminary zero-shot evaluation on a deterministic,
-source-grouped TACO test partition of 212 images and 680 mapped annotations
-measured 7.65% COCO mAP50–95, 10.16% mAP50, and 7.49% micro F1 at the frozen
-operating point. This result establishes an accuracy signal and also shows that
-the unadapted public checkpoint is a functional bootstrap, not a
-production-accepted litter model.
+clone uses a pinned public OmDet-Turbo Tiny checkpoint, while a validated
+litter-specific checkpoint can later replace it without changing downstream
+contracts. On a deterministic source-grouped TACO test partition of 212 images
+and 680 mapped annotations, the public checkpoint measured 7.65% COCO
+mAP50–95, 10.16% mAP50, and 7.49% micro F1 at a frozen operating point. The
+result identifies the checkpoint as a functional bootstrap, not a
+production-accepted litter classifier.
 
-Engineering validation confirms installation, inference, persistence,
-automated checks, and execution on NVIDIA CUDA, Apple silicon, and an NVIDIA
-Jetson Orin Nano 8 GB. A prior complete 3,622-frame Jetson run measured
-4.94 source-to-result FPS. Three subsequent 300-frame full-pipeline
-repetitions, each after 10 warm-up calls, measured 5.188 ± 0.010 FPS. Model
-forward time accounted for 71.10% of wall time, detector preprocessing 13.69%,
-and annotation/output 10.59%; tracking, JSONL, and SQLite together accounted
-for less than 1%. The provisional 15 FPS target was not met. These measurements
-do not establish target-domain accuracy, counting error, endurance, AMD
-performance, or production readiness. The contribution is therefore the
-reusable architecture, explicit count semantics, safety and security boundary,
-traceable preliminary evidence, and a protocol for the remaining empirical
-work.
+Engineering validation covers installation, inference, persistence, automated
+checks, and execution on NVIDIA CUDA, Apple silicon, and a Jetson Orin Nano
+8 GB. A complete 3,622-frame Jetson run measured 4.94 source-to-result FPS;
+three warmed 300-frame full-pipeline repetitions measured 5.188 ± 0.010 FPS.
+Model forward, preprocessing, and annotation/output accounted for 95.38% of
+wall time, whereas tracking, JSONL, and SQLite together accounted for less than
+1%. The provisional 15 FPS target was not met. The contribution is therefore a
+reusable architecture with explicit count semantics, safety and security
+boundaries, traceable preliminary evidence, and a protocol for target-domain
+accuracy, counting, endurance, and hardware acceptance work that remains
+pending.
 
 ## Keywords
 
@@ -102,7 +97,7 @@ in the linked GitHub repository.
    author source outside the public item.
 3. Link the GitHub repository in the description and project links.
 
-The V1.6 PDF uses a neutral single-column journal-preprint layout and contains
+The V1.7 PDF uses a neutral single-column journal-preprint layout and contains
 seven deterministic vector figures covering architecture, count semantics,
 the machinery-safety boundary, model adaptation, evaluation, the measured
 Jetson latency profile, and the leading TACO class-confusion pairs.

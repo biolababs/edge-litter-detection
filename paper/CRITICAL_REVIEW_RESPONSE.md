@@ -2,7 +2,7 @@
 
 Review incorporated: 21 October 2026
 
-Manuscript revision: preprint 1.6
+Manuscript revision: preprint 1.7
 
 ## Overall response
 
@@ -18,7 +18,7 @@ convert those results into a production claim: the measured public checkpoint
 accuracy is low, count accuracy remains unmeasured, and the Jetson path remains
 below the 15 FPS target.
 
-Revision 1.6 replaces the report-style visual treatment with a conventional
+Revision 1.7 replaces the report-style visual treatment with a conventional
 single-column journal-preprint format. All seven figures are regenerated from
 deterministic source as restrained vector diagrams and scientific plots with
 consistent typography, line weights, notation, and grayscale-compatible color.
@@ -31,6 +31,11 @@ consistent typography, line weights, notation, and grayscale-compatible color.
 | No Jetson latency breakdown | Added three 300-frame full-pipeline profiles after 10 warm-up calls each. Model forward averaged 71.10% of wall time, preprocessing 13.69%, annotation/output 10.59%, and tracking plus JSONL plus SQLite 0.91%. | Addressed |
 | Benchmark variance and replication | The warmed Jetson condition was repeated three times: 5.1748, 5.1881, and 5.2002 FPS, with mean 5.1877 and population standard deviation 0.0104 FPS. The benchmark utility now reports standard deviation and p99. | Addressed for the new Jetson profile; historical T4 result remains narrow |
 | Grounding DINO reference | Replaced the arXiv-only citation with the ECCV 2024 Springer proceedings citation and DOI. | Addressed |
+| DINO reference | Replaced the arXiv-only record with the archival ICLR 2023 citation and official OpenReview record. | Addressed |
+| ZeroWaste reference | Replaced the arXiv DOI with the CVPR 2022 proceedings record and page range. | Addressed |
+| RoLID-11K reference | Replaced the arXiv-only record with the WACV Workshops 2026 proceedings citation and page range. | Addressed |
+| PyTorch reference | Added the official NeurIPS proceedings record and corrected page range; the proposed `10.5555/3454287.3455008` identifier was not used because it does not resolve through DOI.org. | Addressed |
+| OWASP ASVS version | Updated the cited security-verification standard from ASVS 4.0.3 to ASVS 5.0.0. | Addressed |
 | RF-DETR reference | Updated the reference to its ICLR 2026 publication while retaining the arXiv identifier. | Addressed |
 | Weak Litterati evidence | Added Watkins et al. (2024), which compares Litterati app data with municipal audits and reports both composition agreement and spatial sampling limitations. | Addressed |
 | Missing recent integrated systems | Added DWaste and the 2026 privacy-aware smart-city trash/face application to related work. | Addressed selectively; weak or non-archival surveys were not used as principal evidence |
@@ -41,7 +46,7 @@ consistent typography, line weights, notation, and grayscale-compatible color.
 | Public-model dependency security | Moved the maintained public-model path to Transformers 5.20+, declared the PyTorch 2.6+/torchvision 0.21+ floor, added an incompatibility guard, and repeated Jetson profiling with PyTorch 2.7.0 and Transformers 5.20.2 in an isolated digest-pinned container. A later network-disabled Jetson smoke passed with a read-only model cache. | Addressed for the maintained dependency line |
 | Exact evaluation prompts not disclosed | Added all 16 frozen OmDet-Turbo prompt strings to the manuscript and machine-readable accuracy evidence. | Addressed |
 | Zero-AP classes insufficiently analyzed | Added class-specific analysis for `cigarette_butt`, `cardboard`, `broken_glass`, and `other_litter`, while separating observed evidence from candidate causes that require ablation. | Addressed without unsupported causal claims |
-| No class-confusion analysis | Added score-ordered greedy all-class matching at IoU 0.50, the top ten confusion pairs, machine-readable full pair counts, a unit test, and Figure 7. | Addressed as a diagnostic, not a replacement for COCO AP |
+| No class-confusion analysis | Added score-ordered greedy all-class matching at IoU 0.50, the top ten confusion pairs, machine-readable full pair counts, a unit test, and Figure 6. | Addressed as a diagnostic, not a replacement for COCO AP |
 | MPS reproducibility caveat | Repeated the frozen evaluation on the same MPS host. Predictions were byte-identical and accuracy was unchanged, while latency differed materially. The paper now requires CUDA reproduction before a platform-independent accuracy claim. | Addressed within available hardware; CUDA accuracy cross-validation remains open |
 | DWaste published-record verification | Confirmed that DOI `10.32604/jai.2026.076674` resolves to the 2026 Journal on Artificial Intelligence article and retained the arXiv identifier as the preprint record. | Addressed |
 | Residual AI warning banner | Removed the duplicate warning banner from the manuscript and publication-package documents; the venue-adaptable “Use of AI tools” declaration remains. | Addressed |
@@ -76,7 +81,7 @@ functionality while addressing less than 1% of the measured runtime.
 
 ## Publication decision
 
-Preprint 1.6 is a stronger systems and reproducibility paper because it
+Preprint 1.7 is a stronger systems and reproducibility paper because it
 contains an accuracy signal, explicit prompts, class-confusion evidence, and a
 replicated component profile. It remains unsuitable as a completed
 production-efficacy paper. The low zero-shot result and sub-target Jetson
