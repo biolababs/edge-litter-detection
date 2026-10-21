@@ -7,8 +7,8 @@
   checksum, category, and license metadata in a local manifest.
 - Kept downloaded test images and their generated manifest outside Git.
 - Added unit and launcher tests for demo-data preparation and execution.
-- Aligned package and launcher validation with the documented Python 3.10–3.12
-  support range.
+- Added Python 3.13–3.14 support with NumPy 2.x while retaining NumPy 1.26 for
+  Python 3.10–3.12 and Jetson-compatible environments.
 - Made non-graphical Linux and `--no-display` startup use headless OpenCV.
 
 ## 0.7.0 - 2026-10-21

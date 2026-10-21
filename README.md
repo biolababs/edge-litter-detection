@@ -72,7 +72,7 @@ That single command:
 6. writes JSON evidence and annotated output; and
 7. persists counts to `state/litter-edge.db`.
 
-Python 3.10–3.12 is required. The first run needs internet access to install
+Python 3.10–3.14 is required. The first run needs internet access to install
 packages and download the public model. Later runs use the local environment
 and model cache.
 

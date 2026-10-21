@@ -94,10 +94,10 @@ source_for_log() {
 select_bootstrap_python() {
   local candidate
   local resolved
-  for candidate in python3.12 python3.11 python3.10 python3; do
+  for candidate in python3.14 python3.13 python3.12 python3.11 python3.10 python3; do
     resolved="$(command -v "$candidate" 2>/dev/null || true)"
     if [[ -n "$resolved" ]] && "$resolved" -c \
-      'import sys; raise SystemExit(0 if (3, 10) <= sys.version_info < (3, 13) else 1)'
+      'import sys; raise SystemExit(0 if (3, 10) <= sys.version_info < (3, 15) else 1)'
     then
       printf '%s\n' "$resolved"
       return 0
@@ -263,7 +263,7 @@ if [[ -z "$python_command" ]]; then
   fi
   if [[ ! -x "$venv_dir/bin/python" ]]; then
     bootstrap_python="$(select_bootstrap_python)" || fail \
-      "Python 3.10 or newer was not found. Install Python 3.10-3.12 and rerun."
+      "Python 3.10-3.14 was not found. Install a supported Python and rerun."
     if [[ -f /etc/nv_tegra_release ]]; then
       fail "Jetson detected. Generic PyTorch installation is disabled.
 
@@ -280,8 +280,8 @@ if [[ "$python_command" != */* ]]; then
 fi
 [[ -x "$python_command" ]] || fail "Python is not executable: $python_command"
 "$python_command" -c \
-  'import sys; raise SystemExit(0 if (3, 10) <= sys.version_info < (3, 13) else 1)' ||
-  fail "The selected Python must be version 3.10, 3.11, or 3.12."
+  'import sys; raise SystemExit(0 if (3, 10) <= sys.version_info < (3, 15) else 1)' ||
+  fail "The selected Python must be version 3.10 through 3.14."
 
 if [[ "$backend_value" == "rfdetr" && "$model_path" != /* ]]; then
   model_path="$project_root/$model_path"

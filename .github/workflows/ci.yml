@@ -7,11 +7,15 @@ on:
 jobs:
   static:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - run: python -m pip install build PyYAML "fastapi>=0.115,<1" "uvicorn>=0.32,<1"
       - run: python -m build
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
