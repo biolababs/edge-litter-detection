@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "paper:docx": "node scripts/paper_to_report_json.js paper/edge_litter_detection_preprint.md reports/generated/preprint-report.json && node scripts/generate_paper_docx.js reports/generated/preprint-report.json paper/Edge_Litter_Detection_Preprint.docx",
     "thesis:docx": "node scripts/generate_thesis_docx.js thesis/manuscript.md thesis/Jetson_Litter_Detection_Thesis_Draft.docx"
   },
   "dependencies": {

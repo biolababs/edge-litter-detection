@@ -46,6 +46,7 @@ for every deployment.
 - [ ] Enable secret scanning and dependency alerts.
 - [ ] Protect `main` from force pushes.
 - [x] Complete `CITATION.cff`, model card, changelog, and source license.
+- [x] Add editable publication figures and a reproducible DOCX/PDF build.
 - [ ] Tag the source release with a semantic version.
 
 ## Artifact release

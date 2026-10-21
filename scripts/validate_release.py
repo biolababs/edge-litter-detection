@@ -75,6 +75,17 @@ REQUIRED = [
     "docs/SOFTWARE_AND_RESEARCH.md",
     "docs/TRUCK_INTEGRATION.md",
     "docs/INTEGRATION_EVENTS.md",
+    "package-lock.json",
+    "scripts/build_preprint.sh",
+    "scripts/generate_paper_docx.js",
+    "scripts/paper_to_report_json.js",
+    "paper/edge_litter_detection_preprint.md",
+    "paper/figures/figure-1-system-architecture.svg",
+    "paper/figures/figure-2-count-semantics.svg",
+    "paper/figures/figure-3-deployment-safety-boundary.svg",
+    "paper/figures/figure-4-model-adaptation-lifecycle.svg",
+    "paper/figures/figure-5-evaluation-evidence-workflow.svg",
+    "paper/figures/figure-6-jetson-latency-profile.svg",
     "deploy/systemd/litter-edge-truck.service.example",
     "query_counts.py",
     "state/README.md",
@@ -134,7 +145,11 @@ def main() -> None:
         errors.append("unsupported legacy 30 FPS claim found")
 
     local_link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-    markdown_files = [ROOT / "README.md", *(ROOT / "docs").glob("*.md")]
+    markdown_files = [
+        ROOT / "README.md",
+        ROOT / "paper/edge_litter_detection_preprint.md",
+        *(ROOT / "docs").glob("*.md"),
+    ]
     for markdown in markdown_files:
         text = markdown.read_text(encoding="utf-8")
         for target in local_link_pattern.findall(text):

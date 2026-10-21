@@ -266,18 +266,7 @@ accuracy or production-readiness result.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    A[Camera / image / video / stream] --> B[Detector adapter]
-    B --> C[Stable detections]
-    C --> D[Tracking and class stabilization]
-    D --> E[Visible and unique counts]
-    C --> F[Separation policy and human review]
-    E --> G[(SQLite evidence store)]
-    F --> G
-    G --> H[Dashboard / API / integration outbox]
-    H --> I[Human or safety controller confirmation]
-```
+![Detector-independent edge litter architecture](paper/figures/figure-1-system-architecture.svg)
 
 The software is a perception and evidence component. It must not directly move
 a garbage-collection or sorting arm. Final actuation belongs to a safety-rated

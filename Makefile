@@ -1,4 +1,4 @@
-.PHONY: install test validate security cameras docx
+.PHONY: install test validate security cameras docx paper
 
 install:
 	python3 -m pip install -e ".[runtime,public-model,api]"
@@ -36,3 +36,6 @@ cameras:
 
 docx:
 	npm run thesis:docx
+
+paper:
+	bash scripts/build_preprint.sh

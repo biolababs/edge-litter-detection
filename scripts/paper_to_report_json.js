@@ -19,7 +19,7 @@ function normalizeInline(text) {
     .trim();
 }
 
-function parse(markdown) {
+function parse(markdown, sourceDirectory) {
   const lines = markdown.split(/\r?\n/);
   const sections = [];
   let paragraph = [];
@@ -78,6 +78,43 @@ function parse(markdown) {
       continue;
     }
 
+    const image = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (image) {
+      flushParagraph();
+      let caption = "";
+      let captionIndex = index + 1;
+      while (
+        captionIndex < lines.length &&
+        !lines[captionIndex].trim()
+      ) {
+        captionIndex += 1;
+      }
+      if (
+        captionIndex < lines.length &&
+        /^\*Figure\s+\d+\./.test(lines[captionIndex].trim())
+      ) {
+        const captionLines = [];
+        while (captionIndex < lines.length) {
+          const captionLine = lines[captionIndex].trim();
+          captionLines.push(captionLine);
+          if (captionLine.endsWith("*")) break;
+          captionIndex += 1;
+        }
+        const candidate = captionLines.join(" ");
+        if (candidate.endsWith("*")) {
+          caption = normalizeInline(candidate);
+          index = captionIndex;
+        }
+      }
+      sections.push({
+        type: "image",
+        path: path.resolve(sourceDirectory, image[2]),
+        alt: normalizeInline(image[1]),
+        caption,
+      });
+      continue;
+    }
+
     if (
       line.startsWith("|") &&
       index + 1 < lines.length &&
@@ -110,14 +147,15 @@ function parse(markdown) {
 
     if (/^\d+\.\s+/.test(line)) {
       flushParagraph();
+      const items = [];
       while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
-        sections.push({
-          type: "paragraph",
-          text: normalizeInline(lines[index].trim()),
-        });
+        items.push(
+          normalizeInline(lines[index].trim().replace(/^\d+\.\s+/, ""))
+        );
         index += 1;
       }
       index -= 1;
+      sections.push({ type: "numbered", items });
       continue;
     }
 
@@ -141,13 +179,13 @@ function main() {
   const markdown = fs.readFileSync(input, "utf8");
   const bodyStart = markdown.indexOf("## Abstract");
   const body = bodyStart >= 0 ? markdown.slice(bodyStart) : markdown;
-  const sections = parse(body);
+  const sections = parse(body, path.dirname(input));
   const report = {
     metadata: {
       title:
         "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
       subtitle:
-        "Preprint version 1.2 — public-data accuracy and warmed Jetson profiling",
+        "Preprint version 1.3 — architecture figures, public-data accuracy, and warmed Jetson profiling",
       date: "21 October 2026",
       author: "Abiola A. Babsalaam — Independent Researcher",
       confidential: false,

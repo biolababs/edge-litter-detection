@@ -58,27 +58,7 @@ paths, not a model leaderboard.
 
 ## Runtime flow
 
-```text
-image / video / camera / stream
-                |
-                v
-      bootstrap/release adapter
-                |
-                v
-      standard Detection records
-                |
-                v
-     duplicate suppression + tracking
-                |
-                v
-     visible + unique run counts
-        /          |          |           \
-     JSONL    JSON summary   SQLite    annotated media
-                                |
-                    review queue + outbox/API
-                                |
-                    local operations dashboard
-```
+![Detector-independent edge litter architecture](../paper/figures/figure-1-system-architecture.svg)
 
 ## Deployment constraints
 

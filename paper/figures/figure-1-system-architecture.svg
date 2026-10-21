@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">End-to-end edge litter detection system architecture</title>
+  <desc id="desc">Inputs enter an isolated edge runtime containing capture, detector adapters, normalized detections, tracking, review policy, evidence storage, and an API. Advisory outputs reach human operators, fleet systems, and an independent safety controller.</desc>
+  <defs>
+    <style>
+      .title{font:700 27px Arial,sans-serif;fill:#18213d}.lane{font:700 15px Arial,sans-serif;letter-spacing:1.4px;fill:#526077}
+      .h{font:700 18px Arial,sans-serif;fill:#18213d}.t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}
+      .box{fill:#fff;stroke:#aeb9ca;stroke-width:2}.blue{fill:#edf3ff;stroke:#4472c4}.teal{fill:#e9f7f4;stroke:#1b998b}
+      .amber{fill:#fff6df;stroke:#d99518}.gray{fill:#f5f7fa;stroke:#aeb9ca}.boundary{fill:#f8fbff;stroke:#4472c4;stroke-width:2.5}
+      .arrow{fill:none;stroke:#526077;stroke-width:2.4;marker-end:url(#arrow)}.branch{fill:none;stroke:#728099;stroke-width:2;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#526077"/></marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".12"/></filter>
+  </defs>
+
+  <rect width="1200" height="680" fill="#fff"/>
+  <text class="title" x="40" y="43">Operational architecture: detector-independent edge workflow</text>
+
+  <rect class="gray" x="34" y="82" width="190" height="520" rx="18"/>
+  <text class="lane" x="56" y="116">INPUT SOURCES</text>
+  <g filter="url(#shadow)">
+    <rect class="box" x="56" y="144" width="146" height="70" rx="12"/>
+    <text class="h" x="129" y="174" text-anchor="middle">Camera</text>
+    <text class="small" x="129" y="196" text-anchor="middle">USB / CSI</text>
+    <rect class="box" x="56" y="232" width="146" height="70" rx="12"/>
+    <text class="h" x="129" y="262" text-anchor="middle">Image</text>
+    <text class="small" x="129" y="284" text-anchor="middle">local / HTTP</text>
+    <rect class="box" x="56" y="320" width="146" height="70" rx="12"/>
+    <text class="h" x="129" y="350" text-anchor="middle">Video</text>
+    <text class="small" x="129" y="372" text-anchor="middle">file / URL</text>
+    <rect class="box" x="56" y="408" width="146" height="70" rx="12"/>
+    <text class="h" x="129" y="438" text-anchor="middle">Live stream</text>
+    <text class="small" x="129" y="460" text-anchor="middle">RTSP / HTTP</text>
+  </g>
+
+  <rect class="boundary" x="270" y="82" width="650" height="520" rx="20"/>
+  <text class="lane" x="294" y="116">EDGE LITTER RUNTIME</text>
+  <text class="small" x="894" y="116" text-anchor="end">same contracts across model and device backends</text>
+
+  <g filter="url(#shadow)">
+    <rect class="blue" x="310" y="146" width="170" height="82" rx="12"/>
+    <text class="h" x="395" y="177" text-anchor="middle">Capture adapter</text>
+    <text class="small" x="395" y="199" text-anchor="middle">decode, validate, redact</text>
+
+    <rect class="blue" x="520" y="146" width="170" height="82" rx="12"/>
+    <text class="h" x="605" y="177" text-anchor="middle">Detector adapter</text>
+    <text class="small" x="605" y="199" text-anchor="middle">public or custom model</text>
+
+    <rect class="teal" x="730" y="146" width="150" height="82" rx="12"/>
+    <text class="h" x="805" y="177" text-anchor="middle">Detections</text>
+    <text class="small" x="805" y="199" text-anchor="middle">stable schema</text>
+
+    <rect class="teal" x="354" y="294" width="210" height="92" rx="12"/>
+    <text class="h" x="459" y="326" text-anchor="middle">Tracking and counting</text>
+    <text class="small" x="459" y="350" text-anchor="middle">class stability · visible</text>
+    <text class="small" x="459" y="370" text-anchor="middle">and unique-session counts</text>
+
+    <rect class="amber" x="622" y="294" width="210" height="92" rx="12"/>
+    <text class="h" x="727" y="326" text-anchor="middle">Review and separation</text>
+    <text class="small" x="727" y="350" text-anchor="middle">confidence · hazard rules</text>
+    <text class="small" x="727" y="370" text-anchor="middle">operator destination</text>
+
+    <rect class="blue" x="330" y="450" width="390" height="98" rx="12"/>
+    <text class="h" x="525" y="482" text-anchor="middle">Durable evidence boundary</text>
+    <text class="small" x="525" y="506" text-anchor="middle">SQLite · JSONL · summaries · review queue</text>
+    <text class="small" x="525" y="528" text-anchor="middle">collection confirmations · integration outbox</text>
+
+    <rect class="blue" x="752" y="450" width="128" height="98" rx="12"/>
+    <text class="h" x="816" y="482" text-anchor="middle">Local API</text>
+    <text class="small" x="816" y="506" text-anchor="middle">dashboard</text>
+    <text class="small" x="816" y="528" text-anchor="middle">fleet connector</text>
+  </g>
+
+  <path class="arrow" d="M224 342 H246 V187 H310"/>
+  <path class="arrow" d="M480 187 H520"/>
+  <path class="arrow" d="M690 187 H730"/>
+  <path class="branch" d="M805 228 V258 H459 V294"/>
+  <path class="branch" d="M805 228 V294"/>
+  <path class="branch" d="M459 386 V420 H525 V450"/>
+  <path class="branch" d="M727 386 V420 H525"/>
+  <path class="arrow" d="M720 499 H752"/>
+
+  <rect class="gray" x="966" y="82" width="204" height="520" rx="18"/>
+  <text class="lane" x="990" y="116">OPERATIONS</text>
+  <g filter="url(#shadow)">
+    <rect class="box" x="990" y="154" width="156" height="82" rx="12"/>
+    <text class="h" x="1068" y="185" text-anchor="middle">Human operator</text>
+    <text class="small" x="1068" y="208" text-anchor="middle">review and separation</text>
+    <rect class="box" x="990" y="274" width="156" height="82" rx="12"/>
+    <text class="h" x="1068" y="305" text-anchor="middle">Fleet system</text>
+    <text class="small" x="1068" y="328" text-anchor="middle">routes and reporting</text>
+    <rect class="amber" x="990" y="394" width="156" height="112" rx="12"/>
+    <text class="h" x="1068" y="425" text-anchor="middle">Safety controller</text>
+    <text class="small" x="1068" y="449" text-anchor="middle">independent authority</text>
+    <text class="small" x="1068" y="471" text-anchor="middle">positive pickup</text>
+    <text class="small" x="1068" y="491" text-anchor="middle">confirmation only</text>
+  </g>
+  <path class="arrow" d="M880 480 H940 V195 H990"/>
+  <path class="branch" d="M940 315 H990"/>
+  <path class="branch" d="M940 450 H990"/>
+  <path class="branch" d="M990 486 H950 V568 H720"/>
+  <text class="small" x="825" y="589" text-anchor="middle">confirmed outcome returns separately</text>
+</svg>

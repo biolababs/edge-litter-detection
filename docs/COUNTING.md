@@ -15,6 +15,8 @@ litter is visible now" should use `visible_counts`. A moving-camera inspection
 that needs "how many items were encountered during this run" should use
 `unique_session_counts`.
 
+![Visible, confirmed, unique, and collected count semantics](../paper/figures/figure-2-count-semantics.svg)
+
 ## Avoiding repeated counts
 
 Video contains the same object in many frames. Summing frame detections would

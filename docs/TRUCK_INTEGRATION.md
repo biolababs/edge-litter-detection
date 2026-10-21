@@ -19,35 +19,7 @@ was collected.
 
 ## Operational flow
 
-```text
-camera or stream
-      |
-      v
-public/custom litter detection and classification
-      |
-      v
-tracking, counting, and separation policy
-      |
-      +---------------------> operator display
-      |                       class / confidence / destination / REVIEW
-      |
-      +---------------------> SQLite observation store
-      |                       runs / frame counts / reviews / outbox
-      |
-      +---------------------> candidate-object integration event
-                              |
-                              v
-                     task or arm planner
-                              |
-                              v
-               safety-rated controller and interlocks
-                              |
-                              v
-                  external pickup confirmation
-                              |
-                              v
-                     SQLite and fleet event
-```
+![Truck and sorting-line machinery-safety boundary](../paper/figures/figure-3-deployment-safety-boundary.svg)
 
 ## One-command truck run
 

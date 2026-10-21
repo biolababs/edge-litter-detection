@@ -23,6 +23,10 @@ Independent Researcher
 
 21 October 2026
 
+## Manuscript version
+
+Preprint 1.3
+
 ## Abstract
 
 Litter monitoring is often treated as an object-detection exercise, although a
@@ -97,6 +101,10 @@ in the linked GitHub repository.
 2. Optionally retain `Edge_Litter_Detection_Preprint.docx` as the editable
    author source outside the public item.
 3. Link the GitHub repository in the description and project links.
+
+The V1.3 PDF contains six publication figures covering architecture, count
+semantics, the machinery-safety boundary, model adaptation, evaluation, and
+the measured Jetson latency profile.
 
 ## Rights and quality checks before upload
 

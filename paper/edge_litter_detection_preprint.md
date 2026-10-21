@@ -2,7 +2,7 @@
 
 Abiola A. Babsalaam  
 Independent Researcher  
-Preprint version 1.2 — 21 October 2026
+Preprint version 1.3 — 21 October 2026
 
 ## Abstract
 
@@ -304,32 +304,12 @@ The system must:
 
 ### 4.1 End-to-end architecture
 
-The runtime flow is:
+![End-to-end system architecture](figures/figure-1-system-architecture.svg)
 
-```text
-camera / image / video / HTTP / RTSP
-                    |
-                    v
-             detector adapter
-                    |
-                    v
-       normalized Detection records
-                    |
-                    v
-     duplicate suppression and tracking
-          /             |              \
-         v              v               v
- visible counts   unique run counts   review policy
-         \              |               /
-          \             v              /
-           +---- SQLite and JSON -----+
-                         |
-                         v
-        dashboard / API / integration outbox
-                         |
-                         v
-       human or independent controller confirmation
-```
+*Figure 1. Detector-independent operational architecture. Capture and model
+adapters feed stable detection records into tracking, review, persistence, and
+integration components. Human and controller confirmations return as separate
+outcome evidence.*
 
 Capture, detection, counting, persistence, and integration are separate
 components. A detector adapter converts backend-specific results into a stable
@@ -402,6 +382,12 @@ The system deliberately reports different quantities:
   run; and
 - `confirmed_collected_counts` are physical pickups separately confirmed by a
   human, collection controller, sensor-fusion service, or reviewed import.
+
+![Count semantics](figures/figure-2-count-semantics.svg)
+
+*Figure 2. The four count quantities are related but not interchangeable.
+Only a separate human, controller, sensor, or reviewed import can establish a
+confirmed collection.*
 
 These quantities answer different questions. Visible counts estimate the
 current scene. Unique-session counts estimate how many track identities were
@@ -523,6 +509,12 @@ This boundary prevents a probabilistic class or box from becoming an
 unreviewed actuation command. It also preserves the difference between “an
 object was observed” and “an object was collected.”
 
+![Deployment and machinery-safety boundary](figures/figure-3-deployment-safety-boundary.svg)
+
+*Figure 3. Edge perception produces advisory candidate events. Mechanical
+motion remains under an independent safety-rated controller, and positive
+pickup confirmation returns to the evidence store separately.*
+
 ## 5. Implementation and Reproducibility
 
 ### 5.1 Software release
@@ -567,6 +559,13 @@ The repository keeps model selection separate from model availability. A
 public model makes the application immediately deployable for functional use,
 but only a checkpoint that passes representative accuracy and systems gates
 should be described as accepted for an operational site.
+
+![Model adaptation lifecycle](figures/figure-4-model-adaptation-lifecycle.svg)
+
+*Figure 4. Ordinary users can begin with a pinned public model. Optional
+target-domain training remains a maintainer activity and can replace the
+checkpoint without changing the application’s detection, counting, storage,
+or integration contracts.*
 
 ### 5.3 Hardware portability
 
@@ -617,6 +616,12 @@ The evaluated object is one frozen solution configuration: checkpoint,
 taxonomy, prompts or class head, thresholds, image size, tracker settings,
 runtime, and Git revision. The purpose is to determine whether the complete
 system satisfies the use case. The study does not compare detectors for rank.
+
+![Evaluation and evidence workflow](figures/figure-5-evaluation-evidence-workflow.svg)
+
+*Figure 5. Detection, counting, and systems evidence are evaluated separately
+against use-case gates. Failed gates lead to a documented evidence or
+configuration change rather than an unsupported release claim.*
 
 ### 6.2 Data acquisition and governance
 
@@ -882,6 +887,12 @@ The breakdown shows that model forward, preprocessing, and annotation/output
 are the principal optimization targets. Tracking, JSONL, and SQLite together
 accounted for 0.91% of wall time, so removing durable count evidence would not
 close the approximately threefold gap to 15 FPS.
+
+![Jetson full-pipeline latency profile](figures/figure-6-jetson-latency-profile.svg)
+
+*Figure 6. Mean exclusive wall-time shares across three warmed Jetson
+full-pipeline runs. Model forward, detector preprocessing, and annotation
+output account for 95.38% of measured wall time.*
 
 Across the complete three-run telemetry session—including loading, warm-up,
 processing, and transitions—minimum available system memory was 2,280 MiB,

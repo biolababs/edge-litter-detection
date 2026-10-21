@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Litter count semantics</title>
+  <desc id="desc">Four separate count concepts progress from frame detections to confirmed visible tracks, unique session tracks, and independently confirmed collections. The quantities are related but not interchangeable.</desc>
+  <defs>
+    <style>
+      .title{font:700 27px Arial,sans-serif;fill:#18213d}.n{font:700 25px Arial,sans-serif;fill:#fff}.h{font:700 18px Arial,sans-serif;fill:#18213d}
+      .t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}.card{fill:#fff;stroke:#aeb9ca;stroke-width:2}
+      .blue{fill:#4472c4}.teal{fill:#1b998b}.navy{fill:#1e2761}.amber{fill:#d99518}.arrow{stroke:#65728a;stroke-width:2.5;fill:none;marker-end:url(#a)}
+      .warn{fill:#fff5e6;stroke:#d99518;stroke-width:2}.persist{fill:#eef3fa;stroke:#8da1bd;stroke-width:1.5;stroke-dasharray:7 5}
+    </style>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#65728a"/></marker>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".13"/></filter>
+  </defs>
+  <rect width="1200" height="560" fill="#fff"/>
+  <text class="title" x="42" y="45">Count semantics: observations are not outcomes</text>
+
+  <g filter="url(#s)">
+    <rect class="card" x="42" y="105" width="245" height="245" rx="16"/>
+    <rect class="blue" x="42" y="105" width="245" height="58" rx="16"/>
+    <rect class="blue" x="42" y="145" width="245" height="18"/>
+    <text class="n" x="67" y="143">1</text>
+    <text class="h" x="100" y="140" style="fill:#fff">Visible detections</text>
+    <text class="t" x="65" y="200">Objects detected in the</text>
+    <text class="t" x="65" y="222">current frame.</text>
+    <text class="small" x="65" y="266">Answers:</text>
+    <text class="h" x="65" y="291">“What is visible now?”</text>
+    <text class="small" x="65" y="325">May include one-frame noise.</text>
+
+    <rect class="card" x="332" y="105" width="245" height="245" rx="16"/>
+    <rect class="teal" x="332" y="105" width="245" height="58" rx="16"/>
+    <rect class="teal" x="332" y="145" width="245" height="18"/>
+    <text class="n" x="357" y="143">2</text>
+    <text class="h" x="390" y="140" style="fill:#fff">Confirmed visible</text>
+    <text class="t" x="355" y="200">Visible tracks that reached</text>
+    <text class="t" x="355" y="222">the confirmation threshold.</text>
+    <text class="small" x="355" y="266">Answers:</text>
+    <text class="h" x="355" y="291">“What is stable now?”</text>
+    <text class="small" x="355" y="325">Default: at least two hits.</text>
+
+    <rect class="card" x="622" y="105" width="245" height="245" rx="16"/>
+    <rect class="navy" x="622" y="105" width="245" height="58" rx="16"/>
+    <rect class="navy" x="622" y="145" width="245" height="18"/>
+    <text class="n" x="647" y="143">3</text>
+    <text class="h" x="680" y="140" style="fill:#fff">Unique session</text>
+    <text class="t" x="645" y="200">Confirmed track identities</text>
+    <text class="t" x="645" y="222">counted once in one run.</text>
+    <text class="small" x="645" y="266">Answers:</text>
+    <text class="h" x="645" y="291">“What did this run see?”</text>
+    <text class="small" x="645" y="325">Not a lifetime site inventory.</text>
+
+    <rect class="card" x="912" y="105" width="245" height="245" rx="16"/>
+    <rect class="amber" x="912" y="105" width="245" height="58" rx="16"/>
+    <rect class="amber" x="912" y="145" width="245" height="18"/>
+    <text class="n" x="937" y="143">4</text>
+    <text class="h" x="970" y="140" style="fill:#fff">Confirmed collected</text>
+    <text class="t" x="935" y="200">Physical pickups confirmed</text>
+    <text class="t" x="935" y="222">by a separate source.</text>
+    <text class="small" x="935" y="266">Answers:</text>
+    <text class="h" x="935" y="291">“What was collected?”</text>
+    <text class="small" x="935" y="325">Human, controller, or sensor.</text>
+  </g>
+
+  <path class="arrow" d="M287 228 H332"/>
+  <path class="arrow" d="M577 228 H622"/>
+  <path class="arrow" d="M867 228 H912"/>
+  <text class="small" x="309" y="94" text-anchor="middle">track</text>
+  <text class="small" x="599" y="94" text-anchor="middle">deduplicate</text>
+  <text class="small" x="889" y="94" text-anchor="middle">external proof</text>
+
+  <rect class="persist" x="194" y="392" width="812" height="54" rx="12"/>
+  <text class="h" x="600" y="416" text-anchor="middle">SQLite preserves each quantity with run, device, vehicle, route, and time context</text>
+  <text class="small" x="600" y="436" text-anchor="middle">review corrections and pickup confirmations remain auditable</text>
+
+  <rect class="warn" x="318" y="472" width="564" height="58" rx="12"/>
+  <text class="h" x="600" y="497" text-anchor="middle">Detection ≠ unique physical object ≠ confirmed collection</text>
+  <text class="small" x="600" y="518" text-anchor="middle">Do not sum frame detections or claim cleanup from model observations alone.</text>
+</svg>

@@ -6,6 +6,16 @@ evaluation, and offline Jetson smoke were executed at commit:
 
 `864308395b5c9515f7c8cbc55c82014d245a0e3c`
 
+## Rebuild the publication artifacts
+
+```bash
+npm ci --ignore-scripts
+make paper
+```
+
+The build renders the editable SVG figures, converts the Markdown manuscript
+to DOCX, and exports the PDF with LibreOffice.
+
 ## Clean-clone demonstration
 
 ```bash

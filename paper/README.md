@@ -8,6 +8,8 @@ software.
 - `edge_litter_detection_preprint.md`: editable source manuscript;
 - `Edge_Litter_Detection_Preprint.docx`: formatted editable manuscript;
 - `Edge_Litter_Detection_Preprint.pdf`: upload-ready preprint;
+- `figures/`: editable SVG publication figures and PNG renderings used by the
+  Word/PDF build;
 - `RESEARCHGATE_SUBMISSION.md`: title, abstract, keywords, rights checks, and
   upload checklist;
 - `SUPPLEMENTARY_REPRODUCIBILITY.md`: exact demonstration, evaluation,
@@ -72,10 +74,10 @@ Repository:
 
 ## Regenerating the document
 
-The DOCX input is generated from the Markdown source and then rendered with the
-document-generation workflow. The PDF is exported from the resulting DOCX.
-Generated artifacts should be reviewed after every substantive manuscript
-change.
+Run `make paper` from the repository root. The build validates and renders the
+SVG figures to PNG, converts the Markdown manuscript into a figure-aware DOCX,
+and exports the publication PDF with LibreOffice. Generated artifacts should
+be reviewed after every substantive manuscript or figure change.
 
 ## Notice
 

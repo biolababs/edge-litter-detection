@@ -2,15 +2,17 @@
 
 Review incorporated: 21 October 2026
 
-Manuscript revision: preprint 1.2
+Manuscript revision: preprint 1.3
 
 ## Overall response
 
 The second review correctly identified preliminary accuracy and Jetson
-component timing as the two highest-impact gaps. Revision 1.2 addresses both
-with traceable evidence. It does not convert those results into a production
-claim: the measured public checkpoint accuracy is low, count accuracy remains
-unmeasured, and the Jetson path remains below the 15 FPS target.
+component timing as the two highest-impact gaps. Revision 1.2 addressed both
+with traceable evidence; revision 1.3 preserves that evidence and adds the
+publication-quality visual architecture. It does not convert those results
+into a production claim: the measured public checkpoint accuracy is low,
+count accuracy remains unmeasured, and the Jetson path remains below the
+15 FPS target.
 
 ## Point-by-point disposition
 
@@ -26,6 +28,7 @@ unmeasured, and the Jetson path remains below the 15 FPS target.
 | Tracker motion failure boundary | Added an image-plane derivation showing that IoU ≥ 0.30 permits at most 0.538 object widths of horizontal displacement per processed frame in the simplified equal-box case. The paper explicitly refuses to convert this to vehicle speed without calibration. | Addressed analytically; field validation remains open |
 | Repository-style appendices | Removed the command appendices from the main manuscript and moved exact commands and evidence boundaries to `SUPPLEMENTARY_REPRODUCIBILITY.md`. | Addressed |
 | Unusual AI banner | Replaced the standalone editorial banner with a “Use of AI tools” declaration. | Addressed subject to destination-venue policy |
+| Insufficient or poorly rendered diagrams | Added six editable SVG publication figures covering the system architecture, count semantics, machinery-safety boundary, model lifecycle, evaluation workflow, and measured Jetson latency profile. The same figures are embedded in the regenerated DOCX/PDF and relevant GitHub documentation. | Addressed |
 | Public-model dependency security | Moved the maintained public-model path to Transformers 5.20+, declared the PyTorch 2.6+/torchvision 0.21+ floor, added an incompatibility guard, and repeated Jetson profiling with PyTorch 2.7.0 and Transformers 5.20.2 in an isolated digest-pinned container. A later network-disabled Jetson smoke passed with a read-only model cache. | Addressed for the maintained dependency line |
 
 ## Evidence interpretation

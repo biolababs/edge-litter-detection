@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Edge deployment and machinery safety boundary</title>
+  <desc id="desc">A camera and edge AI device provide advisory candidate events. A separate task planner and safety-rated controller determine actuation using emergency stop, manual override, proximity, and machine-state inputs. Positive pickup confirmation returns to the edge evidence store.</desc>
+  <defs>
+    <style>
+      .title{font:700 27px Arial,sans-serif;fill:#18213d}.lane{font:700 15px Arial,sans-serif;letter-spacing:1.2px;fill:#526077}
+      .h{font:700 18px Arial,sans-serif;fill:#18213d}.t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}
+      .edge{fill:#f4f8ff;stroke:#4472c4;stroke-width:2.5}.safety{fill:#fff8e8;stroke:#d99518;stroke-width:2.5}.external{fill:#f7f8fa;stroke:#aeb9ca;stroke-width:2}
+      .box{fill:#fff;stroke:#aeb9ca;stroke-width:2}.blue{fill:#eaf1ff;stroke:#4472c4}.amber{fill:#fff3d5;stroke:#d99518}.red{fill:#fff0ed;stroke:#c23b22}
+      .arrow{fill:none;stroke:#526077;stroke-width:2.5;marker-end:url(#a)}.feedback{fill:none;stroke:#1b998b;stroke-width:2.5;stroke-dasharray:8 5;marker-end:url(#g)}
+      .limit{stroke:#c23b22;stroke-width:3;stroke-dasharray:10 6}
+    </style>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#526077"/></marker>
+    <marker id="g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#1b998b"/></marker>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1200" height="680" fill="#fff"/>
+  <text class="title" x="40" y="44">Deployment boundary: perception advises, safety controls motion</text>
+
+  <rect class="external" x="36" y="82" width="188" height="500" rx="18"/>
+  <text class="lane" x="60" y="116">PHYSICAL SCENE</text>
+  <g filter="url(#s)">
+    <rect class="box" x="60" y="150" width="140" height="84" rx="12"/>
+    <text class="h" x="130" y="183" text-anchor="middle">Road / belt</text>
+    <text class="small" x="130" y="207" text-anchor="middle">litter and material</text>
+    <rect class="box" x="60" y="275" width="140" height="84" rx="12"/>
+    <text class="h" x="130" y="308" text-anchor="middle">Camera</text>
+    <text class="small" x="130" y="332" text-anchor="middle">truck or facility</text>
+    <rect class="red" x="60" y="435" width="140" height="96" rx="12"/>
+    <text class="h" x="130" y="468" text-anchor="middle">Collection arm</text>
+    <text class="small" x="130" y="492" text-anchor="middle">hydraulic / electric</text>
+    <text class="small" x="130" y="512" text-anchor="middle">physical actuation</text>
+  </g>
+  <path class="arrow" d="M130 234 V275"/>
+
+  <rect class="edge" x="270" y="82" width="350" height="500" rx="18"/>
+  <text class="lane" x="294" y="116">EDGE-AI APPLICATION · THIS REPOSITORY</text>
+  <g filter="url(#s)">
+    <rect class="blue" x="306" y="150" width="278" height="82" rx="12"/>
+    <text class="h" x="445" y="181" text-anchor="middle">Detect · classify · track</text>
+    <text class="small" x="445" y="205" text-anchor="middle">confidence and candidate location</text>
+    <rect class="blue" x="306" y="270" width="132" height="92" rx="12"/>
+    <text class="h" x="372" y="301" text-anchor="middle">Operator UI</text>
+    <text class="small" x="372" y="325" text-anchor="middle">review</text>
+    <text class="small" x="372" y="345" text-anchor="middle">destination</text>
+    <rect class="blue" x="452" y="270" width="132" height="92" rx="12"/>
+    <text class="h" x="518" y="301" text-anchor="middle">SQLite</text>
+    <text class="small" x="518" y="325" text-anchor="middle">counts</text>
+    <text class="small" x="518" y="345" text-anchor="middle">outbox</text>
+    <rect class="box" x="306" y="420" width="278" height="92" rx="12"/>
+    <text class="h" x="445" y="451" text-anchor="middle">Candidate-object event</text>
+    <text class="small" x="445" y="475" text-anchor="middle">advisory data only</text>
+    <text class="small" x="445" y="495" text-anchor="middle">never a motor command</text>
+  </g>
+  <path class="arrow" d="M224 317 H265 V191 H306"/>
+  <path class="arrow" d="M445 232 V270"/>
+  <path class="arrow" d="M445 362 V420"/>
+
+  <line class="limit" x1="650" y1="92" x2="650" y2="570"/>
+  <rect x="630" y="238" width="42" height="194" fill="#fff"/>
+  <text x="655" y="414" transform="rotate(-90 655 414)" style="font:700 14px Arial,sans-serif;fill:#c23b22;letter-spacing:1px">SAFETY BOUNDARY</text>
+
+  <rect class="safety" x="690" y="82" width="474" height="500" rx="18"/>
+  <text class="lane" x="714" y="116">INDEPENDENT CONTROL SYSTEM</text>
+  <g filter="url(#s)">
+    <rect class="amber" x="726" y="150" width="176" height="84" rx="12"/>
+    <text class="h" x="814" y="181" text-anchor="middle">Task planner</text>
+    <text class="small" x="814" y="205" text-anchor="middle">candidate selection</text>
+    <rect class="amber" x="948" y="150" width="176" height="84" rx="12"/>
+    <text class="h" x="1036" y="181" text-anchor="middle">Safety controller</text>
+    <text class="small" x="1036" y="205" text-anchor="middle">final motion authority</text>
+
+    <rect class="red" x="726" y="286" width="176" height="168" rx="12"/>
+    <text class="h" x="814" y="318" text-anchor="middle">Safety inputs</text>
+    <text class="small" x="814" y="349" text-anchor="middle">emergency stop</text>
+    <text class="small" x="814" y="373" text-anchor="middle">manual override</text>
+    <text class="small" x="814" y="397" text-anchor="middle">proximity / exclusion</text>
+    <text class="small" x="814" y="421" text-anchor="middle">position / load / stale data</text>
+
+    <rect class="amber" x="948" y="286" width="176" height="84" rx="12"/>
+    <text class="h" x="1036" y="317" text-anchor="middle">Actuation gate</text>
+    <text class="small" x="1036" y="341" text-anchor="middle">inhibit by default</text>
+    <rect class="box" x="948" y="414" width="176" height="84" rx="12"/>
+    <text class="h" x="1036" y="445" text-anchor="middle">Pickup sensor</text>
+    <text class="small" x="1036" y="469" text-anchor="middle">positive confirmation</text>
+  </g>
+  <path class="arrow" d="M584 466 H676 V192 H726"/>
+  <path class="arrow" d="M902 192 H948"/>
+  <path class="arrow" d="M902 370 H928 V328 H948"/>
+  <path class="arrow" d="M1036 234 V286"/>
+  <path class="arrow" d="M1124 328 H1150 V620 H130 V531"/>
+  <path class="feedback" d="M948 456 H920 V566 H518 V362"/>
+  <text class="small" x="720" y="590" text-anchor="middle" style="fill:#1b998b">confirmed pickup returns to the evidence store</text>
+</svg>

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Use-case evaluation and evidence workflow</title>
+  <desc id="desc">Representative governed data and a frozen solution configuration feed separate detection, counting, and systems evaluations. Acceptance gates lead either to a versioned release or a documented evidence gap and adaptation loop. The workflow evaluates one solution rather than ranking models.</desc>
+  <defs>
+    <style>
+      .title{font:700 27px Arial,sans-serif;fill:#18213d}.lane{font:700 14px Arial,sans-serif;letter-spacing:1.1px;fill:#526077}
+      .h{font:700 18px Arial,sans-serif;fill:#18213d}.t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}
+      .box{fill:#fff;stroke:#aeb9ca;stroke-width:2}.blue{fill:#edf3ff;stroke:#4472c4}.teal{fill:#e8f7f3;stroke:#1b998b}.amber{fill:#fff5df;stroke:#d99518}
+      .purple{fill:#f2edff;stroke:#7f5fb3}.red{fill:#fff0ed;stroke:#c23b22}.arrow{fill:none;stroke:#5f6c83;stroke-width:2.5;marker-end:url(#a)}
+      .loop{fill:none;stroke:#c23b22;stroke-width:2.4;stroke-dasharray:8 5;marker-end:url(#r)}
+    </style>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#5f6c83"/></marker>
+    <marker id="r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#c23b22"/></marker>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1200" height="640" fill="#fff"/>
+  <text class="title" x="42" y="45">Evaluation workflow: one frozen solution, three evidence dimensions</text>
+
+  <g filter="url(#s)">
+    <rect class="blue" x="42" y="112" width="230" height="126" rx="15"/>
+    <text class="h" x="157" y="147" text-anchor="middle">Representative data</text>
+    <text class="t" x="157" y="176" text-anchor="middle">routes · sites · sorting lines</text>
+    <text class="small" x="157" y="202" text-anchor="middle">licenses · privacy · labels</text>
+    <text class="small" x="157" y="222" text-anchor="middle">grouped and checksummed</text>
+
+    <rect class="blue" x="42" y="292" width="230" height="126" rx="15"/>
+    <text class="h" x="157" y="327" text-anchor="middle">Frozen configuration</text>
+    <text class="t" x="157" y="356" text-anchor="middle">checkpoint · taxonomy</text>
+    <text class="small" x="157" y="382" text-anchor="middle">thresholds · tracker · runtime</text>
+    <text class="small" x="157" y="402" text-anchor="middle">device · Git revision</text>
+
+    <rect class="teal" x="356" y="88" width="244" height="128" rx="15"/>
+    <text class="h" x="478" y="124" text-anchor="middle">Detection evaluation</text>
+    <text class="t" x="478" y="153" text-anchor="middle">mAP · precision · recall · F1</text>
+    <text class="small" x="478" y="179" text-anchor="middle">per class, size, scene, condition</text>
+
+    <rect class="teal" x="356" y="246" width="244" height="128" rx="15"/>
+    <text class="h" x="478" y="282" text-anchor="middle">Counting evaluation</text>
+    <text class="t" x="478" y="311" text-anchor="middle">visible and unique error</text>
+    <text class="small" x="478" y="337" text-anchor="middle">duplicates · misses · identity switches</text>
+
+    <rect class="teal" x="356" y="404" width="244" height="128" rx="15"/>
+    <text class="h" x="478" y="440" text-anchor="middle">Systems evaluation</text>
+    <text class="t" x="478" y="469" text-anchor="middle">FPS · latency · memory</text>
+    <text class="small" x="478" y="495" text-anchor="middle">power · thermal · endurance</text>
+    <text class="small" x="478" y="515" text-anchor="middle">restart · recovery · memory growth</text>
+
+    <rect class="purple" x="692" y="198" width="216" height="222" rx="15"/>
+    <text class="h" x="800" y="236" text-anchor="middle">Use-case gates</text>
+    <text class="small" x="720" y="276">□ supported classes</text>
+    <text class="small" x="720" y="306">□ acceptable count error</text>
+    <text class="small" x="720" y="336">□ target-device throughput</text>
+    <text class="small" x="720" y="366">□ endurance and recovery</text>
+    <text class="small" x="720" y="396">□ security and licensing</text>
+
+    <rect class="teal" x="998" y="122" width="164" height="132" rx="15"/>
+    <text class="h" x="1080" y="158" text-anchor="middle">Accepted</text>
+    <text class="t" x="1080" y="187" text-anchor="middle">versioned release</text>
+    <text class="small" x="1080" y="213" text-anchor="middle">evidence package</text>
+    <text class="small" x="1080" y="233" text-anchor="middle">declared limits</text>
+
+    <rect class="red" x="998" y="364" width="164" height="132" rx="15"/>
+    <text class="h" x="1080" y="400" text-anchor="middle">Not accepted</text>
+    <text class="t" x="1080" y="429" text-anchor="middle">record the gap</text>
+    <text class="small" x="1080" y="455" text-anchor="middle">collect · review</text>
+    <text class="small" x="1080" y="475" text-anchor="middle">adapt · repeat</text>
+
+    <rect class="amber" x="692" y="456" width="216" height="76" rx="12"/>
+    <text class="h" x="800" y="486" text-anchor="middle">No model leaderboard</text>
+    <text class="small" x="800" y="511" text-anchor="middle">evaluate the deployed use case</text>
+  </g>
+
+  <path class="arrow" d="M272 175 H320 V152 H356"/>
+  <path class="arrow" d="M272 175 H320 V310 H356"/>
+  <path class="arrow" d="M272 355 H320 V468 H356"/>
+  <path class="arrow" d="M272 355 H320 V152 H356"/>
+  <path class="arrow" d="M600 152 H650 V268 H692"/>
+  <path class="arrow" d="M600 310 H692"/>
+  <path class="arrow" d="M600 468 H650 V350 H692"/>
+  <path class="arrow" d="M908 270 H956 V188 H998"/>
+  <path class="arrow" d="M908 350 H956 V430 H998"/>
+  <path class="loop" d="M1080 496 V594 H157 V418"/>
+  <text class="small" x="600" y="620" text-anchor="middle" style="fill:#a62e20">failed gates change evidence or configuration—not the meaning of the metrics</text>
+</svg>

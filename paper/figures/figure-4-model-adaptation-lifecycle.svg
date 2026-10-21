@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Public-model bootstrap and target-domain adaptation lifecycle</title>
+  <desc id="desc">Ordinary users can start with a pinned public model. The system collects review evidence. Maintainers may later build a governed target dataset, adapt a fixed-taxonomy model, evaluate it against release gates, and publish a versioned artifact without changing downstream application contracts.</desc>
+  <defs>
+    <style>
+      .title{font:700 27px Arial,sans-serif;fill:#18213d}.h{font:700 18px Arial,sans-serif;fill:#18213d}.t{font:14px Arial,sans-serif;fill:#39445a}.small{font:12.5px Arial,sans-serif;fill:#526077}
+      .box{fill:#fff;stroke:#aeb9ca;stroke-width:2}.blue{fill:#edf3ff;stroke:#4472c4}.teal{fill:#e8f7f3;stroke:#1b998b}.amber{fill:#fff5df;stroke:#d99518}
+      .gate{fill:#f3edff;stroke:#7f5fb3}.arrow{fill:none;stroke:#5f6c83;stroke-width:2.5;marker-end:url(#a)}.loop{fill:none;stroke:#d99518;stroke-width:2.5;stroke-dasharray:8 5;marker-end:url(#b)}
+      .contract{fill:#f5f7fa;stroke:#8fa0b8;stroke-width:1.5;stroke-dasharray:7 5}
+    </style>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#5f6c83"/></marker>
+    <marker id="b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#d99518"/></marker>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#18213d" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1200" height="620" fill="#fff"/>
+  <text class="title" x="42" y="45">Model lifecycle: usable on day one, improvable with evidence</text>
+
+  <g filter="url(#s)">
+    <rect class="blue" x="42" y="120" width="196" height="120" rx="15"/>
+    <text class="h" x="140" y="154" text-anchor="middle">Pinned public model</text>
+    <text class="t" x="140" y="181" text-anchor="middle">OmDet-Turbo Tiny</text>
+    <text class="small" x="140" y="207" text-anchor="middle">no user training required</text>
+
+    <rect class="teal" x="286" y="120" width="196" height="120" rx="15"/>
+    <text class="h" x="384" y="154" text-anchor="middle">Immediate workflow</text>
+    <text class="t" x="384" y="181" text-anchor="middle">detect · review · count</text>
+    <text class="small" x="384" y="207" text-anchor="middle">software bootstrap only</text>
+
+    <rect class="amber" x="530" y="120" width="196" height="120" rx="15"/>
+    <text class="h" x="628" y="154" text-anchor="middle">Operational evidence</text>
+    <text class="t" x="628" y="181" text-anchor="middle">corrections and misses</text>
+    <text class="small" x="628" y="207" text-anchor="middle">representative target data</text>
+
+    <rect class="blue" x="774" y="120" width="196" height="120" rx="15"/>
+    <text class="h" x="872" y="154" text-anchor="middle">Maintainer adaptation</text>
+    <text class="t" x="872" y="181" text-anchor="middle">fixed taxonomy training</text>
+    <text class="small" x="872" y="207" text-anchor="middle">optional, centrally managed</text>
+
+    <rect class="gate" x="1018" y="120" width="140" height="120" rx="15"/>
+    <text class="h" x="1088" y="154" text-anchor="middle">Release gates</text>
+    <text class="small" x="1088" y="181" text-anchor="middle">accuracy</text>
+    <text class="small" x="1088" y="202" text-anchor="middle">counting · device</text>
+    <text class="small" x="1088" y="223" text-anchor="middle">security · license</text>
+  </g>
+  <path class="arrow" d="M238 180 H286"/>
+  <path class="arrow" d="M482 180 H530"/>
+  <path class="arrow" d="M726 180 H774"/>
+  <path class="arrow" d="M970 180 H1018"/>
+
+  <rect class="contract" x="156" y="322" width="888" height="100" rx="16"/>
+  <text class="h" x="600" y="354" text-anchor="middle">Stable application contracts remain unchanged</text>
+  <text class="t" x="600" y="382" text-anchor="middle">Detection schema · 16-class IDs · tracker · count semantics · SQLite · dashboard · API · outbox</text>
+  <text class="small" x="600" y="406" text-anchor="middle">Changing the checkpoint does not redefine the operational product.</text>
+  <path class="arrow" d="M384 240 V322"/>
+  <path class="arrow" d="M1088 240 V272 H860 V322"/>
+
+  <rect class="teal" x="330" y="474" width="540" height="96" rx="15"/>
+  <text class="h" x="600" y="507" text-anchor="middle">Versioned, checksum-verified release artifact</text>
+  <text class="small" x="600" y="532" text-anchor="middle">ordinary deployment users download and run</text>
+  <text class="small" x="600" y="552" text-anchor="middle">maintainers own training and acceptance evidence</text>
+  <path class="arrow" d="M600 422 V474"/>
+
+  <path class="loop" d="M1088 120 V86 H628 V120"/>
+  <text class="small" x="858" y="78" text-anchor="middle" style="fill:#a56808">failed gates return to evidence and adaptation</text>
+</svg>
