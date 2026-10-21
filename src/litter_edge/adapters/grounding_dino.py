@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import nullcontext
+from numbers import Integral
 from typing import Any
 
 from ..schema import Detection
@@ -89,9 +90,18 @@ class GroundingDINODetector:
             _normalize_label(prompt): class_id
             for class_id, prompt in self.class_prompts.items()
         }
+        self.prompt_class_ids = sorted(self.class_names)
         self.prompt_list = [
-            self.class_prompts[class_id] for class_id in sorted(self.class_names)
+            self.class_prompts[class_id] for class_id in self.prompt_class_ids
         ]
+        self.fallback_class_id = next(
+            (
+                class_id
+                for class_id, name in self.class_names.items()
+                if name == "other_litter"
+            ),
+            None,
+        )
         self.confidence = confidence
         self.nms_iou = nms_iou
         self.max_detections = max_detections
@@ -105,10 +115,17 @@ class GroundingDINODetector:
         self.model.eval()
 
     def _class_id_for_label(self, label: object) -> int:
-        if isinstance(label, int):
-            if label in self.class_names:
-                return label
-            raise RuntimeError(f"Grounding DINO returned unknown class ID: {label}")
+        if isinstance(label, Integral):
+            label_index = int(label)
+            if 0 <= label_index < len(self.prompt_class_ids):
+                return self.prompt_class_ids[label_index]
+            if label_index in self.class_names:
+                return label_index
+            if self.fallback_class_id is not None:
+                return self.fallback_class_id
+            raise RuntimeError(
+                f"Grounding DINO returned unknown class ID: {label_index}"
+            )
         normalized = _normalize_label(label)
         exact = self.prompt_to_class_id.get(normalized)
         if exact is not None:
@@ -120,6 +137,8 @@ class GroundingDINODetector:
         ]
         if len(candidates) == 1:
             return candidates[0]
+        if self.fallback_class_id is not None:
+            return self.fallback_class_id
         raise RuntimeError(
             f"Grounding DINO returned an unmapped text label: {label!r}"
         )
@@ -159,21 +178,33 @@ class GroundingDINODetector:
                 threshold=self.confidence,
                 text_threshold=self.confidence,
                 target_sizes=target_sizes,
+                text_labels=[self.prompt_list],
             )
         except TypeError:
-            results = postprocess(
-                outputs,
-                inputs.get("input_ids"),
-                box_threshold=self.confidence,
-                text_threshold=self.confidence,
-                target_sizes=target_sizes,
-            )
+            try:
+                results = postprocess(
+                    outputs,
+                    inputs.get("input_ids"),
+                    threshold=self.confidence,
+                    text_threshold=self.confidence,
+                    target_sizes=target_sizes,
+                )
+            except TypeError:
+                results = postprocess(
+                    outputs,
+                    inputs.get("input_ids"),
+                    box_threshold=self.confidence,
+                    text_threshold=self.confidence,
+                    target_sizes=target_sizes,
+                )
         result = results[0]
         boxes = _to_list(result["boxes"])
         scores = _to_list(result["scores"])
-        labels = result.get("text_labels", result.get("labels"))
+        labels = result.get("labels")
         if labels is None:
-            raise RuntimeError("Grounding DINO result did not include text labels.")
+            labels = result.get("text_labels")
+        if labels is None:
+            raise RuntimeError("Grounding DINO result did not include labels.")
         raw_labels = _to_list(labels)
 
         detections: list[Detection] = []

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.1 - 2026-10-21
+
+- Fixed current Transformers Grounding DINO output handling by preferring
+  stable numeric label IDs over ambiguous decoded text spans.
+- Supplied the configured class labels to post-processing for current
+  Transformers compatibility.
+- Routed genuinely unresolved labels to `other_litter` for human review instead
+  of terminating an operational run.
+- Added the composite-label failure observed during the AWS CUDA smoke test as
+  a regression test.
+
 ## 0.8.0 - 2026-10-21
 
 - Added `./startup.sh --demo` for an automated real-model functional test.

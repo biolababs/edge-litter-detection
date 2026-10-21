@@ -52,10 +52,12 @@ class FakeProcessor:
         threshold: float,
         text_threshold: float,
         target_sizes: list[tuple[int, int]],
+        text_labels: list[list[str]] | None = None,
     ) -> list[dict[str, object]]:
         self.threshold = threshold
         self.text_threshold = text_threshold
         self.target_sizes = target_sizes
+        self.supplied_text_labels = text_labels
         return [
             {
                 "boxes": [
@@ -64,8 +66,9 @@ class FakeProcessor:
                     [100.0, 20.0, 140.0, 70.0],
                 ],
                 "scores": [0.92, 0.81, 0.88],
+                "labels": [0, 2, 1],
                 "text_labels": [
-                    "discarded plastic bottle",
+                    "plastic bottle glass bottle disposable cup",
                     "discarded trash or litter",
                     "discarded battery",
                 ],
@@ -135,6 +138,20 @@ class GroundingDINOAdapterTests(unittest.TestCase):
         self.assertEqual(detections[0].bbox, (1.0, 2.0, 31.0, 42.0))
         self.assertEqual(detector.processor.target_sizes, [(100, 200)])
         self.assertEqual(detector.processor.threshold, 0.35)
+        self.assertEqual(
+            detector.processor.supplied_text_labels,
+            [[
+                "discarded plastic bottle",
+                "discarded battery",
+                "discarded trash or litter",
+            ]],
+        )
+        self.assertEqual(
+            detector._class_id_for_label(
+                "plastic bottle glass bottle disposable cup"
+            ),
+            2,
+        )
         self.assertEqual(detector.model.device, "cpu")
         self.assertTrue(detector.model.eval_called)
 
