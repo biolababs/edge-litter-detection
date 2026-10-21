@@ -1,0 +1,55 @@
+{
+  "annotated_output": "/validation/profile-output/offline-omdet-smoke.jpg",
+  "backend": "omdet_turbo",
+  "class_names": "config/classes.yaml",
+  "completed_at": "2026-10-21T04:44:17.410599+00:00",
+  "count_semantics": {
+    "collection_status": "observed litter only; collection requires an independent human or equipment confirmation",
+    "unique_session_counts": "confirmed track IDs counted once per run; not a lifetime site inventory",
+    "visible_counts": "detections present in the current frame"
+  },
+  "created_at": "2026-10-21T04:44:17.410717+00:00",
+  "database": null,
+  "device": "cuda",
+  "edge_device_id": "jetson-orin-nano-super",
+  "events_output": "/validation/profile-output/offline-omdet-smoke.jsonl",
+  "frames": 1,
+  "git_revision": "864308395b5c9515f7c8cbc55c82014d245a0e3c",
+  "interrupted": false,
+  "mean_detector_call_ms": 1234.5158600073773,
+  "model": "omlab/omdet-turbo-swin-tiny-hf",
+  "operation": "detect_classify_count",
+  "peak_visible_counts": {
+    "metal_can": 3,
+    "plastic_bag": 1,
+    "plastic_bottle": 1,
+    "tire": 1
+  },
+  "persist_detections": false,
+  "platform": "Linux-5.15.199-tegra-aarch64-with-glibc2.39",
+  "python": "3.12.3 (main, Feb  4 2025, 14:48:35) [GCC 13.3.0]",
+  "rfdetr": null,
+  "route_id": null,
+  "run_id": "21e32e6b-0a60-48a7-9c2f-4de66adba56c",
+  "separation_config": "config/separation.yaml",
+  "source": "media/taco-demo/taco-000866.jpg",
+  "source_to_result_fps": 0.7709765988877219,
+  "started_at": "2026-10-21T04:44:16.113493+00:00",
+  "tensorrt": "10.7.0",
+  "timing_profile": {
+    "enabled": false
+  },
+  "torch": "2.7.0",
+  "torchvision": "0.22.0",
+  "tracking_enabled": true,
+  "transformers": "5.20.2",
+  "unique_session_counts": {
+    "metal_can": 3,
+    "plastic_bag": 1,
+    "plastic_bottle": 1,
+    "tire": 1
+  },
+  "vehicle_id": null,
+  "wall_seconds": 1.2970562289992813,
+  "warmup_calls": 0
+}

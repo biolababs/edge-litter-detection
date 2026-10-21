@@ -9,7 +9,7 @@
     "name": "Edge Litter Detection, Multiclass Classification, Tracking, and Counting",
     "version": "0.11.0",
     "repository": "https://github.com/biolababs/edge-litter-detection",
-    "git_revision": "618954e5921305addbd147ccc96ea1d78fe34c6e",
+    "git_revision": "864308395b5c9515f7c8cbc55c82014d245a0e3c",
     "license": "Apache-2.0"
   },
   "verified_scope": [
@@ -25,7 +25,8 @@
     "preliminary repeated-image detector benchmark on the target Jetson Orin Nano 8 GB device",
     "3,622-frame Jetson video, tracking, annotation, JSONL, and SQLite stability workflow",
     "Jetson dashboard stream control, annotated frame delivery, counts API, temperature, and whole-board power capture",
-    "three warmed 300-frame Jetson full-pipeline profiles with component timing and telemetry"
+    "three warmed 300-frame Jetson full-pipeline profiles with component timing and telemetry",
+    "network-disabled Jetson cached-model startup and CUDA inference"
   ],
   "not_yet_claimed": [
     "target-domain detection or classification accuracy beyond the preliminary grouped public-data screen",
@@ -65,6 +66,12 @@
       "platform": "NVIDIA Jetson Orin Nano 8 GB / CUDA",
       "backend": "omdet_turbo",
       "scope": "three warmed full-pipeline component profiles"
+    },
+    {
+      "evidence": "paper/evidence/jetson_offline_omdet_smoke_summary.json",
+      "platform": "NVIDIA Jetson Orin Nano 8 GB / CUDA",
+      "backend": "omdet_turbo",
+      "scope": "network-disabled cached model load and single-image inference"
     }
   ],
   "notice": "All manuscript claims and references require independent author verification before publication."

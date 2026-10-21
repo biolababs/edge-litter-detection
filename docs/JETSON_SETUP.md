@@ -148,10 +148,18 @@ reached 66.31 °C and 15.81 W peak whole-board input power. Dashboard stream
 control, annotated frame delivery, and counts queries also passed.
 
 The workflow is functional, but the provisional 15 FPS target was not met.
-Accuracy, count error, repeatability, multi-hour endurance, and production
+Target-domain accuracy, count error, multi-hour endurance, and production
 readiness remain unproven.
 See `JETSON_VALIDATION_2026-10-21.md` and `paper/evidence/` for the complete
 protocol and machine-readable evidence.
+
+A follow-up on the maintained PyTorch 2.7.0 and Transformers 5.20.2 path ran
+three warmed 300-frame full-pipeline profiles at 5.1877 ± 0.0104 FPS. Model
+forward, preprocessing, and annotation/output represented approximately 95%
+of measured wall time. Cached offline startup also passed with container
+networking disabled and the model cache mounted read-only. Repeatability is
+therefore preliminary rather than wholly unproven; multi-hour endurance,
+camera recovery, target-domain accuracy, and count error remain open.
 
 To identify the optimization opportunity instead of timing only the detector:
 

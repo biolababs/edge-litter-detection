@@ -29,6 +29,8 @@ software.
   summaries;
 - `evidence/jetson_profile_warm_tegrastats.log`: raw three-run device
   telemetry;
+- `evidence/jetson_offline_omdet_smoke_summary.json`: cached, network-disabled
+  Jetson model-loading and CUDA-inference smoke evidence;
 - `evidence/taco_omdet_zero_shot_accuracy.json`: grouped public-data accuracy
   result and evidence boundary; and
 - `evidence/taco_omdet_zero_shot_predictions.json`: COCO-format model
@@ -52,14 +54,17 @@ manuscript license.
 
 ## Software cited
 
-The paper references Edge Litter Detection version 0.11.0. The principal
-warmed Jetson profile was executed at Git commit:
+The paper references Edge Litter Detection version 0.11.0 at implementation
+commit:
+
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`
+
+The principal warmed Jetson profile was executed at:
 
 `618954e5921305addbd147ccc96ea1d78fe34c6e`
 
-The grouped TACO evaluation was executed at:
-
-`142eecf470a91d7d270b89ecdd6d3037b5a90809`
+The final portable grouped TACO evaluation and offline Jetson smoke were
+executed at the implementation commit.
 
 Repository:
 

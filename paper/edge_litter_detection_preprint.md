@@ -451,10 +451,10 @@ explains the stated limitations under rapid motion, long occlusion, and dense
 overlap.
 
 The overlap threshold gives an image-plane failure boundary. For two
-equal-sized boxes of width \(w\) with horizontal displacement \(d\) and no
-vertical displacement, their intersection over union is
-\((w-d)/(w+d)\). The configured requirement of IoU at least 0.30 therefore
-requires \(d \leq 0.538w\) between processed frames. A 40-pixel-wide item can
+equal-sized boxes of width w with horizontal displacement d and no vertical
+displacement, their intersection over union is (w-d)/(w+d). The configured
+requirement of IoU at least 0.30 therefore requires d ≤ 0.538w between
+processed frames. A 40-pixel-wide item can
 move only about 21.5 pixels per processed frame before this simplified case
 becomes unmatchable. At 5 FPS that is approximately 108 image pixels per
 second. This is not responsibly convertible to vehicle speed without camera
@@ -529,7 +529,7 @@ object was observed” and “an object was collected.”
 
 The implementation described in this preprint is Edge Litter Detection version
 0.11.0 at Git commit
-`618954e5921305addbd147ccc96ea1d78fe34c6e` [7]. Code and project
+`864308395b5c9515f7c8cbc55c82014d245a0e3c` [7]. Code and project
 documentation are released under Apache License 2.0. Model checkpoints and
 datasets retain their own licenses and are not relicensed by the repository.
 
@@ -752,7 +752,7 @@ The evaluated configuration used the public
 `7fe93cecfb770c4d76cf71163956221249cab566`, without project fine-tuning.
 The confidence threshold was 0.25, non-maximum-suppression IoU was 0.45, and
 the maximum was 100 detections per image. Evaluation ran at Git revision
-`142eecf470a91d7d270b89ecdd6d3037b5a90809` on Apple MPS using
+`864308395b5c9515f7c8cbc55c82014d245a0e3c` on Apple MPS using
 PyTorch 2.14.1 and Transformers 5.20.2. The annotation and evaluated-image
 sets are checksum-recorded in the evidence file.
 
@@ -810,7 +810,7 @@ support production classification or automated separation decisions.
 |---|---:|---:|---:|---:|---|
 | AWS g4dn.xlarge, Tesla T4, detector benchmark | 50 repeated images after 10 warm-up calls | 16.53 FPS | 58.98 ms | 61.03 ms | 0.55 GiB peak GPU allocation |
 | Jetson Orin Nano 8 GB, detector benchmark | 50 repeated images after 10 warm-up calls | 5.54 FPS | 174.30 ms | 175.65 ms | 0.70 GiB peak GPU allocation |
-| Apple silicon, MPS, public-data evaluation | 212 varied images | 4.57 source-to-result FPS | 215.31 ms | 315.53 ms | 118.74 ms standard deviation; 871.01 ms p99 |
+| Apple silicon, MPS, public-data evaluation | 212 varied images | 5.70 source-to-result FPS | 172.44 ms | 228.32 ms | 29.44 ms standard deviation; 255.48 ms p99 |
 
 The T4 and Jetson measurements used a repeated image and measured the detector
 benchmark path rather than sustained video capture, annotation rendering,
@@ -890,6 +890,14 @@ whole-board input power averaged 12.70 W with a 15.10 W peak. Board power
 includes the full Jetson and co-resident services. The community image remains
 a recorded supply-chain limitation rather than an endorsed production base.
 
+The profile initially allowed outbound HTTPS because Transformers 5.20
+performed a metadata lookup for the named timm backbone. A subsequent adapter
+change materialized that backbone configuration locally. At Git revision
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`, an isolated Jetson smoke test
+with `--network none`, a read-only model cache, and both Hugging Face offline
+flags loaded the same pinned checkpoint and completed CUDA inference. This
+establishes cached offline startup for the tested configuration.
+
 A separate loopback-only dashboard smoke test returned the browser interface
 with security headers, started and completed a 30-frame CUDA stream, served an
 annotated JPEG, and exposed the persisted run through the counts API. Its
@@ -914,6 +922,7 @@ thermal-throttling acceptance, or production readiness.
 | Apple MPS OmDet-Turbo model-only execution | preliminary measured evidence |
 | Jetson Orin 8 GB detector and 3,622-frame full workflow | preliminary measured coexistence and bounded stability evidence |
 | Jetson warmed three-run full-pipeline latency profile | preliminary measured repeatability and component evidence; 15 FPS target not met |
+| Jetson cached offline model loading and CUDA inference | functionally verified with network disabled and read-only model cache |
 | Target-domain detection/classification accuracy | pending representative labeled data |
 | Video counting accuracy | pending track-annotated video |
 | Jetson multi-hour endurance and production acceptance | pending |
@@ -1002,10 +1011,10 @@ outcome mitigate but do not eliminate this limitation.
 Fifth, the Jetson execution path has short repeated profiles but not the
 multi-hour, restart, camera-interruption, thermal-throttling, or optimized
 artifact evidence required for production acceptance. Its community container
-base requires a separate supply-chain decision. Transformers 5.20 also
-performed a remote metadata check for the configured backbone during startup,
-so a fully offline production image requires an additional packaging or
-configuration solution. AMD execution remains untested.
+base requires a separate supply-chain decision. Cached offline startup passed
+after the backbone-configuration fix, but disconnected operation with a live
+camera and restart/recovery behavior remain untested. AMD execution remains
+untested.
 
 Sixth, the author developed the system and performed the reported validation.
 No independent team has yet reproduced the clean-clone workflow or audited the
@@ -1058,9 +1067,9 @@ are available at:
 
 `https://github.com/biolababs/edge-litter-detection`
 
-This paper describes version 0.11.0 and its principal Jetson profile at commit:
+This paper describes version 0.11.0 at implementation commit:
 
-`618954e5921305addbd147ccc96ea1d78fe34c6e`
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`
 
 The repository includes attributed TACO demonstration preparation and a
 license-aware sorting-floor demonstration downloader. Downloaded media,
@@ -1070,9 +1079,12 @@ are not redistributed under the code license.
 Preliminary evidence records accompany this manuscript under `paper/evidence/`,
 including the grouped TACO zero-shot result and predictions, three raw warmed
 Jetson profile summaries, their aggregate, `tegrastats` captures, checksums,
-and interpretation boundaries. The TACO evaluation was executed at commit
-`142eecf470a91d7d270b89ecdd6d3037b5a90809`; its result JSON has SHA-256
-`1efe1108e27a397f11903ebd945ef019ace6caf9c9fa93b2d4b53353ebb08d13`.
+and interpretation boundaries. The warmed Jetson profiles were executed at
+commit `618954e5921305addbd147ccc96ea1d78fe34c6e`. The final portable
+TACO evaluation and offline Jetson smoke were executed at implementation
+commit `864308395b5c9515f7c8cbc55c82014d245a0e3c`; the TACO result JSON
+has SHA-256
+`e95e4eb1cd611b871345ec6a036d6cc155aabe7692b57b30bdefa2a1de793d24`.
 Runtime-generated records normally appear under `reports/generated/`, and the
 SQLite store appears under `state/litter-edge.db`. Transient media, private
 data, credentials, and raw device inventories are excluded from version
@@ -1264,14 +1276,14 @@ https://www.epa.gov/sbir/epa-sbir-supports-technology-improve-recycling
 [24] AMP. (2026). *AMP Vision: Real-Time Material Characterization*.
 https://ampsortation.com/vision-system
 
-[25] Watkins, L., Sullivan, P. J., Walter, M. T., & Albright, E. A. (2024).
+[25] Watkins, L., Bonter, D. N., Sullivan, P. J., & Walter, M. T. (2024).
 Methods for monitoring urban street litter: A comparison of municipal audits
 and an app-based citizen science approach. *Environmental Science: Advances,
 3*, 885–896. https://doi.org/10.1039/D4VA00008K
 
-[26] Kunwar, C. (2025). Greener AI for waste sorting using mobile and edge
-devices. arXiv:2510.18513.
-https://doi.org/10.48550/arXiv.2510.18513
+[26] Kunwar, S. (2026). DWaste: Greener AI for waste sorting using mobile and
+edge devices. *Journal on Artificial Intelligence, 8*(1), 39–49.
+https://doi.org/10.32604/jai.2026.076674
 
 [27] Arora, R. (2026). Real time detection of trash and faces for smart city
 environmental monitoring. *Discover Cities, 3*, 93.

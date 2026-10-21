@@ -32,14 +32,14 @@ evidence, and the frozen protocol for target-domain and edge-device validation:
 - [editable manuscript](paper/edge_litter_detection_preprint.md)
 - [ResearchGate submission record](paper/RESEARCHGATE_SUBMISSION.md)
 
-The manuscript describes software version `0.11.0`. Its principal warmed
-Jetson profile uses Git commit
-`618954e5921305addbd147ccc96ea1d78fe34c6e`. It is a preprint and must not be
-described as peer reviewed. Preliminary grouped public-data accuracy and
-Jetson functionality, throughput, component timing, memory, temperature, and
-whole-device power have been measured. Target-domain accuracy, count error,
-endurance, AMD, and field-outcome results remain pending their declared
-evaluations.
+The manuscript describes software version `0.11.0` at implementation commit
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`; the principal warmed
+Jetson profile uses commit `618954e5921305addbd147ccc96ea1d78fe34c6e`.
+It is a preprint and must not be described as peer reviewed. Preliminary
+grouped public-data accuracy and Jetson functionality, throughput, component
+timing, memory, temperature, whole-device power, and cached offline startup
+have been measured. Target-domain accuracy, count error, endurance, AMD, and
+field-outcome results remain pending their declared evaluations.
 
 ## What the solution provides
 

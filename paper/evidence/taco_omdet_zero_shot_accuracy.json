@@ -1,6 +1,6 @@
 {
   "annotation_count": 680,
-  "annotations": "/Users/babsalaa/Desktop/Model Scripts/jetson-litter-detection/data/taco-operational-v1/test/_annotations.coco.json",
+  "annotations": "data/taco-operational-v1/test/_annotations.coco.json",
   "annotations_sha256": "0f5fb491437b680f47dfe525efa8dd9543b8e46798a5c196b1730099635bf2dc",
   "backend": "omdet_turbo",
   "coco_bbox": {
@@ -124,25 +124,25 @@
     }
   },
   "confidence_threshold": 0.25,
-  "created_at": "2026-10-21T04:14:12.919101+00:00",
-  "dataset": "/Users/babsalaa/Desktop/Model Scripts/jetson-litter-detection/data/taco-operational-v1",
-  "dataset_manifest": "/Users/babsalaa/Desktop/Model Scripts/jetson-litter-detection/data/taco-operational-v1/manifest.json",
+  "created_at": "2026-10-21T04:45:10.934210+00:00",
+  "dataset": "data/taco-operational-v1",
+  "dataset_manifest": "data/taco-operational-v1/manifest.json",
   "dataset_manifest_sha256": "64af15f1d9bcaff9b4fd527581d6866b35b0eae41e41f4ddf8054b9e75ce2d4e",
   "dataset_name": "TACO operational mapping",
   "detector_call_ms": {
     "count": 212,
-    "max": 1056.9251659908332,
-    "mean": 215.30684692080064,
-    "median": 190.95066701993346,
-    "min": 153.39562500594184,
-    "p95": 315.5259999912232,
-    "p99": 871.0115409921855,
-    "standard_deviation": 118.73789085852732
+    "max": 451.1745829950087,
+    "mean": 172.44181619657266,
+    "median": 161.61495851702057,
+    "min": 152.38924999721348,
+    "p95": 228.31608302658424,
+    "p99": 255.475000012666,
+    "standard_deviation": 29.43909049166107
   },
   "device": "mps",
   "evaluated_image_records_in_manifest": 212,
   "evaluated_image_set_sha256": "c515d366897a7ea9a5dad44626680c472964ff8a526b2c84b7523ecfdce8d2e5",
-  "git_revision": "142eecf470a91d7d270b89ecdd6d3037b5a90809",
+  "git_revision": "864308395b5c9515f7c8cbc55c82014d245a0e3c",
   "image_count": 212,
   "interpretation": {
     "claim_boundary": "preliminary public-data zero-shot accuracy only; not target-domain, vehicle, sorting-floor, or counting validation",
@@ -338,12 +338,12 @@
   "operation": "public_zero_shot_detection_evaluation",
   "platform": "macOS-26.7.1-arm64-arm-64bit",
   "prediction_count": 735,
-  "predictions_output": "reports/generated/taco-omdet-zero-shot-2026-10-21-predictions.json",
+  "predictions_output": "reports/generated/taco-omdet-zero-shot-final-predictions.json",
   "predictions_sha256": "b349dc3fbfa1afbd26dc4a6386ec92cc048fc3e17569a6c9e4878292413aaea6",
   "python": "3.12.15 (main, Sep 30 2026, 22:04:19) [Clang 21.0.0 (clang-2100.3.34.2)]",
   "rfdetr": null,
   "scope": "single_model_use_case_evaluation_not_model_comparison",
-  "source_to_result_fps": 4.572004639872197,
+  "source_to_result_fps": 5.704524916044629,
   "split": "test",
   "split_policy": "grouped_by_taco_batch_or_original_source_group",
   "split_seed": 42,
@@ -351,5 +351,5 @@
   "torch": "2.14.1",
   "torchvision": "0.29.1",
   "transformers": "5.20.2",
-  "wall_seconds": 46.369156792003196
+  "wall_seconds": 37.16348041599849
 }

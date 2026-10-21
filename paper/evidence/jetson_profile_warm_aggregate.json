@@ -37,7 +37,7 @@
       "annotated MP4 output"
     ],
     "accelerator_synchronization": "Enabled around supported detector phases.",
-    "network_note": "Outbound HTTPS was available because Transformers 5.20 performs a Hugging Face backbone metadata check during configuration loading. Model weights remained revision-pinned and cache-backed."
+    "network_note": "Outbound HTTPS was available during these measured profiles because Transformers 5.20 performed a Hugging Face backbone metadata check during configuration loading. Model weights remained revision-pinned and cache-backed. A subsequent adapter fix and network-disabled Jetson smoke at commit 864308395b5c9515f7c8cbc55c82014d245a0e3c established cached offline startup."
   },
   "results": {
     "source_to_result_fps": {

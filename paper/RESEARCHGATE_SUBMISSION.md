@@ -72,7 +72,7 @@ recycling; reproducible software
 
 - Code: `https://github.com/biolababs/edge-litter-detection`
 - Software revision:
-  `618954e5921305addbd147ccc96ea1d78fe34c6e`
+  `864308395b5c9515f7c8cbc55c82014d245a0e3c`
 - Software version: `0.11.0`
 
 The manuscript has no DOI at this stage. Do not invent one. A DOI can be added

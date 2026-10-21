@@ -1,17 +1,17 @@
 # Supplementary reproducibility record
 
 This supplement contains commands moved out of the main manuscript. It targets
-Edge Litter Detection version 0.11.0. The principal warmed Jetson profile was
-executed at commit:
+Edge Litter Detection version 0.11.0. The implementation, final portable TACO
+evaluation, and offline Jetson smoke were executed at commit:
 
-`618954e5921305addbd147ccc96ea1d78fe34c6e`
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`
 
 ## Clean-clone demonstration
 
 ```bash
 git clone https://github.com/biolababs/edge-litter-detection.git
 cd edge-litter-detection
-git checkout 618954e5921305addbd147ccc96ea1d78fe34c6e
+git checkout 864308395b5c9515f7c8cbc55c82014d245a0e3c
 ./startup.sh --backend omdet_turbo --demo-video --no-display
 ```
 
@@ -60,10 +60,10 @@ python evaluate_public.py \
 
 TACO has no official train/test partition. The preparation command uses a
 deterministic seed-42 source-group split and records annotation, manifest,
-evaluated-image-set, prediction, and result checksums. The published result was
-executed at commit:
-
-`142eecf470a91d7d270b89ecdd6d3037b5a90809`
+evaluated-image-set, prediction, and result checksums. The published portable
+result was executed at the implementation commit above. The warmed Jetson
+component profile predates the offline-loading fix and records commit
+`618954e5921305addbd147ccc96ea1d78fe34c6e` in its raw summaries.
 
 ## Detector benchmark
 

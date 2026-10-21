@@ -70,8 +70,8 @@ to a compatible vendor build or the documented pinned container.
    community container base still requires production supply-chain approval
    and multi-hour endurance remains pending. The initial Transformers 5.20
    profile required a backbone metadata lookup; the maintained adapter now
-   builds that configuration locally, with an offline Jetson smoke test
-   required before the release record is final. AMD Strix Halo remains
+   builds that configuration locally, and a network-disabled Jetson smoke test
+   passed with the model cache mounted read-only. AMD Strix Halo remains
    untested.
 7. GitHub branch rules and mandatory reviewer policies require repository-owner
    workflow decisions and are not enabled automatically.

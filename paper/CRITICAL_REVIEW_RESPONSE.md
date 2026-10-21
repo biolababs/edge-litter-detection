@@ -26,7 +26,7 @@ unmeasured, and the Jetson path remains below the 15 FPS target.
 | Tracker motion failure boundary | Added an image-plane derivation showing that IoU ≥ 0.30 permits at most 0.538 object widths of horizontal displacement per processed frame in the simplified equal-box case. The paper explicitly refuses to convert this to vehicle speed without calibration. | Addressed analytically; field validation remains open |
 | Repository-style appendices | Removed the command appendices from the main manuscript and moved exact commands and evidence boundaries to `SUPPLEMENTARY_REPRODUCIBILITY.md`. | Addressed |
 | Unusual AI banner | Replaced the standalone editorial banner with a “Use of AI tools” declaration. | Addressed subject to destination-venue policy |
-| Public-model dependency security | Moved the maintained public-model path to Transformers 5.20+, declared the PyTorch 2.6+/torchvision 0.21+ floor, added an incompatibility guard, and repeated Jetson profiling with PyTorch 2.7.0 and Transformers 5.20.2 in an isolated digest-pinned container. | Addressed for the maintained dependency line |
+| Public-model dependency security | Moved the maintained public-model path to Transformers 5.20+, declared the PyTorch 2.6+/torchvision 0.21+ floor, added an incompatibility guard, and repeated Jetson profiling with PyTorch 2.7.0 and Transformers 5.20.2 in an isolated digest-pinned container. A later network-disabled Jetson smoke passed with a read-only model cache. | Addressed for the maintained dependency line |
 
 ## Evidence interpretation
 

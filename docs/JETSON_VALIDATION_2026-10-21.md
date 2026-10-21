@@ -71,10 +71,14 @@ includes model loading, warm-up, processing, transitions, and co-resident
 services; it is not detector-only energy.
 
 Transformers 5.20 performed a Hugging Face metadata request for the configured
-Swin backbone during model setup even with cached weights. The measured
-container therefore allowed outbound HTTPS. The checkpoint remained pinned to
-revision `7fe93cecfb770c4d76cf71163956221249cab566`. A fully offline
-production package requires another configuration or packaging step.
+Swin backbone during the measured profile even with cached weights. The
+profile container therefore allowed outbound HTTPS. The adapter was then
+changed to materialize that timm backbone configuration locally. At commit
+`864308395b5c9515f7c8cbc55c82014d245a0e3c`, a follow-up smoke test
+used `--network none`, both Hugging Face offline flags, and a read-only model
+cache; it loaded the same revision-pinned checkpoint and completed CUDA image
+inference. The resulting summary has SHA-256
+`9350cb84b5033ab65e46a045780e1bf8023454ad542a88aca58f34271ac3fc75`.
 
 ## Device and isolation
 
@@ -246,4 +250,6 @@ video.
 Machine-readable results and raw `tegrastats` captures are stored under
 `paper/evidence/`. Their checksums and limitations are recorded in
 `paper/evidence/jetson_orin_nano_validation.json` and
-`paper/evidence/jetson_profile_warm_aggregate.json`.
+`paper/evidence/jetson_profile_warm_aggregate.json`. The network-disabled
+follow-up is stored as
+`paper/evidence/jetson_offline_omdet_smoke_summary.json`.
