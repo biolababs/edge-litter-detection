@@ -48,6 +48,30 @@ expire after more than 30 missed frames
 The built-in tracker has no motion model, appearance embedding, or global
 assignment solver. Its purpose is a transparent dependency-light baseline.
 
+### Image-plane motion limit
+
+For two equal-sized boxes with horizontal displacement `d` and unchanged
+height, the overlap is:
+
+```text
+IoU = (w - d) / (w + d)
+```
+
+At the default `IoU >= 0.30`, association therefore requires approximately
+`d <= 0.538 × w` between processed frames. An object spanning 40 pixels can
+move only about 21.5 pixels horizontally before this idealized association
+fails; at 5 FPS that is about 108 image pixels per second. Vertical motion,
+scale change, missed detections, camera rotation, or overlapping objects make
+the practical limit lower.
+
+There is no responsible fixed conversion from this image-plane limit to
+vehicle speed. It depends on focal length, mounting angle, object depth,
+object size, road geometry, and processed frame rate. Vehicle-mounted
+acceptance must therefore measure displacement and identity error on footage
+from the intended camera. For faster motion, use a motion/appearance tracker,
+increase processed FPS, enlarge the association model, or count only within a
+validated region.
+
 ## Important limitation
 
 The built-in tracker is intentionally small and dependency-free. It is a strong

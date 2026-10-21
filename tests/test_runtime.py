@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 import unittest
 
-from litter_edge.runtime import _safe_source_label, run
+from litter_edge.runtime import _safe_source_label, _timing_profile, run
 from litter_edge.schema import Detection
 from litter_edge.storage import summarize_counts
 
@@ -28,6 +28,25 @@ class FakeDetector:
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_timing_profile_uses_non_overlapping_component_shares(self) -> None:
+        profile = _timing_profile(
+            {
+                "detector_call": [60.0],
+                "pipeline_total": [65.0],
+                "detector_preprocess": [10.0],
+                "model_forward": [40.0],
+                "detector_postprocess": [10.0],
+                "tracking_policy_and_counting": [5.0],
+                "event_serialization_and_write": [5.0],
+            },
+            wall_seconds=0.1,
+        )
+
+        shares = profile["exclusive_wall_share_percent"]
+        self.assertNotIn("detector_call", shares)
+        self.assertAlmostEqual(shares["model_forward"], 40.0)
+        self.assertAlmostEqual(shares["unattributed_loop_and_finalization"], 30.0)
+
     def test_redacts_stream_credentials_and_query(self) -> None:
         source = "rtsp://camera-user:secret@example.test:8554/live?token=abc"
         self.assertEqual(

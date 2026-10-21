@@ -351,7 +351,7 @@ fi
 if [[ "$install_profile" == "runtime" || "$install_profile" == "runtime-headless" ]]; then
   install_profile="$install_profile-$backend_value"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.10.1"
+install_marker="$venv_dir/.edge-litter-$install_profile-0.11.0"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.11.0 - 2026-10-21
+
+- Added public-checkpoint zero-shot COCO evaluation for the deterministic,
+  grouped TACO operational test split.
+- Added opt-in end-to-end timing profiles covering capture/decode, detector
+  preprocessing, model forward, detector postprocessing, tracking and policy,
+  JSONL, SQLite, and annotation output.
+- Added latency standard deviation and p99 to benchmark evidence.
+- Moved the public-model runtime to the patched Transformers 5.20+ line after
+  dependency auditing identified published advisories in 4.57.6.
 - Fixed OmDet-Turbo loading on JetPack-compatible PyTorch when Swin
   non-persistent attention buffers remain on the meta device.
 - Constrained Transformers to the PyTorch-2.4-compatible 4.x series and fixed

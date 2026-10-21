@@ -81,6 +81,16 @@ achieved result.
     evidence.
 11. Publish weights only after all declared release gates pass.
 
+Every final target-device condition will be executed at least three times
+(`N >= 3`) after warm-up. Reports will include mean, population standard
+deviation, median, p95, p99, minimum, and maximum latency. A longer endurance
+run is additional evidence and does not replace replication.
+
+Before representative project data are available, the public OmDet-Turbo
+checkpoint may be evaluated once on the deterministic grouped TACO test split.
+That result must be labeled a zero-shot bootstrap screen rather than
+target-domain or release-checkpoint accuracy.
+
 ## Results status
 
 ### Detection and classification

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import statistics
 import time
 from pathlib import Path
 from typing import Any, Iterator
@@ -10,6 +9,7 @@ from .adapters import create_detector
 from .classes import load_class_names, load_class_prompts
 from .common import environment_manifest, memory_snapshot, write_json
 from .device import resolve_torch_device
+from .metrics import summarize_samples
 from .runtime import _frames, _is_image_source, _safe_source_label, _source_value
 from .settings import load_settings, normalize_backend, resolve_model_reference
 
@@ -35,21 +35,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output", required=True)
     return parser
-
-
-def _summary(values: list[float]) -> dict[str, float | int | None]:
-    if not values:
-        return {"count": 0, "mean": None, "median": None, "p95": None, "min": None, "max": None}
-    ordered = sorted(values)
-    p95_index = min(len(ordered) - 1, max(0, round(0.95 * len(ordered) - 1)))
-    return {
-        "count": len(values),
-        "mean": statistics.fmean(values),
-        "median": statistics.median(values),
-        "p95": ordered[p95_index],
-        "min": min(values),
-        "max": max(values),
-    }
 
 
 def _memory_evidence(
@@ -347,9 +332,11 @@ def main() -> None:
             "samples": len(inference_ms),
             "wall_seconds": wall_seconds,
             "observed_throughput_fps": len(inference_ms) / wall_seconds if wall_seconds else None,
-            "inference_ms": _summary(inference_ms),
-            "detector_call_ms": _summary(end_to_end_ms),
-            "detections_per_sample": _summary([float(value) for value in detections]),
+            "inference_ms": summarize_samples(inference_ms),
+            "detector_call_ms": summarize_samples(end_to_end_ms),
+            "detections_per_sample": summarize_samples(
+                [float(value) for value in detections]
+            ),
             "memory": _memory_evidence(
                 memory_samples,
                 settings.preferred_incremental_memory_gb,

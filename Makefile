@@ -20,6 +20,7 @@ validate: test
 	python3 query_counts.py --help >/dev/null
 	python3 train.py --help >/dev/null
 	python3 evaluate.py --help >/dev/null
+	python3 evaluate_public.py --help >/dev/null
 	python3 evaluate_counts.py --help >/dev/null
 	python3 export_model.py --help >/dev/null
 	python3 benchmark.py --help >/dev/null

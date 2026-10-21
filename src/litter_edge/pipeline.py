@@ -27,6 +27,7 @@ class LitterPipeline:
         self.tracker = tracker
         self.separation_policy = separation_policy
         self.counter = SessionCounter()
+        self.last_timing_ms: dict[str, float] = {}
 
     def process(
         self,
@@ -37,6 +38,7 @@ class LitterPipeline:
         started = time.perf_counter()
         detections = self.detector.predict(frame_bgr)
         inference_ms = (time.perf_counter() - started) * 1000.0
+        downstream_started = time.perf_counter()
         tracked = self.tracker.update(detections) if self.tracker else detections
         if self.separation_policy is not None:
             tracked = [
@@ -48,6 +50,11 @@ class LitterPipeline:
             detection.class_name for detection in tracked if detection.confirmed
         )
         unique, newly_confirmed = self.counter.update(tracked)
+        downstream_ms = (time.perf_counter() - downstream_started) * 1000.0
+        self.last_timing_ms = {
+            "detector_call": inference_ms,
+            "tracking_policy_and_counting": downstream_ms,
+        }
         return FrameOutcome(
             frame_index=frame_index,
             timestamp_seconds=timestamp_seconds,

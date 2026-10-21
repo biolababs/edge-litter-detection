@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import nullcontext
 from numbers import Integral
+import time
 from typing import Any
 
 from ..schema import Detection
@@ -100,6 +101,8 @@ class OmDetTurboDetector:
         self.nms_iou = nms_iou
         self.max_detections = max_detections
         self.use_autocast = optimize and device.startswith("cuda")
+        self.profiling_enabled = False
+        self.last_timing_ms: dict[str, float] = {}
 
         model_id, revision = resolve_transformers_model_reference(
             self.backend_name,
@@ -119,6 +122,20 @@ class OmDetTurboDetector:
         _materialize_meta_buffers(self.model)
         self.model.to(device)
         self.model.eval()
+
+    def enable_profiling(self) -> None:
+        self.profiling_enabled = True
+
+    def _synchronize(self) -> None:
+        if not self.profiling_enabled:
+            return
+        if self.device.startswith("cuda") and self.torch.cuda.is_available():
+            self.torch.cuda.synchronize()
+        elif self.device.startswith("mps"):
+            mps = getattr(self.torch, "mps", None)
+            synchronize = getattr(mps, "synchronize", None)
+            if callable(synchronize):
+                synchronize()
 
     def _class_id_for_label(self, label: object) -> int:
         if isinstance(label, Integral):
@@ -144,6 +161,7 @@ class OmDetTurboDetector:
         raise RuntimeError(f"OmDet-Turbo returned an unmapped label: {label!r}")
 
     def predict(self, frame_bgr: Any) -> list[Detection]:
+        preprocess_started = time.perf_counter()
         frame_rgb = frame_bgr[:, :, ::-1].copy()
         inputs = self.processor(
             images=frame_rgb,
@@ -152,6 +170,8 @@ class OmDetTurboDetector:
         )
         if hasattr(inputs, "to"):
             inputs = inputs.to(self.device)
+        self._synchronize()
+        preprocess_ms = (time.perf_counter() - preprocess_started) * 1000.0
 
         autocast_context = nullcontext()
         if self.use_autocast and hasattr(self.torch, "autocast"):
@@ -159,9 +179,14 @@ class OmDetTurboDetector:
                 device_type="cuda",
                 dtype=self.torch.float16,
             )
+        self._synchronize()
+        forward_started = time.perf_counter()
         with self.torch.inference_mode(), autocast_context:
             outputs = self.model(**inputs)
+        self._synchronize()
+        forward_ms = (time.perf_counter() - forward_started) * 1000.0
 
+        postprocess_started = time.perf_counter()
         target_sizes = [tuple(int(value) for value in frame_rgb.shape[:2])]
         postprocess = self.processor.post_process_grounded_object_detection
         try:
@@ -222,8 +247,17 @@ class OmDetTurboDetector:
                     class_name=self.class_names[class_id],
                 )
             )
-        return _class_agnostic_nms(
+        detections = _class_agnostic_nms(
             detections,
             iou_threshold=self.nms_iou,
             maximum=self.max_detections,
         )
+        self._synchronize()
+        postprocess_ms = (time.perf_counter() - postprocess_started) * 1000.0
+        if self.profiling_enabled:
+            self.last_timing_ms = {
+                "detector_preprocess": preprocess_ms,
+                "model_forward": forward_ms,
+                "detector_postprocess": postprocess_ms,
+            }
+        return detections

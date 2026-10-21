@@ -5,9 +5,16 @@ from litter_edge.benchmark import (
     _cuda_device_reference,
     _memory_evidence,
 )
+from litter_edge.metrics import summarize_samples
 
 
 class MemoryEvidenceTests(unittest.TestCase):
+    def test_latency_summary_includes_variance_and_p99(self) -> None:
+        summary = summarize_samples([10.0, 11.0, 12.0, 50.0])
+
+        self.assertIn("standard_deviation", summary)
+        self.assertEqual(summary["p99"], 50.0)
+
     def test_plain_cuda_uses_current_device_index(self) -> None:
         class FakeCuda:
             @staticmethod

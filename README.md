@@ -296,6 +296,28 @@ commits, use SafeTensors, and disable remote model code. A custom remote model
 must use `owner/model@40-character-commit`; reviewed local model directories are
 also accepted.
 
+### Public zero-shot accuracy screen
+
+Maintainers can measure the untrained public checkpoint against the
+deterministic grouped TACO test split:
+
+```bash
+python -m pip install -e ".[runtime,public-model,evaluation]"
+python prepare_training_data.py --output data/taco-operational-v1
+python evaluate_public.py \
+  --backend omdet_turbo \
+  --data data/taco-operational-v1 \
+  --split test \
+  --device auto \
+  --output reports/generated/taco-omdet-zero-shot.json
+```
+
+This evaluates one deployed use-case configuration; it is not a model
+comparison. TACO has no official train/test partition, so the command uses the
+repository's seed-42 source-group split and records the annotation, manifest,
+image-set, and prediction checksums. The result is public-data bootstrap
+evidence, not target-camera or counting accuracy.
+
 Optional site-specific improvement uses a COCO detection dataset:
 
 ```bash
@@ -356,6 +378,22 @@ make security
 
 CI runs the unit, launcher, release-validation, Ruff, Bandit, and build checks.
 CodeQL, dependency review, and Dependabot are configured separately.
+
+For a component-level runtime profile:
+
+```bash
+./startup.sh \
+  --backend omdet_turbo \
+  --source media/representative-line-video.mp4 \
+  --device cuda \
+  --profile-timing \
+  --no-display
+```
+
+The summary separates capture/decode, detector preprocessing, model forward,
+detector postprocessing, tracking and policy, JSONL, SQLite, and
+annotation/output. Accelerator synchronization makes profiling more accurate
+but can change throughput, so compare profiled runs only with the same setting.
 
 The repository intentionally excludes runtime media, databases, generated
 reports, datasets, and model weights. Empty `.gitkeep` placeholders are not

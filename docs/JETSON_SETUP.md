@@ -154,6 +154,22 @@ readiness remain unproven.
 See `JETSON_VALIDATION_2026-10-21.md` and `paper/evidence/` for the complete
 protocol and machine-readable evidence.
 
+To identify the optimization opportunity instead of timing only the detector:
+
+```bash
+./startup.sh \
+  --backend omdet_turbo \
+  --source /path/to/representative-video.mp4 \
+  --device cuda \
+  --profile-timing \
+  --no-display
+```
+
+Use the `timing_profile.components_ms` section in the generated summary.
+Internal detector phases are available for OmDet-Turbo. Profiling synchronizes
+CUDA around those phases and should be repeated with the same profiling
+setting.
+
 ## Official references
 
 - NVIDIA JetPack: https://developer.nvidia.com/embedded/jetpack

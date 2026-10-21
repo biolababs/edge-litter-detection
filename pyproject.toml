@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "litter-edge"
-version = "0.10.1"
+version = "0.11.0"
 description = "Portable edge litter detection, classification, tracking, and counting"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
@@ -41,7 +41,7 @@ public-model = [
   "torch>=2.2",
   "torchvision>=0.17",
   "timm>=1.0,<2",
-  "transformers>=4.56,<5",
+  "transformers>=5.20,<6",
   "Pillow>=13,<14; python_version >= '3.11'",
   "Pillow>=12.3,<13; python_version < '3.11'",
 ]
@@ -65,6 +65,9 @@ api = [
   "fastapi>=0.115,<1",
   "uvicorn>=0.32,<1",
 ]
+evaluation = [
+  "pycocotools>=2.0.10,<3",
+]
 dev = [
   "bandit==1.9.4",
   "defusedxml>=0.7,<1",
@@ -76,6 +79,7 @@ dev = [
 [project.scripts]
 litter-train = "litter_edge.train:main"
 litter-evaluate = "litter_edge.evaluate:main"
+litter-evaluate-public = "litter_edge.evaluate_public:main"
 litter-evaluate-counts = "litter_edge.evaluate_counts:main"
 litter-discover = "litter_edge.discover:main"
 litter-download-model = "litter_edge.model_fetch:main"

@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 from .adapters import create_detector
 from .classes import load_class_names, load_class_prompts
 from .common import environment_manifest, utc_now, write_json
+from .metrics import summarize_samples
 from .pipeline import LitterPipeline
 from .schema import FrameOutcome
 from .settings import (
@@ -85,6 +86,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--vehicle-id", default=os.environ.get("LITTER_VEHICLE_ID"))
     parser.add_argument("--route-id", default=os.environ.get("LITTER_ROUTE_ID"))
     parser.add_argument("--max-frames", type=int, default=0)
+    parser.add_argument(
+        "--profile-timing",
+        action="store_true",
+        help=(
+            "Synchronize supported accelerators and report capture, detector, "
+            "tracking, persistence, and rendering latency components."
+        ),
+    )
     return parser
 
 
@@ -231,7 +240,62 @@ def _annotate(frame: Any, outcome: FrameOutcome) -> Any:
     return annotated
 
 
+def _timing_profile(
+    samples: dict[str, list[float]],
+    wall_seconds: float,
+) -> dict[str, Any]:
+    components = {
+        name: {
+            **summarize_samples(values),
+            "total_ms": sum(values),
+        }
+        for name, values in sorted(samples.items())
+    }
+    detector_phases = {
+        "detector_preprocess",
+        "model_forward",
+        "detector_postprocess",
+    }
+    exclusive_names = {
+        "source_open_and_first_decode",
+        "capture_or_decode",
+        "tracking_policy_and_counting",
+        "event_serialization_and_write",
+        "sqlite_persistence",
+        "annotation_render_and_output",
+    }
+    if detector_phases.issubset(samples):
+        exclusive_names.update(detector_phases)
+    else:
+        exclusive_names.add("detector_call")
+    wall_ms = wall_seconds * 1000.0
+    shares = {
+        name: sum(samples[name]) / wall_ms * 100.0
+        for name in sorted(exclusive_names)
+        if name in samples and wall_ms > 0
+    }
+    accounted = sum(shares.values())
+    return {
+        "enabled": True,
+        "accelerator_synchronization": (
+            "enabled when supported by the selected detector"
+        ),
+        "components_ms": components,
+        "exclusive_wall_share_percent": {
+            **shares,
+            "unattributed_loop_and_finalization": max(0.0, 100.0 - accounted),
+        },
+        "interpretation": (
+            "detector phases are contained in detector_call, which is contained "
+            "in pipeline_total. exclusive_wall_share_percent uses detector "
+            "phases when available and does not also count their inclusive "
+            "parents. The first source open/decode is reported separately."
+        ),
+    }
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    profile_timing = bool(getattr(args, "profile_timing", False))
     settings = load_settings(args.config)
     backend = normalize_backend(args.backend or settings.backend)
     model_reference = resolve_model_reference(
@@ -277,6 +341,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         iou=settings.iou,
         max_detections=settings.max_detections,
     )
+    if profile_timing:
+        enable_profiling = getattr(detector, "enable_profiling", None)
+        if callable(enable_profiling):
+            enable_profiling()
     pipeline = LitterPipeline(
         detector=detector,
         tracker=_make_tracker(settings, tracking_enabled, single_image),
@@ -322,6 +390,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     peak_visible: Counter[str] = Counter()
     final_unique: dict[str, int] = {}
     inference_times: list[float] = []
+    timing_samples: dict[str, list[float]] = {}
+
+    def record_timing(name: str, elapsed_ms: float) -> None:
+        if profile_timing:
+            timing_samples.setdefault(name, []).append(elapsed_ms)
+
     interrupted = False
     started_at = utc_now()
     started = time.perf_counter()
@@ -342,13 +416,37 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     try:
         with events_path.open("w", encoding="utf-8") as events:
-            for frame, timestamp, source_fps in _frames(source):
+            frame_iterator = iter(_frames(source))
+            while True:
+                capture_started = time.perf_counter()
+                try:
+                    frame, timestamp, source_fps = next(frame_iterator)
+                except StopIteration:
+                    break
+                record_timing(
+                    (
+                        "source_open_and_first_decode"
+                        if frame_count == 0
+                        else "capture_or_decode"
+                    ),
+                    (time.perf_counter() - capture_started) * 1000.0,
+                )
                 frame_count += 1
+                pipeline_started = time.perf_counter()
                 outcome = pipeline.process(frame, frame_count, timestamp)
+                pipeline_ms = (time.perf_counter() - pipeline_started) * 1000.0
+                record_timing("pipeline_total", pipeline_ms)
+                for name, elapsed_ms in pipeline.last_timing_ms.items():
+                    record_timing(name, elapsed_ms)
+                detector_timing = getattr(detector, "last_timing_ms", {})
+                if profile_timing and isinstance(detector_timing, dict):
+                    for name, elapsed_ms in detector_timing.items():
+                        record_timing(name, float(elapsed_ms))
                 inference_times.append(outcome.inference_ms)
                 final_unique = outcome.unique_session_counts
                 for name, count in outcome.visible_counts.items():
                     peak_visible[name] = max(peak_visible[name], count)
+                event_started = time.perf_counter()
                 event = outcome.to_dict()
                 event["run_id"] = run_id
                 event["source"] = source_label
@@ -356,14 +454,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 event["vehicle_id"] = vehicle_id
                 event["route_id"] = route_id
                 events.write(json.dumps(event, sort_keys=True) + "\n")
+                record_timing(
+                    "event_serialization_and_write",
+                    (time.perf_counter() - event_started) * 1000.0,
+                )
                 if observation_store is not None:
+                    database_started = time.perf_counter()
                     observation_store.record_frame(run_id, outcome)
+                    record_timing(
+                        "sqlite_persistence",
+                        (time.perf_counter() - database_started) * 1000.0,
+                    )
                 if frame_count % 30 == 0:
                     events.flush()
 
                 if annotated_path or args.display:
                     import cv2
 
+                    rendering_started = time.perf_counter()
                     annotated = _annotate(frame, outcome)
                     if annotated_path:
                         if single_image:
@@ -390,6 +498,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         cv2.imshow("litter-edge", annotated)
                         if cv2.waitKey(1) & 0xFF == ord("q"):
                             break
+                    record_timing(
+                        "annotation_render_and_output",
+                        (time.perf_counter() - rendering_started) * 1000.0,
+                    )
                 if args.max_frames and frame_count >= args.max_frames:
                     break
     except KeyboardInterrupt:
@@ -452,6 +564,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "wall_seconds": wall_seconds,
             "source_to_result_fps": source_to_result_fps,
             "mean_detector_call_ms": mean_detector_call_ms,
+            "timing_profile": (
+                _timing_profile(timing_samples, wall_seconds)
+                if profile_timing
+                else {"enabled": False}
+            ),
             "peak_visible_counts": dict(sorted(peak_visible.items())),
             "unique_session_counts": final_unique,
             "events_output": str(events_path),
