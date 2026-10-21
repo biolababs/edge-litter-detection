@@ -17,3 +17,9 @@ third-party or research artifacts:
 3. review the selected model's code, weights, runtime, and commercial-use terms;
 4. do not describe an academic/open-source release as suitable for proprietary
    commercial deployment without a separate licensing review.
+
+The optional demo downloader retrieves a small selection from the TACO
+dataset. TACO annotations are distributed under CC BY 4.0, while individual
+images can use different licenses recorded in the downloaded
+`media/taco-demo/manifest.json`. The repository does not redistribute those
+images.

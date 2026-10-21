@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
+from . import __version__
 from .adapters import create_detector
 from .classes import load_class_names, load_class_prompts
 from .device import resolve_torch_device
@@ -150,7 +151,7 @@ def create_app() -> Any:
     holder = DetectorHolder()
     app = FastAPI(
         title="Edge Litter Detection API",
-        version="0.7.0",
+        version=__version__,
         description="Detect, classify, and count litter in an image.",
     )
 

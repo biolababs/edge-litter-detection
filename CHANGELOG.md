@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0 - 2026-10-21
+
+- Added `./startup.sh --demo` for an automated real-model functional test.
+- Added a bounded TACO sample downloader that retains per-image source,
+  checksum, category, and license metadata in a local manifest.
+- Kept downloaded test images and their generated manifest outside Git.
+- Added unit and launcher tests for demo-data preparation and execution.
+- Aligned package and launcher validation with the documented Python 3.10–3.12
+  support range.
+
 ## 0.7.0 - 2026-10-21
 
 - Made public Grounding DINO Tiny the automatically downloaded default model.

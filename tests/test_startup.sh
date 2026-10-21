@@ -8,6 +8,7 @@ trap 'rm -rf "$test_directory"' EXIT
 fake_python="$test_directory/python"
 fake_model="$test_directory/model.pth"
 fake_log="$test_directory/python.log"
+fake_demo_image="$test_directory/demo.jpg"
 
 cat >"$fake_python" <<'EOF'
 #!/usr/bin/env bash
@@ -23,6 +24,9 @@ case "${1:-}" in
       printf '%s\n' '{"cameras":[{"source":"0","frame_read":true}]}'
     fi
     ;;
+  *prepare_test_data.py)
+    printf '%s\n' "$FAKE_DEMO_IMAGE"
+    ;;
   *infer.py)
     ;;
   *serve.py)
@@ -37,6 +41,7 @@ EOF
 
 chmod +x "$fake_python"
 : >"$fake_model"
+: >"$fake_demo_image"
 
 FAKE_PYTHON_LOG="$fake_log" \
 LITTER_PYTHON="$fake_python" \
@@ -51,6 +56,34 @@ grep -F -- "--backend grounding_dino" "$fake_log" >/dev/null
 grep -F -- "--model IDEA-Research/grounding-dino-tiny" "$fake_log" >/dev/null
 grep -F -- "--source 0" "$fake_log" >/dev/null
 grep -F -- "--max-frames 1" "$fake_log" >/dev/null
+
+: >"$fake_log"
+FAKE_DEMO_IMAGE="$fake_demo_image" \
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_PYTHON="$fake_python" \
+  "$repository_root/startup.sh" \
+  --skip-install \
+  --demo \
+  --demo-limit 3 \
+  --no-display >/dev/null
+
+grep -F "$repository_root/prepare_test_data.py" "$fake_log" >/dev/null
+grep -F -- "--limit 3" "$fake_log" >/dev/null
+grep -F -- "--format path" "$fake_log" >/dev/null
+grep -F "$repository_root/infer.py" "$fake_log" >/dev/null
+grep -F -- "--source $fake_demo_image" "$fake_log" >/dev/null
+
+if FAKE_DEMO_IMAGE="$fake_demo_image" \
+  FAKE_PYTHON_LOG="$fake_log" \
+  LITTER_PYTHON="$fake_python" \
+    "$repository_root/startup.sh" \
+    --skip-install \
+    --demo \
+    --counts-api >/dev/null 2>&1
+then
+  printf '%s\n' "--demo unexpectedly accepted --counts-api." >&2
+  exit 1
+fi
 
 FAKE_PYTHON_LOG="$fake_log" \
 LITTER_PYTHON="$fake_python" \

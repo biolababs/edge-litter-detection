@@ -29,6 +29,8 @@ force_model_download=false
 database_enabled=true
 persist_detections=false
 max_frames=0
+demo_data=false
+demo_limit="${LITTER_DEMO_LIMIT:-8}"
 
 usage() {
   cat <<'EOF'
@@ -58,6 +60,8 @@ Options:
   --display              Force the live display window.
   --no-display           Disable the display window.
   --max-frames N         Stop after N frames; zero means unlimited.
+  --demo                  Download attributed public test images and run one.
+  --demo-limit N          Number of test images to cache (default: 8).
   --api                   Start the HTTP API instead of media inference.
   --counts-api            Start the database/review API without requiring a model.
   --list-cameras          Install dependencies and list attached cameras.
@@ -70,7 +74,7 @@ Environment equivalents:
   LITTER_SOURCE, LITTER_BACKEND, LITTER_MODEL, LITTER_MODEL_URL,
   LITTER_MODEL_SHA256, LITTER_DEVICE, LITTER_DATABASE, LITTER_EDGE_DEVICE_ID,
   LITTER_VEHICLE_ID, LITTER_ROUTE_ID, LITTER_SEPARATION_CONFIG, LITTER_VENV,
-  and LITTER_PYTHON.
+  LITTER_DEMO_LIMIT, and LITTER_PYTHON.
 EOF
 }
 
@@ -93,7 +97,7 @@ select_bootstrap_python() {
   for candidate in python3.12 python3.11 python3.10 python3; do
     resolved="$(command -v "$candidate" 2>/dev/null || true)"
     if [[ -n "$resolved" ]] && "$resolved" -c \
-      'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)'
+      'import sys; raise SystemExit(0 if (3, 10) <= sys.version_info < (3, 13) else 1)'
     then
       printf '%s\n' "$resolved"
       return 0
@@ -181,6 +185,15 @@ while [[ $# -gt 0 ]]; do
       max_frames="$2"
       shift 2
       ;;
+    --demo)
+      demo_data=true
+      shift
+      ;;
+    --demo-limit)
+      [[ $# -ge 2 ]] || fail "--demo-limit requires a value."
+      demo_limit="$2"
+      shift 2
+      ;;
     --api)
       mode="api"
       shift
@@ -216,6 +229,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ "$max_frames" =~ ^[0-9]+$ ]] || fail "--max-frames must be a non-negative integer."
+[[ "$demo_limit" =~ ^[1-9][0-9]*$ ]] || fail \
+  "--demo-limit must be a positive integer."
+(( demo_limit <= 100 )) || fail "--demo-limit must not exceed 100."
 case "$(printf '%s' "$backend_value" | tr '[:upper:]-' '[:lower:]_')" in
   grounding_dino)
     backend_value="grounding_dino"
@@ -236,6 +252,9 @@ if [[ "$model_was_set" != true ]]; then
 fi
 if [[ "$mode" != "infer" && "$database_enabled" != true ]]; then
   fail "--no-database is supported only for media inference."
+fi
+if [[ "$mode" != "infer" && "$demo_data" == true ]]; then
+  fail "--demo is supported only for media inference."
 fi
 
 if [[ -z "$python_command" ]]; then
@@ -261,8 +280,8 @@ if [[ "$python_command" != */* ]]; then
 fi
 [[ -x "$python_command" ]] || fail "Python is not executable: $python_command"
 "$python_command" -c \
-  'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' ||
-  fail "The selected Python must be version 3.10 or newer."
+  'import sys; raise SystemExit(0 if (3, 10) <= sys.version_info < (3, 13) else 1)' ||
+  fail "The selected Python must be version 3.10, 3.11, or 3.12."
 
 if [[ "$backend_value" == "rfdetr" && "$model_path" != /* ]]; then
   model_path="$project_root/$model_path"
@@ -302,7 +321,7 @@ fi
 if [[ "$install_profile" == "runtime" ]]; then
   install_profile="runtime-$backend_value"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.7.0"
+install_marker="$venv_dir/.edge-litter-$install_profile-0.8.0"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip
@@ -314,6 +333,19 @@ fi
 
 if [[ "$list_cameras" == true ]]; then
   exec "$python_command" "$project_root/discover_sources.py" --list-cameras
+fi
+
+if [[ "$demo_data" == true ]]; then
+  printf 'Preparing attributed TACO demo images...\n'
+  source_value="$(
+    "$python_command" "$project_root/prepare_test_data.py" \
+      --output "$project_root/media/taco-demo" \
+      --limit "$demo_limit" \
+      --format path
+  )"
+  [[ -f "$source_value" ]] || fail \
+    "Demo data preparation did not return a readable image."
+  printf '  attribution: %s\n' "$project_root/media/taco-demo/manifest.json"
 fi
 
 if [[ "$backend_value" != "rfdetr" && \

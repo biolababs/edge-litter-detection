@@ -22,6 +22,7 @@ jobs:
       - run: ./startup.sh --help
       - run: python infer.py --help
       - run: python discover_sources.py --help
+      - run: python prepare_test_data.py --help
       - run: python download_model.py --help
       - run: python query_counts.py --help
       - run: python train.py --help

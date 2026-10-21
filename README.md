@@ -76,6 +76,19 @@ Python 3.10–3.12 is required. The first run needs internet access to install
 packages and download the public model. Later runs use the local environment
 and model cache.
 
+Run a self-contained functional demonstration when no camera or local media is
+ready:
+
+```bash
+./startup.sh --demo
+```
+
+This downloads a small selection of public TACO litter images into the ignored
+`media/taco-demo/` directory, records each image's source and license metadata,
+and processes the first image through the normal detection, classification,
+counting, evidence, and SQLite path. No test image is committed to this
+repository.
+
 Choose an input explicitly when needed:
 
 ```bash
@@ -345,6 +358,17 @@ published.
 ```bash
 make validate
 ```
+
+`make validate` is the fast dependency-light code test. The real model and
+download path require internet access and are intentionally explicit:
+
+```bash
+./startup.sh --demo --no-display
+python query_counts.py summary
+```
+
+Successful completion creates annotated evidence under `reports/generated/`
+and a persisted run in `state/litter-edge.db`.
 
 ## Security, privacy, and licensing
 

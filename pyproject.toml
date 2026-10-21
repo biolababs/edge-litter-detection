@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "litter-edge"
-version = "0.7.0"
+version = "0.8.0"
 description = "Portable edge litter detection, classification, tracking, and counting"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 license = { file = "LICENSE" }
 authors = [
   { name = "Abiola A. Babsalaam" },
@@ -64,6 +64,7 @@ litter-evaluate = "litter_edge.evaluate:main"
 litter-evaluate-counts = "litter_edge.evaluate_counts:main"
 litter-discover = "litter_edge.discover:main"
 litter-download-model = "litter_edge.model_fetch:main"
+litter-prepare-test-data = "litter_edge.demo_data:main"
 litter-query-counts = "litter_edge.query:main"
 litter-export = "litter_edge.export:main"
 litter-infer = "litter_edge.infer:main"
