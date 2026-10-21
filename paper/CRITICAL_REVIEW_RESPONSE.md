@@ -2,7 +2,7 @@
 
 Review incorporated: 21 October 2026
 
-Manuscript revision: preprint 1.5
+Manuscript revision: preprint 1.6
 
 ## Overall response
 
@@ -18,7 +18,7 @@ convert those results into a production claim: the measured public checkpoint
 accuracy is low, count accuracy remains unmeasured, and the Jetson path remains
 below the 15 FPS target.
 
-Revision 1.5 replaces the report-style visual treatment with a conventional
+Revision 1.6 replaces the report-style visual treatment with a conventional
 single-column journal-preprint format. All seven figures are regenerated from
 deterministic source as restrained vector diagrams and scientific plots with
 consistent typography, line weights, notation, and grayscale-compatible color.
@@ -76,7 +76,7 @@ functionality while addressing less than 1% of the measured runtime.
 
 ## Publication decision
 
-Preprint 1.5 is a stronger systems and reproducibility paper because it
+Preprint 1.6 is a stronger systems and reproducibility paper because it
 contains an accuracy signal, explicit prompts, class-confusion evidence, and a
 replicated component profile. It remains unsuitable as a completed
 production-efficacy paper. The low zero-shot result and sub-target Jetson

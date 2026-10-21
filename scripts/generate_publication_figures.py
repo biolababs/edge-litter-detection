@@ -691,8 +691,8 @@ def main() -> None:
         "figure-3-deployment-safety-boundary.svg": figure_3(),
         "figure-4-model-adaptation-lifecycle.svg": figure_4(),
         "figure-5-evaluation-evidence-workflow.svg": figure_5(),
-        "figure-6-jetson-latency-profile.svg": figure_6(),
-        "figure-7-taco-confusions.svg": figure_7(),
+        "figure-6-taco-confusions.svg": figure_7(),
+        "figure-7-jetson-latency-profile.svg": figure_6(),
     }
     for name, payload in outputs.items():
         destination = FIGURES / name

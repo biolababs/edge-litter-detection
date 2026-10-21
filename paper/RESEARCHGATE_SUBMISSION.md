@@ -25,7 +25,7 @@ Independent Researcher
 
 ## Manuscript version
 
-Preprint 1.5
+Preprint 1.6
 
 ## Abstract
 
@@ -102,7 +102,7 @@ in the linked GitHub repository.
    author source outside the public item.
 3. Link the GitHub repository in the description and project links.
 
-The V1.5 PDF uses a neutral single-column journal-preprint layout and contains
+The V1.6 PDF uses a neutral single-column journal-preprint layout and contains
 seven deterministic vector figures covering architecture, count semantics,
 the machinery-safety boundary, model adaptation, evaluation, the measured
 Jetson latency profile, and the leading TACO class-confusion pairs.

@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "paper": {
     "title": "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
-    "version": "preprint-1.5",
+    "version": "preprint-1.6",
     "date": "2026-10-21"
   },
   "software": {

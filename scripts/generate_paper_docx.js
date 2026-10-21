@@ -53,6 +53,7 @@ function imageSource(section) {
   if (path.extname(source).toLowerCase() !== ".svg") {
     return {
       source,
+      type: "png",
       dimensions: { width: 1200, height: 675 },
     };
   }
@@ -60,7 +61,12 @@ function imageSource(section) {
   if (!fs.existsSync(png)) {
     throw new Error(`Rendered PNG is missing for ${source}`);
   }
-  return { source: png, dimensions: parseSvgDimensions(source) };
+  return {
+    source,
+    fallback: png,
+    type: "svg",
+    dimensions: parseSvgDimensions(source),
+  };
 }
 
 function makeImage(section) {
@@ -70,22 +76,29 @@ function makeImage(section) {
     targetWidth * image.dimensions.height / image.dimensions.width
   );
   const alt = section.alt || "Publication figure";
+  const imageOptions = {
+    data: fs.readFileSync(image.source),
+    type: image.type,
+    transformation: { width: targetWidth, height: targetHeight },
+    altText: {
+      title: alt,
+      description: alt,
+      name: path.basename(image.source),
+    },
+  };
+  if (image.type === "svg") {
+    imageOptions.fallback = {
+      data: fs.readFileSync(image.fallback),
+      type: "png",
+    };
+  }
   return [
     new Paragraph({
       alignment: AlignmentType.CENTER,
       keepNext: true,
       spacing: { before: 160, after: 80 },
       children: [
-        new ImageRun({
-          data: fs.readFileSync(image.source),
-          type: "png",
-          transformation: { width: targetWidth, height: targetHeight },
-          altText: {
-            title: alt,
-            description: alt,
-            name: path.basename(image.source),
-          },
-        }),
+        new ImageRun(imageOptions),
       ],
     }),
     new Paragraph({
