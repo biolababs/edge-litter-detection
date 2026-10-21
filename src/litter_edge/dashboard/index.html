@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071a16">
+    <title>Edge Litter Operations</title>
+    <link rel="icon" href="/dashboard-assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/dashboard-assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Edge Litter Operations home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>Edge Litter</strong>
+            <small>Operations Console</small>
+          </span>
+        </a>
+        <div class="system-state">
+          <span id="health-dot" class="status-dot"></span>
+          <span id="health-label">Connecting</span>
+          <span id="model-label" class="model-pill">model pending</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Real-time environmental intelligence</p>
+            <h1>Detect, classify and count litter at the edge.</h1>
+            <p class="hero-copy">
+              Operate an attached camera, route video or network stream from one
+              screen. Every completed session is recorded in the local SQLite
+              evidence store.
+            </p>
+          </div>
+          <div class="hero-metric">
+            <span>Current session</span>
+            <strong id="session-state">Idle</strong>
+            <small id="session-detail">Choose a source to begin</small>
+          </div>
+        </section>
+
+        <section class="workspace">
+          <aside class="control-panel panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Source control</p>
+                <h2>Start a detection session</h2>
+              </div>
+              <span class="live-indicator"><i></i> Live</span>
+            </div>
+
+            <form id="stream-form">
+              <label>
+                Camera, video or stream
+                <input
+                  id="source"
+                  name="source"
+                  value="0"
+                  required
+                  autocomplete="off"
+                  placeholder="0, media/route.mp4, or rtsp://camera/live"
+                >
+              </label>
+              <p class="field-help">
+                Use a camera number, a path on the edge device, or an HTTP/RTSP
+                URL. Credentials are not shown in dashboard records.
+              </p>
+
+              <div class="field-grid">
+                <label>
+                  Edge device
+                  <input id="edge-device-id" value="edge-node" autocomplete="off">
+                </label>
+                <label>
+                  Vehicle
+                  <input id="vehicle-id" placeholder="truck-12" autocomplete="off">
+                </label>
+                <label>
+                  Route
+                  <input id="route-id" placeholder="route-a" autocomplete="off">
+                </label>
+                <label>
+                  Maximum frames
+                  <input id="max-frames" type="number" value="0" min="0">
+                </label>
+              </div>
+
+              <label class="toggle-row">
+                <input id="realtime" type="checkbox" checked>
+                <span>
+                  <strong>Play video in real time</strong>
+                  <small>Disable to process a downloaded video as fast as possible.</small>
+                </span>
+              </label>
+
+              <div class="button-row">
+                <button id="start-button" class="button primary" type="submit">
+                  Start detection
+                </button>
+                <button id="stop-button" class="button danger" type="button" disabled>
+                  Stop session
+                </button>
+              </div>
+            </form>
+
+            <div id="notice" class="notice" role="status" hidden></div>
+
+            <div class="quick-test">
+              <span>Downloaded demonstration</span>
+              <button id="demo-source-button" class="text-button" type="button">
+                Use public demo video
+              </button>
+            </div>
+          </aside>
+
+          <section class="viewer-panel panel">
+            <div class="viewer-header">
+              <div>
+                <p class="section-kicker">Perception feed</p>
+                <h2 id="source-label">No source connected</h2>
+              </div>
+              <div class="viewer-stats">
+                <span><strong id="frame-count">0</strong> frames</span>
+                <span><strong id="inference-ms">—</strong> ms</span>
+              </div>
+            </div>
+            <div class="viewer">
+              <img id="stream-frame" alt="Annotated live litter detection feed">
+              <div id="viewer-empty" class="viewer-empty">
+                <div class="radar" aria-hidden="true"><span></span></div>
+                <strong>Feed ready</strong>
+                <p>Start a source to see annotated detections here.</p>
+              </div>
+            </div>
+            <div class="count-band">
+              <div>
+                <span>Visible now</span>
+                <div id="visible-counts" class="count-list">
+                  <em>No detections</em>
+                </div>
+              </div>
+              <div>
+                <span>Unique this session</span>
+                <div id="unique-counts" class="count-list">
+                  <em>No confirmed tracks</em>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="overview-grid">
+          <article class="panel metric-card">
+            <span>Completed runs</span>
+            <strong id="total-runs">0</strong>
+            <small>Persisted operational sessions</small>
+          </article>
+          <article class="panel metric-card">
+            <span>Observed objects</span>
+            <strong id="total-observed">0</strong>
+            <small>Unique counts summed by run</small>
+          </article>
+          <article class="panel metric-card">
+            <span>Pending review</span>
+            <strong id="pending-review">0</strong>
+            <small>Low-confidence or hazardous items</small>
+          </article>
+          <article class="panel metric-card">
+            <span>Confirmed collected</span>
+            <strong id="confirmed-collected">0</strong>
+            <small>Independent human or equipment confirmation</small>
+          </article>
+        </section>
+
+        <section class="data-grid">
+          <article class="panel table-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Evidence store</p>
+                <h2>Recent runs</h2>
+              </div>
+              <button class="icon-button" id="refresh-button" type="button">
+                Refresh
+              </button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Source</th>
+                    <th>Frames</th>
+                    <th>Unique count</th>
+                    <th>Device</th>
+                  </tr>
+                </thead>
+                <tbody id="runs-body">
+                  <tr><td colspan="5" class="empty-cell">No completed runs yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel table-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Human in the loop</p>
+                <h2>Review queue</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Suggested class</th>
+                    <th>Confidence</th>
+                    <th>Destination</th>
+                  </tr>
+                </thead>
+                <tbody id="review-body">
+                  <tr><td colspan="3" class="empty-cell">No pending reviews.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel image-test">
+          <div>
+            <p class="section-kicker">Single-image check</p>
+            <h2>Inspect a photograph</h2>
+            <p>
+              Upload an image for an immediate detection check. This does not
+              create a tracked operational session.
+            </p>
+            <label class="upload-button">
+              Choose image
+              <input id="image-input" type="file" accept="image/*">
+            </label>
+          </div>
+          <div class="image-result">
+            <canvas id="image-canvas"></canvas>
+            <div id="image-placeholder">Image results appear here</div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>Edge Litter Detection</span>
+        <span>Observed litter is not automatically recorded as collected material.</span>
+      </footer>
+    </div>
+    <script src="/dashboard-assets/app.js" defer></script>
+  </body>
+</html>

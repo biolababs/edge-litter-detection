@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from collections import Counter
+from contextlib import asynccontextmanager
 from pathlib import Path
 from threading import Lock
 from typing import Any
@@ -21,9 +22,12 @@ from .storage import (
     summarize_counts,
     update_review,
 )
+from .streaming import SerializedDetector, StreamManager
 
 try:
     from fastapi import FastAPI, HTTPException, Request
+    from fastapi.responses import FileResponse, Response
+    from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
     from starlette.concurrency import run_in_threadpool
 except ImportError as exc:
@@ -108,6 +112,10 @@ class DetectorHolder:
                 )
         return self._detector
 
+    def predict_frame(self, frame: Any) -> list[Any]:
+        with self._predict_lock:
+            return self._get_detector().predict(frame)
+
     def detect(self, image_bytes: bytes) -> dict[str, Any]:
         try:
             import cv2
@@ -121,8 +129,7 @@ class DetectorHolder:
         frame = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
         if frame is None:
             raise ValueError("Request body is not a decodable image.")
-        with self._predict_lock:
-            detections = self._get_detector().predict(frame)
+        detections = self.predict_frame(frame)
         detections = [
             self.separation_policy.apply(detection) for detection in detections
         ]
@@ -135,8 +142,9 @@ class DetectorHolder:
             "counts": dict(sorted(counts.items())),
             "detections": [detection.to_dict() for detection in detections],
             "note": (
-                "Unique tracking counts require the streaming CLI because "
-                "independent HTTP requests do not share track state."
+                "Unique tracking counts require a CLI or dashboard stream "
+                "session because independent image requests do not share "
+                "track state."
             ),
         }
 
@@ -160,16 +168,56 @@ class CollectionConfirmation(BaseModel):
     note: str | None = None
 
 
+class StreamStartRequest(BaseModel):
+    source: str = "0"
+    edge_device_id: str | None = None
+    vehicle_id: str | None = None
+    route_id: str | None = None
+    realtime: bool = True
+    max_frames: int = 0
+    persist_detections: bool = False
+
+
 def create_app() -> Any:
     holder = DetectorHolder()
+    streams = StreamManager(
+        detector=SerializedDetector(holder.backend, holder.predict_frame),
+        backend=holder.backend,
+        model=holder.model_reference,
+        device=holder.device,
+        settings=holder.settings,
+        separation_policy=holder.separation_policy,
+        database=holder.database,
+        maximum_active_streams=int(os.environ.get("LITTER_MAX_STREAMS", "1")),
+    )
+
+    @asynccontextmanager
+    async def lifespan(_: Any) -> Any:
+        try:
+            yield
+        finally:
+            streams.close()
+
     app = FastAPI(
         title="Edge Litter Detection API",
         version=__version__,
         description="Detect, classify, and count litter in an image.",
+        lifespan=lifespan,
     )
+    dashboard_directory = Path(__file__).with_name("dashboard")
+    app.mount(
+        "/dashboard-assets",
+        StaticFiles(directory=dashboard_directory),
+        name="dashboard-assets",
+    )
+
+    @app.get("/", include_in_schema=False)
+    def dashboard() -> Any:
+        return FileResponse(dashboard_directory / "index.html")
 
     @app.get("/healthz")
     def healthz() -> dict[str, Any]:
+        stream_snapshots = streams.list()
         return {
             "status": "ok",
             "backend": holder.backend,
@@ -179,6 +227,12 @@ def create_app() -> Any:
             "database": str(holder.database),
             "database_exists": holder.database.is_file(),
             "service_mode": "counts_api" if holder.counts_only else "detection_api",
+            "active_stream_count": sum(
+                1
+                for stream in stream_snapshots
+                if stream["status"] in {"created", "starting", "running", "stopping"}
+            ),
+            "dashboard": "/",
         }
 
     @app.get("/readyz")
@@ -222,6 +276,75 @@ def create_app() -> Any:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/v1/streams")
+    def start_stream(request: StreamStartRequest) -> dict[str, Any]:
+        if holder.counts_only:
+            raise HTTPException(
+                status_code=503,
+                detail="Live stream processing is disabled in counts-only mode.",
+            )
+        try:
+            session = streams.start(
+                source=request.source,
+                edge_device_id=(
+                    request.edge_device_id
+                    or os.environ.get("LITTER_EDGE_DEVICE_ID", "edge-node")
+                ),
+                vehicle_id=(
+                    request.vehicle_id
+                    if request.vehicle_id is not None
+                    else os.environ.get("LITTER_VEHICLE_ID") or None
+                ),
+                route_id=(
+                    request.route_id
+                    if request.route_id is not None
+                    else os.environ.get("LITTER_ROUTE_ID") or None
+                ),
+                realtime=request.realtime,
+                max_frames=request.max_frames,
+                persist_detections=request.persist_detections,
+            )
+            return session.snapshot()
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/v1/streams")
+    def list_streams() -> dict[str, Any]:
+        return {"streams": streams.list()}
+
+    @app.get("/v1/streams/{session_id}")
+    def stream_status(session_id: str) -> dict[str, Any]:
+        try:
+            return streams.get(session_id).snapshot()
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/v1/streams/{session_id}/frame.jpg")
+    def stream_frame(session_id: str) -> Any:
+        try:
+            frame = streams.get(session_id).latest_frame()
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        if frame is None:
+            raise HTTPException(
+                status_code=404,
+                detail="The first annotated frame is not available yet.",
+            )
+        return Response(
+            content=frame,
+            media_type="image/jpeg",
+            headers={"Cache-Control": "no-store, max-age=0"},
+        )
+
+    @app.delete("/v1/streams/{session_id}")
+    def stop_stream(session_id: str) -> dict[str, Any]:
+        try:
+            return streams.stop(session_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.get("/v1/counts/summary")
     def counts_summary(

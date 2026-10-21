@@ -48,12 +48,14 @@ The launcher refuses to create a generic first-time environment on detected
 Jetson systems. This protects the JetPack-compatible software stack and avoids
 changing a shared device unexpectedly.
 
-## Image API
+## Dashboard and API
 
 ```bash
-python -m pip install -e ".[runtime-headless,public-model,api]"
-python serve.py
+./startup.sh --dashboard --backend omdet_turbo --device auto
 ```
+
+Open `http://127.0.0.1:8088` locally. For remote administration, forward that
+localhost port through a secure tunnel or authenticated gateway.
 
 Health and readiness:
 
@@ -72,7 +74,24 @@ curl \
 ```
 
 Independent HTTP images return per-image visible counts. Use the streaming CLI
-for tracking and unique run counts.
+or dashboard stream endpoint for tracking and unique run counts.
+
+Start a server-side source:
+
+```bash
+curl \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "0",
+    "edge_device_id": "edge-truck-01",
+    "vehicle_id": "truck-12",
+    "route_id": "route-a"
+  }' \
+  http://127.0.0.1:8088/v1/streams
+```
+
+The returned session ID addresses status, annotated-frame, and stop endpoints.
+The default concurrency limit is one active stream.
 
 ## Counts and integration API
 

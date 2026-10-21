@@ -9,6 +9,7 @@ fake_python="$test_directory/python"
 fake_model="$test_directory/model.pth"
 fake_log="$test_directory/python.log"
 fake_demo_image="$test_directory/demo.jpg"
+fake_demo_video="$test_directory/demo.mp4"
 fake_venv="$test_directory/venv"
 
 cat >"$fake_python" <<'EOF'
@@ -30,6 +31,9 @@ case "${1:-}" in
   *prepare_test_data.py)
     printf '%s\n' "$FAKE_DEMO_IMAGE"
     ;;
+  *prepare_demo_video.py)
+    printf '%s\n' "$FAKE_DEMO_VIDEO"
+    ;;
   *infer.py)
     ;;
   *serve.py)
@@ -45,6 +49,7 @@ EOF
 chmod +x "$fake_python"
 : >"$fake_model"
 : >"$fake_demo_image"
+: >"$fake_demo_video"
 
 FAKE_PYTHON_LOG="$fake_log" \
 LITTER_PYTHON="$fake_python" \
@@ -75,6 +80,21 @@ grep -F -- "--limit 3" "$fake_log" >/dev/null
 grep -F -- "--format path" "$fake_log" >/dev/null
 grep -F "$repository_root/infer.py" "$fake_log" >/dev/null
 grep -F -- "--source $fake_demo_image" "$fake_log" >/dev/null
+
+: >"$fake_log"
+FAKE_DEMO_VIDEO="$fake_demo_video" \
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_PYTHON="$fake_python" \
+  "$repository_root/startup.sh" \
+  --skip-install \
+  --demo-video \
+  --no-display \
+  --max-frames 1 >/dev/null
+
+grep -F "$repository_root/prepare_demo_video.py" "$fake_log" >/dev/null
+grep -F -- "--format path" "$fake_log" >/dev/null
+grep -F "$repository_root/infer.py" "$fake_log" >/dev/null
+grep -F -- "--source $fake_demo_video" "$fake_log" >/dev/null
 
 if FAKE_DEMO_IMAGE="$fake_demo_image" \
   FAKE_PYTHON_LOG="$fake_log" \
@@ -151,3 +171,15 @@ LITTER_PYTHON="$fake_python" \
 
 grep -F "$repository_root/serve.py" "$fake_log" >/dev/null
 grep -F "counts-only=true" "$fake_log" >/dev/null
+
+: >"$fake_log"
+FAKE_DEMO_VIDEO="$fake_demo_video" \
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_PYTHON="$fake_python" \
+  "$repository_root/startup.sh" \
+  --skip-install \
+  --dashboard \
+  --demo-video >/dev/null
+
+grep -F "$repository_root/prepare_demo_video.py" "$fake_log" >/dev/null
+grep -F "$repository_root/serve.py" "$fake_log" >/dev/null

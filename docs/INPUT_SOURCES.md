@@ -25,6 +25,28 @@ Pass a source directly for unattended startup:
 ./startup.sh --source "$LITTER_STREAM_URL" --no-display
 ```
 
+Operate the same source types from the browser:
+
+```bash
+./startup.sh --dashboard --backend omdet_turbo
+```
+
+The dashboard is served at `http://127.0.0.1:8088`. It starts a server-side
+capture session, so camera indexes and local paths refer to the edge device
+rather than the operator's browser computer.
+
+Download attributed functional video media:
+
+```bash
+python prepare_demo_video.py --format path
+```
+
+Or download it and run the command-line pipeline automatically:
+
+```bash
+./startup.sh --backend omdet_turbo --demo-video --no-display
+```
+
 ## Discover and probe
 
 List attached cameras:
@@ -81,3 +103,17 @@ Do not store stream credentials in Git-tracked configuration.
 Use `Ctrl+C` for a controlled stop. A service deployment should run the
 application under systemd, Docker, or another supervisor so a disconnected
 camera or stream can be restarted according to the site's policy.
+
+Dashboard stream-control endpoints:
+
+```text
+POST   /v1/streams
+GET    /v1/streams
+GET    /v1/streams/{session_id}
+GET    /v1/streams/{session_id}/frame.jpg
+DELETE /v1/streams/{session_id}
+```
+
+The default limit is one active stream because accelerator memory and model
+execution are shared. The stream URL is retained only in process memory; API,
+SQLite, and UI representations remove user information and query strings.

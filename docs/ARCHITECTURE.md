@@ -47,6 +47,15 @@ paths, not a model leaderboard.
    - A human, controller, or sensor-fusion service separately confirms a pickup.
    - Detection never proves collection.
 
+8. **Operator interface**
+   - The FastAPI service hosts a dependency-free browser dashboard.
+   - The dashboard can start and stop one bounded server-side camera, video,
+     HTTP, or RTSP session by default.
+   - Annotated frames and status use same-origin API endpoints; raw stream
+     credentials are never returned to the browser.
+   - Dashboard sessions use the same tracker, SQLite store, review queue, and
+     outbox as unattended command-line sessions.
+
 ## Runtime flow
 
 ```text
@@ -67,6 +76,8 @@ image / video / camera / stream
      JSONL    JSON summary   SQLite    annotated media
                                 |
                     review queue + outbox/API
+                                |
+                    local operations dashboard
 ```
 
 ## Deployment constraints
@@ -94,5 +105,7 @@ targets, not measured results.
 - Scene cut or tracking loss: retain frame detections and disclose possible
   duplicate run counts.
 - SQLite/fleet connection unavailable: keep local outbox records for retry.
+- A second dashboard stream exceeds device capacity: reject it without
+  disrupting the active stream.
 - Safety input unavailable or contradictory: external arm control remains
   inhibited.

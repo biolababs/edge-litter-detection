@@ -247,6 +247,8 @@ The system shall:
 - report visible counts and unique confirmed-track counts by class;
 - persist run and count records locally when the network is unavailable;
 - associate observations with an edge device, vehicle, and route;
+- provide a local browser interface for starting and stopping a bounded camera,
+  video, HTTP, or RTSP session and observing annotated output;
 - show a human the predicted material and configured separation destination;
 - queue uncertain items for human confirmation, correction, or rejection;
 - distinguish observed litter from externally confirmed collected material;
@@ -269,7 +271,8 @@ The system shall:
 - keep all mechanical actuation under an independent safety-rated controller;
 - download/cache the published model automatically and fail clearly when required
   runtime assets or inputs are unavailable;
-- minimize retention of raw imagery and personally identifiable information.
+- minimize retention of raw imagery and personally identifiable information;
+- keep the operator interface functional without a cloud dependency.
 
 ### 3.3 Architecture
 
@@ -287,6 +290,17 @@ The runtime applies an operator-configured separation policy after tracking.
 The display presents the predicted material and destination, while
 low-confidence, hazardous, and other-litter observations are placed in a
 review queue.
+
+A local FastAPI service also hosts a dependency-free browser operations
+dashboard. The service can own one server-side capture session by default,
+which allows a remote operator to reference a camera index or local file on the
+edge computer rather than on the browser computer. The dashboard displays
+annotated frames, visible counts, unique tracked counts, recent runs, and the
+human review queue. Dashboard sessions reuse the same detector adapter,
+tracker, separation policy, SQLite schema, and outbox as the unattended
+runtime; the interface is therefore an operator view of the application rather
+than a separate demonstration pipeline.
+
 Detected objects remain observations; they are not recorded as collected until
 a human, arm controller, sensor-fusion component, or reviewed import provides a
 separate positive confirmation. Perception output may inform a task planner but

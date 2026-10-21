@@ -109,6 +109,18 @@ and processes the first image through the normal detection, classification,
 counting, evidence, and SQLite path. No test image is committed to this
 repository.
 
+Run an attributed public-domain video through the streaming, tracking,
+counting, SQLite, and annotated-output path:
+
+```bash
+./startup.sh --backend omdet_turbo --demo-video --no-display
+```
+
+The video is downloaded into the ignored `media/demo-video/` directory. Its
+source, creator, Public Domain Mark, and checksums are recorded in
+`media/demo-video/manifest.json`. It is functional test media, not a labelled
+accuracy dataset.
+
 Choose an input explicitly when needed:
 
 ```bash
@@ -135,6 +147,40 @@ export LITTER_STREAM_URL="rtsp://camera-host/live"
 
 Press `q` in the display window or `Ctrl+C` in the terminal to stop a live run.
 Run `./startup.sh --help` for all options.
+
+## Browser operations dashboard
+
+Start the local dashboard and API together:
+
+```bash
+./startup.sh --dashboard --backend omdet_turbo --device auto
+```
+
+Then open `http://127.0.0.1:8088`. The dashboard provides:
+
+- camera, local video, HTTP video, and RTSP source control;
+- an annotated near-real-time perception feed;
+- current visible counts and unique tracked counts;
+- edge-device, vehicle, and route context;
+- automatic SQLite persistence for dashboard stream sessions;
+- recent runs, aggregate observed counts, collection confirmations, and the
+  human review queue; and
+- a separate single-image inspection tool.
+
+Prepare the reusable demonstration and dashboard in one command:
+
+```bash
+./startup.sh \
+  --dashboard \
+  --demo-video \
+  --backend omdet_turbo \
+  --device auto
+```
+
+In the dashboard, select **Use public demo video**, then start detection.
+The API binds to localhost by default. Use an authenticated reverse proxy or an
+SSH tunnel for a remote edge device; do not expose the unauthenticated port
+directly to the internet.
 
 ## Outputs
 
@@ -183,7 +229,7 @@ them with:
 
 ## HTTP API
 
-Start image detection and operational APIs:
+Start the dashboard, image detection, stream control, and operational APIs:
 
 ```bash
 ./startup.sh --api
@@ -209,10 +255,21 @@ curl \
 curl "http://127.0.0.1:8088/v1/counts/summary?vehicle_id=truck-12"
 curl "http://127.0.0.1:8088/v1/review-queue?status=pending"
 curl "http://127.0.0.1:8088/v1/integration/events"
+
+curl \
+  -H "Content-Type: application/json" \
+  -d '{"source":"0","edge_device_id":"edge-truck-01"}' \
+  http://127.0.0.1:8088/v1/streams
 ```
 
-The API binds to localhost and has no built-in authentication. Put it behind an
-authenticated gateway before exposing it to a network.
+Live stream sessions use the same tracker, counts, separation policy, review
+queue, SQLite schema, and integration outbox as the command-line runtime. Only
+one live stream is accepted by default to protect constrained edge devices.
+Set `LITTER_MAX_STREAMS` deliberately if the hardware has been validated for
+more.
+
+The API binds to localhost and has no built-in authentication. Put it behind
+an authenticated gateway before exposing it to a network.
 
 ## Cleanup-truck and sorting integration
 

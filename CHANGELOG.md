@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.10.0 - 2026-10-21
+
+- Added a responsive browser operations dashboard served by the existing API.
+- Added server-side camera, video, HTTP, and RTSP session control with
+  annotated frame polling, tracking, counting, review routing, and SQLite
+  persistence.
+- Limited live dashboard concurrency to one stream by default for predictable
+  edge-device resource use.
+- Added an attributed, checksum-verified public-domain video downloader for
+  reproducible functional stream testing without committing media to Git.
+- Added `./startup.sh --dashboard` and `--demo-video` automated workflows.
+- Added regression tests for stream persistence, credential redaction, video
+  integrity, attribution, and launcher behavior.
+
 ## 0.9.1 - 2026-10-21
 
 - Fixed backend overrides in the benchmark, direct inference CLI, and API so

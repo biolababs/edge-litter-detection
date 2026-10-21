@@ -30,6 +30,7 @@ database_enabled=true
 persist_detections=false
 max_frames=0
 demo_data=false
+demo_video=false
 demo_limit="${LITTER_DEMO_LIMIT:-8}"
 
 usage() {
@@ -61,8 +62,10 @@ Options:
   --no-display           Disable the display window.
   --max-frames N         Stop after N frames; zero means unlimited.
   --demo                  Download attributed public test images and run one.
+  --demo-video            Download an attributed public-domain test video.
   --demo-limit N          Number of test images to cache (default: 8).
-  --api                   Start the HTTP API instead of media inference.
+  --api                   Start the HTTP API and browser dashboard.
+  --dashboard             Alias for --api.
   --counts-api            Start the database/review API without requiring a model.
   --list-cameras          Install dependencies and list attached cameras.
   --skip-install          Reuse the existing environment without pip install.
@@ -189,12 +192,20 @@ while [[ $# -gt 0 ]]; do
       demo_data=true
       shift
       ;;
+    --demo-video)
+      demo_video=true
+      shift
+      ;;
     --demo-limit)
       [[ $# -ge 2 ]] || fail "--demo-limit requires a value."
       demo_limit="$2"
       shift 2
       ;;
     --api)
+      mode="api"
+      shift
+      ;;
+    --dashboard)
       mode="api"
       shift
       ;;
@@ -260,6 +271,12 @@ if [[ "$mode" != "infer" && "$database_enabled" != true ]]; then
 fi
 if [[ "$mode" != "infer" && "$demo_data" == true ]]; then
   fail "--demo is supported only for media inference."
+fi
+if [[ "$demo_data" == true && "$demo_video" == true ]]; then
+  fail "--demo and --demo-video cannot be used together."
+fi
+if [[ "$mode" == "counts_api" && "$demo_video" == true ]]; then
+  fail "--demo-video is unavailable in counts-only API mode."
 fi
 
 if [[ -z "$python_command" ]]; then
@@ -334,7 +351,7 @@ fi
 if [[ "$install_profile" == "runtime" || "$install_profile" == "runtime-headless" ]]; then
   install_profile="$install_profile-$backend_value"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.9.1"
+install_marker="$venv_dir/.edge-litter-$install_profile-0.10.0"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip
@@ -359,6 +376,19 @@ if [[ "$demo_data" == true ]]; then
   [[ -f "$source_value" ]] || fail \
     "Demo data preparation did not return a readable image."
   printf '  attribution: %s\n' "$project_root/media/taco-demo/manifest.json"
+fi
+
+if [[ "$demo_video" == true ]]; then
+  printf 'Preparing attributed public-domain demo video...\n'
+  source_value="$(
+    "$python_command" "$project_root/prepare_demo_video.py" \
+      --output \
+      "$project_root/media/demo-video/wsdot-adopt-a-highway-safety.mp4" \
+      --format path
+  )"
+  [[ -f "$source_value" ]] || fail \
+    "Demo video preparation did not return a readable video."
+  printf '  attribution: %s\n' "$project_root/media/demo-video/manifest.json"
 fi
 
 if [[ "$backend_value" != "rfdetr" && \
