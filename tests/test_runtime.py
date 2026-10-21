@@ -13,7 +13,11 @@ from litter_edge.storage import summarize_counts
 class FakeDetector:
     backend_name = "rfdetr"
 
+    def __init__(self) -> None:
+        self.predict_calls = 0
+
     def predict(self, frame: object) -> list[Detection]:
+        self.predict_calls += 1
         return [
             Detection(
                 1,
@@ -85,10 +89,12 @@ class RuntimeTests(unittest.TestCase):
                 vehicle_id="truck-test",
                 route_id="route-test",
                 max_frames=0,
+                warmup_calls=2,
             )
+            detector = FakeDetector()
             with patch(
                 "litter_edge.runtime.create_detector",
-                return_value=FakeDetector(),
+                return_value=detector,
             ):
                 with patch(
                     "litter_edge.runtime._frames",
@@ -107,6 +113,8 @@ class RuntimeTests(unittest.TestCase):
             stored_counts = summarize_counts(root / "observations.db")
 
         self.assertEqual(summary["unique_session_counts"], {"plastic": 1})
+        self.assertEqual(summary["warmup_calls"], 2)
+        self.assertEqual(detector.predict_calls, 4)
         self.assertEqual(saved_summary["source"], "rtsp://example.test/live")
         self.assertEqual(len(event_rows), 2)
         self.assertEqual(event_rows[1]["unique_session_counts"], {"plastic": 1})

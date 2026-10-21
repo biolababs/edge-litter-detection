@@ -1,5 +1,6 @@
-# Future authorized Jetson test window only: install NVIDIA-compatible
-# torch/torchvision for JetPack 6.2.3 first. See docs/JETSON_SETUP.md.
+# Install an NVIDIA-compatible PyTorch >=2.6 and torchvision >=0.21 build for
+# the fixed JetPack release first. Do not let pip replace the vendor framework.
+# See docs/JETSON_SETUP.md.
 transformers>=5.20,<6
 timm>=1.0,<2
 # JetPack 6 vendor PyTorch commonly requires Python 3.10. Pillow 13 requires

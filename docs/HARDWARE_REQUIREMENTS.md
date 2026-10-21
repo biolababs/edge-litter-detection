@@ -38,6 +38,11 @@ backend, resolution, or stream rate will satisfy real-time requirements.
 Validate sustained throughput, memory, thermals, power, accuracy, and count
 error on the intended device and representative footage.
 
+The maintained public-model dependency line requires PyTorch 2.6 or newer,
+torchvision 0.21 or newer, and Transformers 5.20 or newer. Jetson deployments
+must use builds compatible with the installed JetPack release; the installer
+must not replace the device's system framework or CUDA packages.
+
 ## Current validation evidence
 
 The application and OmDet-Turbo path were functionally exercised on an AWS

@@ -14,6 +14,34 @@ from .grounding_dino import (
 )
 
 
+def _numeric_version(value: object) -> tuple[int, ...]:
+    parts: list[int] = []
+    for component in str(value).split("+", 1)[0].split("."):
+        digits = "".join(character for character in component if character.isdigit())
+        if not digits:
+            break
+        parts.append(int(digits))
+    return tuple(parts)
+
+
+def _validate_runtime_versions(torch_module: Any, transformers_module: Any) -> None:
+    torch_version = _numeric_version(getattr(torch_module, "__version__", ""))
+    transformers_version = _numeric_version(
+        getattr(transformers_module, "__version__", "")
+    )
+    if (
+        transformers_version >= (5,)
+        and torch_version
+        and torch_version < (2, 6)
+    ):
+        raise RuntimeError(
+            "Transformers 5 requires PyTorch 2.6 or newer for the public-model "
+            f"runtime; found PyTorch {getattr(torch_module, '__version__', 'unknown')}. "
+            "Use a vendor-supported framework build or the documented pinned "
+            "Jetson container. Do not replace JetPack system packages."
+        )
+
+
 def _materialize_meta_buffers(model: Any) -> None:
     """Initialize non-persistent buffers left on the meta device."""
     modules = getattr(model, "modules", None)
@@ -65,6 +93,14 @@ class OmDetTurboDetector:
     ) -> None:
         try:
             import torch
+            import transformers
+        except ImportError as exc:
+            raise RuntimeError(
+                "The OmDet-Turbo runtime is not installed. Install the "
+                "'public-model' optional dependency."
+            ) from exc
+        _validate_runtime_versions(torch, transformers)
+        try:
             from transformers import AutoProcessor, OmDetTurboForObjectDetection
         except ImportError as exc:
             raise RuntimeError(

@@ -44,7 +44,8 @@ The authorized validation used an isolated JetPack-compatible container and
 did not modify the system Python, system packages, existing services, power
 mode, or clock configuration. Any PyTorch build must match the installed
 JetPack/CUDA stack; a generic wheel is not assumed to provide working Jetson
-GPU support.
+GPU support. The maintained Transformers 5.20 public-model path requires
+PyTorch 2.6 or newer and torchvision 0.21 or newer.
 
 Preferred options:
 
@@ -55,8 +56,6 @@ Preferred options:
 
 The following dedicated-environment path remains an alternative and was not
 used for the reported Jetson result:
-
-Then:
 
 ```bash
 python3 -m venv --system-site-packages .venv
@@ -161,6 +160,7 @@ To identify the optimization opportunity instead of timing only the detector:
   --backend omdet_turbo \
   --source /path/to/representative-video.mp4 \
   --device cuda \
+  --warmup-calls 10 \
   --profile-timing \
   --no-display
 ```

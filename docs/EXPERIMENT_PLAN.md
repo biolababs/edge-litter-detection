@@ -82,7 +82,7 @@ achieved result.
 11. Publish weights only after all declared release gates pass.
 
 Every final target-device condition will be executed at least three times
-(`N >= 3`) after warm-up. Reports will include mean, population standard
+(`N >= 3`) after at least 10 detector warm-up calls. Reports will include mean, population standard
 deviation, median, p95, p99, minimum, and maximum latency. A longer endurance
 run is additional evidence and does not replace replication.
 

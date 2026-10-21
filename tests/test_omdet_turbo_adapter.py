@@ -9,6 +9,8 @@ import unittest
 from litter_edge.adapters.omdet_turbo import (
     OmDetTurboDetector,
     _materialize_meta_buffers,
+    _numeric_version,
+    _validate_runtime_versions,
 )
 
 
@@ -145,6 +147,18 @@ class FakeBufferModel:
 
 
 class OmDetTurboAdapterTests(unittest.TestCase):
+    def test_parses_framework_versions(self) -> None:
+        self.assertEqual(_numeric_version("2.7.0a0+79aa17489c.nv25.04"), (2, 7, 0))
+
+    def test_rejects_transformers_five_with_old_pytorch(self) -> None:
+        torch_module = ModuleType("torch")
+        torch_module.__version__ = "2.4.0"
+        transformers_module = ModuleType("transformers")
+        transformers_module.__version__ = "5.20.2"
+
+        with self.assertRaisesRegex(RuntimeError, "PyTorch 2.6 or newer"):
+            _validate_runtime_versions(torch_module, transformers_module)
+
     def test_materializes_non_persistent_meta_buffers(self) -> None:
         child = FakeBufferModule()
         model = FakeBufferModel(child)
@@ -165,9 +179,11 @@ class OmDetTurboAdapterTests(unittest.TestCase):
 
     def test_normalizes_labels_scores_and_suppresses_duplicates(self) -> None:
         torch_module = ModuleType("torch")
+        torch_module.__version__ = "2.7.0"
         torch_module.inference_mode = nullcontext
         torch_module.float16 = object()
         transformers_module = ModuleType("transformers")
+        transformers_module.__version__ = "5.20.2"
         transformers_module.AutoProcessor = FakeProcessor
         transformers_module.OmDetTurboForObjectDetection = FakeModel
 

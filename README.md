@@ -386,11 +386,13 @@ For a component-level runtime profile:
   --backend omdet_turbo \
   --source media/representative-line-video.mp4 \
   --device cuda \
+  --warmup-calls 10 \
   --profile-timing \
   --no-display
 ```
 
-The summary separates capture/decode, detector preprocessing, model forward,
+Warm-up calls occur before source capture and measured output. The summary
+separates capture/decode, detector preprocessing, model forward,
 detector postprocessing, tracking and policy, JSONL, SQLite, and
 annotation/output. Accelerator synchronization makes profiling more accurate
 but can change throughput, so compare profiled runs only with the same setting.

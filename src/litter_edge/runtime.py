@@ -94,6 +94,15 @@ def build_parser() -> argparse.ArgumentParser:
             "tracking, persistence, and rendering latency components."
         ),
     )
+    parser.add_argument(
+        "--warmup-calls",
+        type=int,
+        default=0,
+        help=(
+            "Run this many zero-frame detector calls before opening the source "
+            "and starting measured output."
+        ),
+    )
     return parser
 
 
@@ -296,6 +305,9 @@ def _timing_profile(
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     profile_timing = bool(getattr(args, "profile_timing", False))
+    warmup_calls = int(getattr(args, "warmup_calls", 0))
+    if warmup_calls < 0:
+        raise ValueError("warmup-calls cannot be negative.")
     settings = load_settings(args.config)
     backend = normalize_backend(args.backend or settings.backend)
     model_reference = resolve_model_reference(
@@ -350,6 +362,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         tracker=_make_tracker(settings, tracking_enabled, single_image),
         separation_policy=separation_policy,
     )
+    if warmup_calls:
+        try:
+            import numpy as np
+        except ImportError as exc:
+            raise RuntimeError(
+                "Install a runtime optional dependency before using warm-up calls."
+            ) from exc
+        warmup_frame = np.zeros(
+            (settings.image_size, settings.image_size, 3),
+            dtype=np.uint8,
+        )
+        for _ in range(warmup_calls):
+            detector.predict(warmup_frame)
 
     events_path = Path(args.events_output)
     events_path.parent.mkdir(parents=True, exist_ok=True)
@@ -548,6 +573,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "vehicle_id": vehicle_id,
             "route_id": route_id,
             "tracking_enabled": tracking_enabled,
+            "warmup_calls": warmup_calls,
             "count_semantics": {
                 "visible_counts": "detections present in the current frame",
                 "unique_session_counts": (

@@ -11,9 +11,13 @@
 - Added opt-in end-to-end timing profiles covering capture/decode, detector
   preprocessing, model forward, detector postprocessing, tracking and policy,
   JSONL, SQLite, and annotation output.
+- Added explicit pre-measurement detector warm-up calls for repeatable runtime
+  profiles.
 - Added latency standard deviation and p99 to benchmark evidence.
 - Moved the public-model runtime to the patched Transformers 5.20+ line after
   dependency auditing identified published advisories in 4.57.6.
+- Declared and validated the corresponding PyTorch 2.6+/torchvision 0.21+
+  runtime floor, with an actionable error for incompatible vendor images.
 - Fixed OmDet-Turbo loading on JetPack-compatible PyTorch when Swin
   non-persistent attention buffers remain on the meta device.
 - Constrained Transformers to the PyTorch-2.4-compatible 4.x series and fixed
