@@ -1285,7 +1285,7 @@ and an app-based citizen science approach. *Environmental Science: Advances,
 edge devices. *Journal on Artificial Intelligence, 8*(1), 39–49.
 https://doi.org/10.32604/jai.2026.076674
 
-[27] Arora, R. (2026). Real time detection of trash and faces for smart city
+[27] Arora, N. (2026). Real time detection of trash and faces for smart city
 environmental monitoring. *Discover Cities, 3*, 93.
 https://doi.org/10.1007/s44327-026-00276-2
 
