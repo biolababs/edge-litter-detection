@@ -13,6 +13,39 @@ from .grounding_dino import (
 )
 
 
+def _materialize_meta_buffers(model: Any) -> None:
+    """Initialize non-persistent buffers left on the meta device."""
+    modules = getattr(model, "modules", None)
+    named_buffers = getattr(model, "named_buffers", None)
+    if not callable(modules) or not callable(named_buffers):
+        return
+
+    for module in modules():
+        buffers = getattr(module, "buffers", None)
+        if not callable(buffers):
+            continue
+        has_local_meta_buffer = any(
+            getattr(buffer, "is_meta", False)
+            for buffer in buffers(recurse=False)
+        )
+        initializer = getattr(module, "init_non_persistent_buffers", None)
+        if has_local_meta_buffer and callable(initializer):
+            initializer()
+
+    remaining = [
+        name
+        for name, buffer in named_buffers()
+        if getattr(buffer, "is_meta", False)
+    ]
+    if remaining:
+        preview = ", ".join(remaining[:5])
+        suffix = "" if len(remaining) <= 5 else ", ..."
+        raise RuntimeError(
+            "OmDet-Turbo contains unmaterialized model buffers after loading: "
+            f"{preview}{suffix}"
+        )
+
+
 class OmDetTurboDetector:
     """Compact open-vocabulary detector loaded through Transformers."""
 
@@ -83,6 +116,7 @@ class OmDetTurboDetector:
             use_safetensors=True,
             trust_remote_code=False,
         )
+        _materialize_meta_buffers(self.model)
         self.model.to(device)
         self.model.eval()
 

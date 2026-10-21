@@ -6,7 +6,10 @@ from unittest.mock import patch
 import sys
 import unittest
 
-from litter_edge.adapters.omdet_turbo import OmDetTurboDetector
+from litter_edge.adapters.omdet_turbo import (
+    OmDetTurboDetector,
+    _materialize_meta_buffers,
+)
 
 
 class FakeFrame:
@@ -107,7 +110,59 @@ class FakeModel:
         return object()
 
 
+class FakeBuffer:
+    def __init__(self, is_meta: bool) -> None:
+        self.is_meta = is_meta
+
+
+class FakeBufferModule:
+    def __init__(self, *, can_initialize: bool = True) -> None:
+        self.buffer = FakeBuffer(is_meta=True)
+        self.can_initialize = can_initialize
+
+    def buffers(self, recurse: bool = True) -> list[FakeBuffer]:
+        del recurse
+        return [self.buffer]
+
+    def init_non_persistent_buffers(self) -> None:
+        if self.can_initialize:
+            self.buffer = FakeBuffer(is_meta=False)
+
+
+class FakeBufferModel:
+    def __init__(self, child: FakeBufferModule) -> None:
+        self.child = child
+
+    def modules(self) -> list[object]:
+        return [self, self.child]
+
+    def buffers(self, recurse: bool = True) -> list[FakeBuffer]:
+        del recurse
+        return []
+
+    def named_buffers(self) -> list[tuple[str, FakeBuffer]]:
+        return [("backbone.attn_mask", self.child.buffer)]
+
+
 class OmDetTurboAdapterTests(unittest.TestCase):
+    def test_materializes_non_persistent_meta_buffers(self) -> None:
+        child = FakeBufferModule()
+        model = FakeBufferModel(child)
+
+        _materialize_meta_buffers(model)
+
+        self.assertFalse(child.buffer.is_meta)
+
+    def test_rejects_meta_buffers_that_cannot_be_materialized(self) -> None:
+        child = FakeBufferModule(can_initialize=False)
+        model = FakeBufferModel(child)
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "backbone.attn_mask",
+        ):
+            _materialize_meta_buffers(model)
+
     def test_normalizes_labels_scores_and_suppresses_duplicates(self) -> None:
         torch_module = ModuleType("torch")
         torch_module.inference_mode = nullcontext

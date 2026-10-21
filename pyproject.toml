@@ -41,7 +41,7 @@ public-model = [
   "torch>=2.2",
   "torchvision>=0.17",
   "timm>=1.0,<2",
-  "transformers>=4.56,<6",
+  "transformers>=4.56,<5",
   "Pillow>=13,<14; python_version >= '3.11'",
   "Pillow>=12.3,<13; python_version < '3.11'",
 ]
