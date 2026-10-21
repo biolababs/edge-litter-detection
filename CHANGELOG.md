@@ -9,6 +9,7 @@
 - Added unit and launcher tests for demo-data preparation and execution.
 - Aligned package and launcher validation with the documented Python 3.10–3.12
   support range.
+- Made non-graphical Linux and `--no-display` startup use headless OpenCV.
 
 ## 0.7.0 - 2026-10-21
 

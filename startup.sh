@@ -301,25 +301,33 @@ mkdir -p \
   "$project_root/reports/generated" \
   "$(dirname "$database_path")"
 
-install_profile="runtime"
+runtime_extra="runtime"
+if [[ "$display_mode" == "off" || \
+  ( "$display_mode" == "auto" && "$(uname -s)" != "Darwin" && \
+    -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ) ]]
+then
+  runtime_extra="runtime-headless"
+fi
+
+install_profile="$runtime_extra"
 if [[ "$backend_value" == "rfdetr" ]]; then
   model_extra="rfdetr"
 else
   model_extra="public-model"
 fi
-install_extras="runtime,$model_extra"
+install_extras="$runtime_extra,$model_extra"
 if [[ "$list_cameras" == true ]]; then
   install_profile="discovery"
-  install_extras="runtime"
+  install_extras="runtime-headless"
 elif [[ "$mode" == "api" ]]; then
   install_profile="api-$backend_value"
-  install_extras="runtime,$model_extra,api"
+  install_extras="runtime-headless,$model_extra,api"
 elif [[ "$mode" == "counts_api" ]]; then
   install_profile="counts-api"
   install_extras="api"
 fi
-if [[ "$install_profile" == "runtime" ]]; then
-  install_profile="runtime-$backend_value"
+if [[ "$install_profile" == "runtime" || "$install_profile" == "runtime-headless" ]]; then
+  install_profile="$install_profile-$backend_value"
 fi
 install_marker="$venv_dir/.edge-litter-$install_profile-0.8.0"
 

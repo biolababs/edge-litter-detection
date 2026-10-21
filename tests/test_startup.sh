@@ -9,6 +9,7 @@ fake_python="$test_directory/python"
 fake_model="$test_directory/model.pth"
 fake_log="$test_directory/python.log"
 fake_demo_image="$test_directory/demo.jpg"
+fake_venv="$test_directory/venv"
 
 cat >"$fake_python" <<'EOF'
 #!/usr/bin/env bash
@@ -18,6 +19,8 @@ printf '%s\n' "$*" >>"$FAKE_PYTHON_LOG"
 
 case "${1:-}" in
   -c)
+    ;;
+  -m)
     ;;
   *discover_sources.py)
     if [[ " $* " == *" --list-cameras "* ]]; then
@@ -84,6 +87,18 @@ then
   printf '%s\n' "--demo unexpectedly accepted --counts-api." >&2
   exit 1
 fi
+
+mkdir -p "$fake_venv/bin"
+cp "$fake_python" "$fake_venv/bin/python"
+: >"$fake_log"
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_VENV="$fake_venv" \
+  "$repository_root/startup.sh" \
+  --source 0 \
+  --no-display \
+  --max-frames 1 >/dev/null
+
+grep -F -- "-e .[runtime-headless,public-model]" "$fake_log" >/dev/null
 
 FAKE_PYTHON_LOG="$fake_log" \
 LITTER_PYTHON="$fake_python" \
