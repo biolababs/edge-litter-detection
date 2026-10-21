@@ -46,10 +46,10 @@ public-model = [
   "Pillow>=12.3,<13; python_version < '3.11'",
 ]
 rfdetr = [
-  "rfdetr>=1.10,<1.11",
+  "rfdetr>=1.10,<1.12",
 ]
 train = [
-  "rfdetr[train,loggers]>=1.10,<1.11",
+  "rfdetr[train,loggers]>=1.10,<1.12",
 ]
 runtime = [
   "numpy==1.26.4; python_version < '3.13'",
