@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ..device import resolve_torch_device
 from ..pipeline import Detector
+from ..settings import normalize_backend
 
 
 def create_detector(
@@ -15,9 +16,9 @@ def create_detector(
     iou: float = 0.6,
     max_detections: int = 100,
 ) -> Detector:
-    normalized = backend.strip().lower()
+    normalized = normalize_backend(backend)
     resolved_device = resolve_torch_device(device)
-    if normalized in {"grounding_dino", "grounding-dino"}:
+    if normalized == "grounding_dino":
         from .grounding_dino import GroundingDINODetector
 
         return GroundingDINODetector(
@@ -30,7 +31,7 @@ def create_detector(
             nms_iou=iou,
             max_detections=max_detections,
         )
-    if normalized in {"omdet_turbo", "omdet-turbo", "omdet"}:
+    if normalized == "omdet_turbo":
         from .omdet_turbo import OmDetTurboDetector
 
         return OmDetTurboDetector(

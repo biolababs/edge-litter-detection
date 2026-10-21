@@ -7,6 +7,46 @@ from typing import Any
 import yaml
 
 
+DEFAULT_MODEL_REFERENCES = {
+    "grounding_dino": "IDEA-Research/grounding-dino-tiny",
+    "omdet_turbo": "omlab/omdet-turbo-swin-tiny-hf",
+    "rfdetr": "models/rfdetr-nano-litter.pth",
+}
+
+
+def normalize_backend(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized == "omdet":
+        return "omdet_turbo"
+    return normalized
+
+
+def resolve_model_reference(
+    backend: str,
+    *,
+    explicit_model: str | None,
+    configured_backend: str,
+    configured_model: str,
+) -> str:
+    """Select a checkpoint that belongs to the effective detector backend."""
+    if explicit_model and explicit_model.strip():
+        return explicit_model.strip()
+
+    normalized_backend = normalize_backend(backend)
+    if (
+        normalized_backend == normalize_backend(configured_backend)
+        and configured_model.strip()
+    ):
+        return configured_model.strip()
+
+    try:
+        return DEFAULT_MODEL_REFERENCES[normalized_backend]
+    except KeyError as exc:
+        raise ValueError(
+            f"No default model is registered for backend: {backend}"
+        ) from exc
+
+
 @dataclass(frozen=True)
 class ProjectSettings:
     project_name: str
@@ -67,7 +107,7 @@ def load_settings(path: str | Path) -> ProjectSettings:
     required_gates = validation.get("operational_gates") or {}
     settings = ProjectSettings(
         project_name=str(_required(raw, "project_name")),
-        backend=str(raw.get("backend", "grounding_dino")),
+        backend=normalize_backend(str(raw.get("backend", "grounding_dino"))),
         model=str(_required(raw, "model")),
         base_model=str(
             custom_training.get("base_model", "rfdetr-nano")

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.1 - 2026-10-21
+
+- Fixed backend overrides in the benchmark, direct inference CLI, and API so
+  OmDet-Turbo automatically loads its own checkpoint instead of the configured
+  Grounding DINO bootstrap checkpoint.
+- Added regression coverage for backend-aware model selection and preserved
+  explicit custom-model overrides.
+
 ## 0.9.0 - 2026-10-21
 
 - Selected one project-maintained RF-DETR Nano checkpoint as the release

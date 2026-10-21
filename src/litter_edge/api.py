@@ -10,7 +10,7 @@ from . import __version__
 from .adapters import create_detector
 from .classes import load_class_names, load_class_prompts
 from .device import resolve_torch_device
-from .settings import load_settings
+from .settings import load_settings, normalize_backend, resolve_model_reference
 from .sorting import load_separation_policy
 from .storage import (
     acknowledge_outbox_event,
@@ -38,8 +38,14 @@ class DetectorHolder:
     def __init__(self) -> None:
         config_path = os.environ.get("LITTER_CONFIG", "config/project.yaml")
         self.settings = load_settings(config_path)
-        self.backend = os.environ.get("LITTER_BACKEND", self.settings.backend)
-        self.model_reference = os.environ.get("LITTER_MODEL", self.settings.model)
+        backend_override = os.environ.get("LITTER_BACKEND")
+        self.backend = normalize_backend(backend_override or self.settings.backend)
+        self.model_reference = resolve_model_reference(
+            self.backend,
+            explicit_model=os.environ.get("LITTER_MODEL"),
+            configured_backend=self.settings.backend,
+            configured_model=self.settings.model,
+        )
         self.class_names_path = os.environ.get(
             "LITTER_CLASSES", str(self.settings.class_names_file)
         )

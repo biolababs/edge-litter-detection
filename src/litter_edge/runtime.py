@@ -15,7 +15,12 @@ from .classes import load_class_names, load_class_prompts
 from .common import environment_manifest, utc_now, write_json
 from .pipeline import LitterPipeline
 from .schema import FrameOutcome
-from .settings import ProjectSettings, load_settings
+from .settings import (
+    ProjectSettings,
+    load_settings,
+    normalize_backend,
+    resolve_model_reference,
+)
 from .sorting import load_separation_policy
 from .storage import SQLiteObservationStore
 from .tracking import ClassStabilizedIoUTracker
@@ -228,8 +233,13 @@ def _annotate(frame: Any, outcome: FrameOutcome) -> Any:
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     settings = load_settings(args.config)
-    backend = args.backend or settings.backend
-    model_reference = args.model or settings.model
+    backend = normalize_backend(args.backend or settings.backend)
+    model_reference = resolve_model_reference(
+        backend,
+        explicit_model=args.model,
+        configured_backend=settings.backend,
+        configured_model=settings.model,
+    )
     class_names_path = args.class_names or str(settings.class_names_file)
     class_names = load_class_names(class_names_path)
     class_prompts = load_class_prompts(

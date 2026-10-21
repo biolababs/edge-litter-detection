@@ -2,7 +2,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from litter_edge.settings import load_settings
+from litter_edge.settings import (
+    load_settings,
+    normalize_backend,
+    resolve_model_reference,
+)
 
 
 VALID_CONFIG = """
@@ -34,6 +38,37 @@ tracking:
 
 
 class SettingsTests(unittest.TestCase):
+    def test_backend_override_selects_matching_public_model(self) -> None:
+        model = resolve_model_reference(
+            "omdet_turbo",
+            explicit_model=None,
+            configured_backend="grounding_dino",
+            configured_model="IDEA-Research/grounding-dino-tiny",
+        )
+        self.assertEqual(model, "omlab/omdet-turbo-swin-tiny-hf")
+
+    def test_explicit_model_takes_precedence_over_backend_default(self) -> None:
+        model = resolve_model_reference(
+            "omdet_turbo",
+            explicit_model="organization/custom-omdet",
+            configured_backend="grounding_dino",
+            configured_model="IDEA-Research/grounding-dino-tiny",
+        )
+        self.assertEqual(model, "organization/custom-omdet")
+
+    def test_configured_model_is_retained_for_configured_backend(self) -> None:
+        model = resolve_model_reference(
+            "grounding_dino",
+            explicit_model=None,
+            configured_backend="grounding_dino",
+            configured_model="organization/custom-grounding-dino",
+        )
+        self.assertEqual(model, "organization/custom-grounding-dino")
+
+    def test_normalizes_backend_aliases(self) -> None:
+        self.assertEqual(normalize_backend("omdet-turbo"), "omdet_turbo")
+        self.assertEqual(normalize_backend("omdet"), "omdet_turbo")
+
     def test_loads_valid_configuration(self) -> None:
         with TemporaryDirectory() as temporary:
             path = Path(temporary) / "project.yaml"

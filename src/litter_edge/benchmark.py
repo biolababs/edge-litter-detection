@@ -11,7 +11,7 @@ from .classes import load_class_names, load_class_prompts
 from .common import environment_manifest, memory_snapshot, write_json
 from .device import resolve_torch_device
 from .runtime import _frames, _is_image_source, _safe_source_label, _source_value
-from .settings import load_settings
+from .settings import load_settings, normalize_backend, resolve_model_reference
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -225,8 +225,13 @@ def main() -> None:
             "Install the 'runtime' optional dependency before benchmarking."
         ) from exc
 
-    backend = args.backend or settings.backend
-    model_reference = args.model or settings.model
+    backend = normalize_backend(args.backend or settings.backend)
+    model_reference = resolve_model_reference(
+        backend,
+        explicit_model=args.model,
+        configured_backend=settings.backend,
+        configured_model=settings.model,
+    )
     class_names = args.class_names or str(settings.class_names_file)
     device = resolve_torch_device(args.device or str(settings.device))
     memory_samples = [
