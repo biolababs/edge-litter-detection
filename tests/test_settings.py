@@ -71,12 +71,23 @@ class SettingsTests(unittest.TestCase):
             settings = load_settings(path)
         self.assertEqual(settings.backend, "rfdetr")
 
+    def test_accepts_omdet_turbo_backend(self) -> None:
+        config = VALID_CONFIG.replace(
+            "backend: grounding_dino",
+            "backend: omdet_turbo",
+        )
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "project.yaml"
+            path.write_text(config, encoding="utf-8")
+            settings = load_settings(path)
+        self.assertEqual(settings.backend, "omdet_turbo")
+
     def test_loads_nested_optional_training_settings(self) -> None:
         config = VALID_CONFIG + """
-custom_training:
+release_training:
   base_model: rfdetr-nano
   epochs: 12
-  run_name: site-custom
+  run_name: release-candidate
 """
         with TemporaryDirectory() as temporary:
             path = Path(temporary) / "project.yaml"
@@ -84,7 +95,7 @@ custom_training:
             settings = load_settings(path)
         self.assertEqual(settings.base_model, "rfdetr-nano")
         self.assertEqual(settings.epochs, 12)
-        self.assertEqual(settings.run_name, "site-custom")
+        self.assertEqual(settings.run_name, "release-candidate")
 
     def test_rejects_preferred_memory_above_hard_limit(self) -> None:
         invalid = VALID_CONFIG.replace(

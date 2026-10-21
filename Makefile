@@ -14,6 +14,7 @@ validate: test
 	python3 infer.py --help >/dev/null
 	python3 discover_sources.py --help >/dev/null
 	python3 prepare_test_data.py --help >/dev/null
+	python3 prepare_training_data.py --help >/dev/null
 	python3 download_model.py --help >/dev/null
 	python3 query_counts.py --help >/dev/null
 	python3 train.py --help >/dev/null

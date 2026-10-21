@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.0 - 2026-10-21
+
+- Selected one project-maintained RF-DETR Nano checkpoint as the release
+  detector while retaining Grounding DINO Tiny as a functional bootstrap.
+- Added automated, attributed TACO-to-operational COCO dataset preparation with
+  deterministic source-group train, validation, and held-out test splits.
+- Added conservative category mapping, per-image licenses and checksums,
+  download-failure evidence, and explicit missing-class release blockers.
+- Added training-time validation that COCO class IDs and names exactly match
+  the runtime taxonomy.
+- Added repeatable static-image benchmarking and direct PyTorch accelerator
+  allocation, reservation, free-memory, and peak-memory evidence.
+- Added an Apache-2.0 OmDet-Turbo Tiny open-vocabulary backend for a
+  confidence-scored, no-training acceptance screen on the same TACO data.
+- Updated the reusable software and MSc plan around one evaluated use case:
+  maintainers publish weights; deployment users do not train.
+
 ## 0.8.1 - 2026-10-21
 
 - Fixed current Transformers Grounding DINO output handling by preferring
@@ -8,8 +25,8 @@
   Transformers compatibility.
 - Routed genuinely unresolved labels to `other_litter` for human review instead
   of terminating an operational run.
-- Added the composite-label failure observed during the AWS CUDA smoke test as
-  a regression test.
+- Added the composite-label failure observed during the CUDA smoke test as a
+  regression test.
 
 ## 0.8.0 - 2026-10-21
 

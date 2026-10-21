@@ -51,6 +51,26 @@ class ClassNamesTests(unittest.TestCase):
                 {0: "plastic bottle"},
             )
 
+    def test_loads_backend_specific_prompts(self) -> None:
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "classes.yaml"
+            path.write_text(
+                "names:\n"
+                "  0: plastic_bottle\n"
+                "prompts:\n"
+                "  0: discarded plastic bottle\n"
+                "omdet_turbo_prompts:\n"
+                "  0: plastic bottle\n",
+                encoding="utf-8",
+            )
+
+            prompts = load_class_prompts(
+                path,
+                profile="omdet_turbo",
+            )
+
+        self.assertEqual(prompts, {0: "plastic bottle"})
+
 
 if __name__ == "__main__":
     unittest.main()

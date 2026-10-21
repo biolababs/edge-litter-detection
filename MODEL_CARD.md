@@ -1,16 +1,23 @@
-# Model card: public edge litter profile
+# Model card: edge litter detector
 
 ## Status
 
-The repository's default runnable profile uses the public
+The selected release detector is a project-maintained RF-DETR Nano checkpoint.
+Its artifact is not published yet because representative data, complete class
+coverage, held-out accuracy, counting accuracy, and target-device validation
+are still pending.
+
+The repository's current runnable bootstrap uses the public
 `IDEA-Research/grounding-dino-tiny` checkpoint through Hugging Face
 Transformers. It is an open-vocabulary reference implementation and does not
-require project-specific training.
+require project-specific training. It exercises the complete application but
+is not the production-accuracy claim.
 
-The model is public, but this repository does not redistribute its weights.
-Transformers downloads the selected revision from its source and stores it in
-the local user cache. Review the upstream model card and terms before
-production or redistribution.
+The repository also integrates the Apache-2.0
+`omlab/omdet-turbo-swin-tiny-hf` checkpoint as a confidence-scored
+open-vocabulary acceptance candidate. These public models are downloaded by
+Transformers and stored in the local user cache; this repository does not
+redistribute their weights.
 
 ## Intended use
 
@@ -25,7 +32,7 @@ Detect and classify visible litter in images or video to support:
 The application reports visible detections and unique confirmed track IDs.
 Counting accuracy must be validated independently of detection accuracy.
 
-## Default operational catalog
+## Operational catalog
 
 The default configuration contains 16 prompts:
 
@@ -46,9 +53,10 @@ The default configuration contains 16 prompts:
 15. broken glass; and
 16. other litter.
 
-This is not a fixed output layer. Operators can revise the prompts without
-training. Stable output names should be versioned when databases or external
-consumers depend on them.
+The output names and IDs are stable interfaces for the database and external
+consumers. Bootstrap prompts can be revised without training. The release
+checkpoint uses a fixed output layer and must exactly match the published class
+schema.
 
 ## Human review
 
@@ -95,12 +103,16 @@ Report at minimum:
 No accuracy, frame-rate, memory, or power result is claimed until the relevant
 measurement is completed.
 
-## Optional specialized model
+## Release artifact requirements
 
-The repository also contains an RF-DETR adapter and training/evaluation
-utilities for teams that choose to create a licensed, target-specific
-closed-set model. That profile is optional and has its own data, checkpoint,
-license, and validation requirements.
+The RF-DETR release remains blocked until it has:
+
+- training and held-out examples for every released class;
+- a versioned data statement and source/license inventory;
+- detection, classification, and count evaluation evidence;
+- sustained edge-device latency, memory, power, and thermal evidence;
+- a public artifact URL and SHA-256 digest;
+- a successful clean-clone automatic-download test.
 
 ## Upstream references
 
@@ -109,3 +121,9 @@ license, and validation requirements.
   https://huggingface.co/IDEA-Research/grounding-dino-tiny
 - Transformers documentation:
   https://huggingface.co/docs/transformers/model_doc/grounding-dino
+- OmDet-Turbo checkpoint:
+  https://huggingface.co/omlab/omdet-turbo-swin-tiny-hf
+- Transformers OmDet-Turbo documentation:
+  https://huggingface.co/docs/transformers/model_doc/omdet-turbo
+- RF-DETR repository: https://github.com/roboflow/rf-detr
+- TACO repository: https://github.com/pedropro/TACO

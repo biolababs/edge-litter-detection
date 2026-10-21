@@ -3,16 +3,35 @@
 [![CI](https://github.com/biolababs/edge-litter-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/biolababs/edge-litter-detection/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/Code-Apache--2.0-4c1.svg)](LICENSE)
-[![Default model](https://img.shields.io/badge/Default-Grounding%20DINO%20Tiny-6C63FF.svg)](https://huggingface.co/IDEA-Research/grounding-dino-tiny)
+[![Bootstrap model](https://img.shields.io/badge/Bootstrap-Grounding%20DINO%20Tiny-6C63FF.svg)](https://huggingface.co/IDEA-Research/grounding-dino-tiny)
 
 A reusable edge-AI application that detects, classifies, tracks, and counts
 visible litter from images, videos, attached cameras, and live streams.
 
-The default installation uses the public
+The current bootstrap installation uses the public
 [`IDEA-Research/grounding-dino-tiny`](https://huggingface.co/IDEA-Research/grounding-dino-tiny)
 open-vocabulary model. It downloads automatically on first use, requires no API
 key, and does not require users to collect data or train a model before running
-the application.
+the application. This proves the complete application path; it is not presented
+as the final production-accuracy model.
+
+An additional no-training backend,
+[`omlab/omdet-turbo-swin-tiny-hf`](https://huggingface.co/omlab/omdet-turbo-swin-tiny-hf),
+is available for acceptance screening. OmDet-Turbo Tiny is a compact
+Apache-2.0 open-vocabulary detector that returns confidence-scored boxes:
+
+```bash
+./startup.sh --backend omdet_turbo --demo
+```
+
+It uses backend-specific object prompts while preserving the same stable class
+IDs, tracker, counts, SQLite records, review queue, and APIs.
+
+The selected release architecture is a project-maintained, litter-specific
+RF-DETR Nano checkpoint. Maintainers train and validate it centrally, publish
+versioned weights and a SHA-256 digest, and update the release manifest. Once
+published, ordinary users will continue to use the same one-command launcher;
+they will not train a model.
 
 The software is designed as a practical perception component for cleanup
 vehicles, refuse-collection trucks, fixed monitoring points, and
@@ -45,9 +64,10 @@ The default operational catalog now contains 16 litter categories:
 | `broken_glass` | Hazardous-glass review |
 | `other_litter` | Manual review |
 
-These are configuration defaults, not a fixed model output layer. Edit
+These are stable product output names. During the bootstrap phase, edit
 [`config/classes.yaml`](config/classes.yaml) to add, remove, rename, or improve
-text prompts without retraining the public model. Edit
+text prompts without retraining Grounding DINO. A released closed-set checkpoint
+supports only the class schema recorded with that checkpoint. Edit
 [`config/separation.yaml`](config/separation.yaml) to match the operator's
 local sorting policy.
 
@@ -65,15 +85,15 @@ cd edge-litter-detection
 That single command:
 
 1. creates an isolated Python environment;
-2. installs the runtime and public model dependencies;
+2. installs the runtime and current bootstrap-model dependencies;
 3. finds an attached camera or a media file under `media/`;
-4. downloads and caches the public model on first use;
+4. downloads and caches the model on first use;
 5. runs detection, classification, tracking, and counting;
 6. writes JSON evidence and annotated output; and
 7. persists counts to `state/litter-edge.db`.
 
 Python 3.10–3.14 is required. The first run needs internet access to install
-packages and download the public model. Later runs use the local environment
+packages and download the model. Later runs use the local environment
 and model cache.
 
 Run a self-contained functional demonstration when no camera or local media is
@@ -220,11 +240,11 @@ pneumatic, or electric arm. Emergency stops, exclusion zones, proximity
 sensing, interlocks, motion limits, and final actuation authority belong to the
 truck's safety controller. See [truck integration](docs/TRUCK_INTEGRATION.md).
 
-## Model profiles
+## Model release path
 
-The repository supports operational profiles, not a model leaderboard.
+The repository implements one litter use case, not a model leaderboard.
 
-### Default: public, no training
+### Current functional bootstrap
 
 ```bash
 ./startup.sh --backend grounding_dino
@@ -234,29 +254,46 @@ The repository supports operational profiles, not a model leaderboard.
 - automatic public download through Hugging Face Transformers;
 - configurable text-prompt categories;
 - no API key;
-- no custom training prerequisite;
+- no user training prerequisite;
 - portable PyTorch reference path for CPU, NVIDIA CUDA, and AMD ROCm.
 
 Open-vocabulary support makes the catalog configurable; it does not guarantee
 equal accuracy for every prompt, scene, object size, city, camera, or weather
 condition. Deployment accuracy and sustained frame rate must be measured on
-representative data and the intended device.
+representative data and the intended device. The bootstrap exists so anyone can
+exercise the full source, tracking, counting, SQLite, review, and API workflow
+while the release checkpoint is pending.
 
-### Optional: custom RF-DETR checkpoint
-
-Organizations may later use a licensed, litter-specific RF-DETR checkpoint
-when they need a smaller closed-set detector, locally optimized accuracy, or a
-target-specific export:
+### No-training visual-model screen
 
 ```bash
-./startup.sh \
-  --backend rfdetr \
-  --model /path/to/rfdetr-litter.pth \
-  --source 0
+./startup.sh --backend omdet_turbo --source 0
 ```
 
-This profile is optional. Training utilities remain in the repository for
-research and advanced customization, but ordinary users do not need them.
+- model: `omlab/omdet-turbo-swin-tiny-hf`;
+- Apache-2.0 model card and checkpoint;
+- approximately 0.1B parameters;
+- confidence-scored open-vocabulary boxes;
+- automatic download through Transformers;
+- PyTorch reference path for CPU, NVIDIA CUDA, Apple MPS, and AMD ROCm.
+
+This backend is operationally integrated but is not yet the validated release
+model. Its purpose is to determine whether a public no-training visual detector
+can satisfy the litter use case before central fine-tuning is undertaken.
+
+### Selected deployable release
+
+The project release will use one litter-specific RF-DETR Nano checkpoint:
+
+```bash
+./startup.sh --backend rfdetr --source 0
+```
+
+That command already supports checksum-verified automatic download through
+[`config/model-release.json`](config/model-release.json). It becomes the normal
+release path only after a checkpoint has complete class coverage, held-out
+accuracy evidence, count evidence, and edge-device acceptance results. Until
+then, the manifest intentionally remains `pending`.
 
 ## Edge-device portability
 
@@ -285,7 +322,7 @@ docker compose build
 docker compose up
 ```
 
-The public model is downloaded into the container user's model cache on first
+The bootstrap model is downloaded into the container user's model cache on first
 detection unless a cache volume is added by the deployer. Use a
 vendor-supported base image for NVIDIA, AMD, or Jetson acceleration.
 
@@ -309,20 +346,22 @@ The public repository does not claim a particular accuracy, frame rate, memory
 use, or power result until measurements are produced from representative data
 on the target deployment.
 
-## Optional custom training
+## Maintainer model-release workflow
 
-Custom training is not part of the quick start. It is available only for teams
-that have licensed, representative data and need a specialized closed-set
-checkpoint:
+Training is not part of deployment. Project maintainers use the following
+workflow to build the one published litter checkpoint:
 
 ```bash
 python -m pip install -e ".[runtime,train]"
-python train.py --model rfdetr-nano --data data/litter
+python prepare_training_data.py
+python train.py --model rfdetr-nano --data data/taco-operational-v1
 ```
 
-Dataset licensing, privacy, annotation rules, versioning, checkpoints, and
-evaluation evidence remain the responsibility of the team creating the custom
-model.
+The data command downloads public TACO media, retains attribution and checksums,
+maps its fine-grained labels to the operational taxonomy, and creates grouped
+COCO train/validation/test splits. It also reports classes with no examples.
+TACO is bootstrap data; representative truck, roadside, motion, weather, and
+camera data must be added before a model release.
 
 ## Software and MSc thesis
 
@@ -330,11 +369,12 @@ The reusable application and the academic evaluation are separate:
 
 - the repository provides deployable source code, configuration, schemas,
   tests, persistence, APIs, and integration guidance;
-- the MSc thesis evaluates a versioned configuration on representative data
-  and edge hardware.
+- the MSc thesis evaluates the single versioned release configuration on
+  representative data and edge hardware.
 
-The thesis may evaluate the public default and document optional customization,
-but it is not a prerequisite for cloning or using the application. See
+The thesis does not compare model families. It evaluates whether the selected
+release implementation meets the use case. It is not a prerequisite for cloning
+or using the application. See
 [software and research separation](docs/SOFTWARE_AND_RESEARCH.md).
 
 ## Repository layout

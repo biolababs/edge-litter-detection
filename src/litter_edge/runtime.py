@@ -32,7 +32,10 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("--config", default="config/project.yaml")
-    parser.add_argument("--backend", choices=("grounding_dino", "rfdetr"))
+    parser.add_argument(
+        "--backend",
+        choices=("grounding_dino", "omdet_turbo", "rfdetr"),
+    )
     parser.add_argument("--model")
     parser.add_argument("--class-names")
     parser.add_argument("--separation-config")
@@ -229,7 +232,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model_reference = args.model or settings.model
     class_names_path = args.class_names or str(settings.class_names_file)
     class_names = load_class_names(class_names_path)
-    class_prompts = load_class_prompts(class_names_path, class_names)
+    class_prompts = load_class_prompts(
+        class_names_path,
+        class_names,
+        profile=backend,
+    )
     separation_config = (
         args.separation_config or str(settings.separation_policy_file)
     )

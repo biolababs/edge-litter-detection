@@ -58,7 +58,11 @@ def load_settings(path: str | Path) -> ProjectSettings:
     tracking = raw.get("tracking") or {}
     separation = raw.get("separation") or {}
     storage = raw.get("storage") or {}
-    custom_training = raw.get("custom_training") or raw
+    custom_training = (
+        raw.get("release_training")
+        or raw.get("custom_training")
+        or raw
+    )
     validation = raw.get("validation") or {}
     required_gates = validation.get("operational_gates") or {}
     settings = ProjectSettings(
@@ -114,8 +118,10 @@ def load_settings(path: str | Path) -> ProjectSettings:
 def validate_settings(settings: ProjectSettings) -> None:
     if settings.task != "detect":
         raise ValueError("This study currently supports task='detect' only.")
-    if settings.backend not in {"grounding_dino", "rfdetr"}:
-        raise ValueError("backend must be 'grounding_dino' or 'rfdetr'.")
+    if settings.backend not in {"grounding_dino", "omdet_turbo", "rfdetr"}:
+        raise ValueError(
+            "backend must be 'grounding_dino', 'omdet_turbo', or 'rfdetr'."
+        )
     if settings.image_size <= 0 or settings.image_size % 32:
         raise ValueError("image_size must be a positive multiple of 32.")
     if settings.epochs <= 0:

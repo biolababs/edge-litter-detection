@@ -30,6 +30,19 @@ def create_detector(
             nms_iou=iou,
             max_detections=max_detections,
         )
+    if normalized in {"omdet_turbo", "omdet-turbo", "omdet"}:
+        from .omdet_turbo import OmDetTurboDetector
+
+        return OmDetTurboDetector(
+            model_reference=model,
+            class_names=class_names,
+            class_prompts=class_prompts,
+            confidence=confidence,
+            device=resolved_device,
+            optimize=optimize,
+            nms_iou=iou,
+            max_detections=max_detections,
+        )
     if normalized == "rfdetr":
         from .rfdetr import RFDETRDetector
 
@@ -41,5 +54,6 @@ def create_detector(
             optimize=optimize,
         )
     raise ValueError(
-        f"Unsupported backend '{backend}'. Expected 'grounding_dino' or 'rfdetr'."
+        f"Unsupported backend '{backend}'. Expected 'grounding_dino', "
+        "'omdet_turbo', or 'rfdetr'."
     )

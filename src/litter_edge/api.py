@@ -47,6 +47,7 @@ class DetectorHolder:
         self.class_prompts = load_class_prompts(
             self.class_names_path,
             self.class_names,
+            profile=self.backend,
         )
         self.separation_config = os.environ.get(
             "LITTER_SEPARATION_CONFIG",
@@ -73,7 +74,13 @@ class DetectorHolder:
 
     @property
     def model_configured(self) -> bool:
-        if self.backend in {"grounding_dino", "grounding-dino"}:
+        if self.backend in {
+            "grounding_dino",
+            "grounding-dino",
+            "omdet_turbo",
+            "omdet-turbo",
+            "omdet",
+        }:
             return bool(self.model_reference.strip())
         return Path(self.model_reference).is_file()
 

@@ -30,7 +30,11 @@ artifact redistribution terms remain separate release decisions.
 ## Release boundary
 
 The source release includes code, documentation, tests, and the prospective
-thesis. The public default model is downloaded from its upstream source rather
-than committed to Git. Any later custom model release should carry its own
-model card, dataset version, checksums, hardware results, and third-party
-notices.
+thesis. The current bootstrap model is downloaded from its upstream source
+rather than committed to Git.
+
+The project-maintained RF-DETR Nano checkpoint is a separate pending artifact
+release. It must carry a model card, dataset version, exact class schema,
+checksums, accuracy and counting results, hardware evidence, and third-party
+notices. After publication, the source launcher downloads that artifact; the
+weight file is not committed as a normal Git blob.

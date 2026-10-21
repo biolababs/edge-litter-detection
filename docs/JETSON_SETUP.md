@@ -52,7 +52,7 @@ Preferred options:
 1. A version-pinned NVIDIA-compatible container with explicit memory and port
    limits.
 2. A dedicated environment using NVIDIA-compatible framework builds, only if a
-   container cannot support the public Grounding DINO runtime.
+   container cannot support the selected detector runtime.
 
 The commands below are a future procedure, not authorization to execute them:
 
@@ -115,7 +115,7 @@ Do not stop or reconfigure existing services for a benchmark. If the device
 owner later authorizes an exclusive benchmark, report it separately from the
 normal coexistence condition.
 
-## Public-model runtime validation
+## Public visual-model acceptance screen
 
 Start with a recorded-video smoke test because no camera was connected at
 inventory time:
@@ -123,16 +123,17 @@ inventory time:
 ```bash
 LITTER_PYTHON="$PWD/.venv/bin/python" \
   ./startup.sh --skip-install \
-  --backend grounding_dino \
+  --backend omdet_turbo \
   --source sample.mp4 \
   --device cuda \
   --no-display
 ```
 
 The first authorized run downloads and caches
-`IDEA-Research/grounding-dino-tiny` unless the model cache is populated in the
-isolated environment beforehand. Measure the reference runtime before deciding
-whether an optimized NVIDIA platform service or exported artifact is required.
+`omlab/omdet-turbo-swin-tiny-hf` unless the model cache is populated in the
+isolated environment beforehand. OmDet-Turbo requires the JetPack-compatible
+PyTorch and torchvision packages plus `timm` and Transformers. Measure the
+complete runtime before deciding whether it passes the use case.
 
 Any optimized path must preserve the configured prompt/output contract and be
 re-evaluated on the same held-out data. INT8 is deferred until representative
@@ -143,6 +144,6 @@ calibration data and a validated runtime path exist.
 - NVIDIA JetPack: https://developer.nvidia.com/embedded/jetpack
 - NVIDIA Jetson Orin Nano series:
   https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/nano-super-developer-kit/
-- Transformers Grounding DINO:
-  https://huggingface.co/docs/transformers/model_doc/grounding-dino
+- Transformers OmDet-Turbo:
+  https://huggingface.co/docs/transformers/model_doc/omdet-turbo
 

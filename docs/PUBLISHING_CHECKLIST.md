@@ -19,11 +19,14 @@ for every deployment.
 
 - [x] Confirm the Jetson hardware and software baseline through a read-only
       inventory.
-- [ ] Confirm public dataset licenses and required attribution.
+- [x] Automate TACO source, checksum, category mapping, split, and per-image
+      license manifests.
+- [ ] Complete independent dataset-license and required-attribution review.
 - [ ] Complete ethics/privacy review for new camera data.
 - [ ] Freeze the class schema, dataset version, and held-out split.
 - [ ] Annotate track-level ground truth for counting evaluation.
-- [x] Freeze the public model ID and configurable default prompt catalog.
+- [x] Select RF-DETR Nano as the single release architecture.
+- [ ] Train and freeze the project checkpoint and exact class schema.
 - [x] Prepare detection/classification and aggregate counting evaluators.
 - [ ] Run detection/classification and counting accuracy evaluation.
 - [ ] Recapture the Jetson inventory before the authorized validation run.
@@ -45,7 +48,7 @@ for every deployment.
 
 ## Artifact release
 
-- [ ] Record evaluation data, selected model revision, optional export, and
+- [ ] Record evaluation data, selected model revision, selected export, and
       environment checksums.
 - [ ] Publish large weights as release assets or through an appropriate model
       registry, not normal Git blobs.

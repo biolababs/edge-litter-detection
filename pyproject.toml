@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "litter-edge"
-version = "0.8.1"
+version = "0.9.0"
 description = "Portable edge litter detection, classification, tracking, and counting"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
@@ -17,6 +17,7 @@ keywords = [
   "litter-detection",
   "object-detection",
   "grounding-dino",
+  "omdet-turbo",
   "rfdetr",
   "computer-vision",
 ]
@@ -38,6 +39,8 @@ dependencies = [
 [project.optional-dependencies]
 public-model = [
   "torch>=2.2",
+  "torchvision>=0.17",
+  "timm>=1.0,<2",
   "transformers>=4.56,<6",
   "Pillow>=10,<13",
 ]
@@ -69,6 +72,7 @@ litter-evaluate-counts = "litter_edge.evaluate_counts:main"
 litter-discover = "litter_edge.discover:main"
 litter-download-model = "litter_edge.model_fetch:main"
 litter-prepare-test-data = "litter_edge.demo_data:main"
+litter-prepare-training-data = "litter_edge.training_data:main"
 litter-query-counts = "litter_edge.query:main"
 litter-export = "litter_edge.export:main"
 litter-infer = "litter_edge.infer:main"

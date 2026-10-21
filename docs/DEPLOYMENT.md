@@ -8,9 +8,9 @@ all devices.
 
 | Target | Reference runtime | Device value | Status |
 |---|---|---|---|
-| CPU host | PyTorch + Transformers | `cpu` | Functional reference path |
-| NVIDIA CUDA | Vendor PyTorch + Transformers | `cuda` | Code path implemented; benchmark required |
-| AMD ROCm / Strix Halo | Vendor PyTorch + Transformers | `cuda` | Code path implemented; benchmark required |
+| CPU host | PyTorch | `cpu` | Functional reference path |
+| NVIDIA CUDA | Vendor PyTorch | `cuda` | Code path implemented; benchmark required |
+| AMD ROCm / Strix Halo | Vendor PyTorch | `cuda` | Code path implemented; benchmark required |
 | Jetson Orin 8 GB | JetPack-compatible PyTorch or optimized platform service | `cuda` or service-specific | Deployment pending authorized maintenance window |
 | Target export | ONNX/OpenVINO/TensorRT adapter | provider-specific | Optional optimization |
 
@@ -23,9 +23,9 @@ mean an AMD computer uses NVIDIA CUDA.
 ./startup.sh --source sample.mp4
 ```
 
-The launcher uses `grounding_dino` and
-`IDEA-Research/grounding-dino-tiny` by default. The model is fetched and cached
-automatically by Transformers on first use.
+The launcher currently uses the Grounding DINO bootstrap so a clean clone is
+functional while the project RF-DETR checkpoint is pending. Both the bootstrap
+and the selected release path fetch and cache their model automatically.
 
 The public profile requires internet access only for initial package/model
 download. Input media, counts, and output evidence remain local unless the
@@ -100,18 +100,18 @@ The included image is a CPU reference. For accelerated deployments, start from
 a vendor-supported image containing the correct PyTorch runtime, then install
 this project's `runtime-headless`, `public-model`, and `api` extras.
 
-## Optional RF-DETR profile
+## Selected RF-DETR release path
 
 ```bash
-./startup.sh \
-  --backend rfdetr \
-  --model /path/to/compatible-checkpoint.pth \
-  --source sample.mp4
+./startup.sh --backend rfdetr --source sample.mp4
 ```
 
-The RF-DETR profile requires a compatible local checkpoint. It is intended for
-teams that intentionally choose a specialized closed-set model; it is not
-required by the public default.
+Before publication, this command correctly fails unless a compatible local
+checkpoint or explicit verified download is supplied. After maintainers publish
+`config/model-release.json`, the same command downloads and verifies the
+project checkpoint automatically.
+
+No deployment user is expected to train.
 
 ## Adapter contract
 
@@ -144,6 +144,7 @@ Preserve a manifest containing:
 
 - Transformers Grounding DINO:
   https://huggingface.co/docs/transformers/model_doc/grounding-dino
+- RF-DETR: https://rfdetr.roboflow.com/
 - AMD PyTorch guidance:
   https://rocm.docs.amd.com/projects/radeon-ryzen/en/latest/docs/install/installrad/native_linux/install-pytorch.html
 - NVIDIA JetPack: https://developer.nvidia.com/embedded/jetpack

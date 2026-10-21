@@ -8,8 +8,8 @@ deliverables.
 | Purpose | Detect, classify, track, count, review, persist, and integrate litter observations | Evaluate whether a versioned system meets defined accuracy and edge-device requirements |
 | Location | `src/`, `config/`, `deploy/`, `schemas/`, and operational docs | `thesis/` and experiment documents |
 | License | Apache-2.0 for original project code and software documentation | Academic text, datasets, weights, and results can have separate terms |
-| Default model | Public Grounding DINO Tiny, downloaded automatically | The same frozen public-model configuration can be evaluated |
-| Custom training | Optional advanced profile | Optional research extension, not a prerequisite |
+| Detector | Grounding DINO bootstrap, OmDet-Turbo no-training screen, and published RF-DETR Nano fallback release path | Only the final frozen release configuration is evaluated |
+| Training | Maintainers publish weights; deployers do not train | Training is an implementation step, not a model-comparison study |
 | Claims | Implemented interfaces and behavior | Measured accuracy, latency, memory, power, and limitations |
 
 ## What a user can do immediately
@@ -20,14 +20,13 @@ A user can clone the repository and run:
 ./startup.sh --source 0
 ```
 
-The launcher installs the public-model runtime, downloads and caches the model,
+The launcher installs the runtime, downloads and caches the current model,
 processes the selected source, writes evidence, and stores counts in SQLite.
 No thesis manuscript, dataset, API key, or custom checkpoint is required.
 
-The default class catalog contains 16 configurable prompts. Because the default
-detector is open-vocabulary, users can change `config/classes.yaml` without
-retraining. Output names should be treated as versioned API/database
-identifiers.
+The product catalog contains 16 stable output names. Grounding DINO and
+OmDet-Turbo prompts can be changed without training. A published closed-set
+checkpoint must use the exact class schema recorded with its release.
 
 ## What remains deployment-specific
 
@@ -44,12 +43,12 @@ must still validate:
 Until those measurements exist, the repository must not claim a universal
 accuracy, frame rate, memory footprint, or safety rating.
 
-## Optional specialization
+## Central model release
 
-A team with licensed target-domain data may choose to train a closed-set
-RF-DETR checkpoint. This can be useful when the public zero-shot profile does
-not meet local accuracy or performance targets. That is an optimization path,
-not the normal installation requirement.
+Maintainers train one closed-set RF-DETR Nano litter checkpoint using licensed
+bootstrap and target-domain data. They publish weights only after the declared
+accuracy, counting, and target-device gates pass. This is not a task for normal
+deployers.
 
 If a custom artifact is produced, record:
 
@@ -69,7 +68,6 @@ research question is whether the solution meets the defined litter use case on
 representative data and target hardware—not which detector wins a model
 competition.
 
-The thesis can report the public Grounding DINO Tiny configuration as the
-implementation baseline. Optional custom training can be documented later as
-future optimization or an additional implementation phase without making the
-public software depend on it.
+The thesis evaluates the frozen litter-specific release implementation.
+Grounding DINO can be described as an engineering bootstrap and data-review
+aid, not as a competing thesis model.

@@ -77,8 +77,8 @@ active listeners rather than relying on a published port list.
 
 ## Design consequences
 
-1. Validate the public Grounding DINO Tiny profile first; perform optional
-   custom training off-device only if later measurements justify it.
+1. Screen the integrated OmDet-Turbo Tiny public checkpoint without modifying
+   the device, then validate the frozen selected release implementation.
 2. Do not add a continuous VLM or second LLM to the initial real-time path.
 3. Prefer a detector process using no more than 1.5 GiB of incremental memory.
 4. Reject a deployment above 2.0 GiB incremental memory or one that
@@ -94,12 +94,14 @@ active listeners rather than relying on a published port list.
 ## Implementation
 
 At the time of this inventory, RF-DETR Nano was the planned implementation.
-Version 0.7.0 superseded that plan with public Grounding DINO Tiny as the
-no-training default and retained RF-DETR only as an optional custom profile.
-The hardware observations remain valid historical evidence. Target validation
-checks detection/classification accuracy, counting accuracy, full-pipeline
-latency, sustained FPS, incremental memory, power, thermal stability,
-operational reliability, and licensing. It does not compare model families.
+Version 0.7.0 temporarily made Grounding DINO Tiny the clean-clone bootstrap.
+Version 0.9.0 added OmDet-Turbo Tiny as a stronger no-training acceptance
+candidate and restored RF-DETR Nano as the selected release path if no public
+checkpoint passes the declared gates. The hardware observations remain valid
+historical evidence. Target validation checks detection/classification
+accuracy, counting accuracy, full-pipeline latency, sustained FPS, incremental
+memory, power, thermal stability, operational reliability, and licensing. It
+does not compare model families as a research objective.
 
 ## Evidence handling
 

@@ -3,5 +3,5 @@
   "status": "pending",
   "url": null,
   "sha256": null,
-  "notes": "Optional RF-DETR custom-profile descriptor. The default public Grounding DINO model is downloaded by model ID and does not use this file."
+  "notes": "Project-maintained RF-DETR Nano litter checkpoint. When status becomes published, startup.sh can download and verify it automatically. Grounding DINO remains the functional bootstrap until this release artifact passes accuracy, counting, and edge-device gates."
 }

@@ -4,8 +4,9 @@
 
 This repository implements one litter detection, multiclass classification,
 tracking, counting, human-assisted separation, and operational integration use
-case. Grounding DINO Tiny is the public no-training default; RF-DETR is an
-optional custom profile. Contributions should improve the solution,
+case. Grounding DINO Tiny is the default functional bootstrap,
+OmDet-Turbo Tiny is the no-training acceptance candidate, and RF-DETR Nano is
+the selected maintainer release path. Contributions should improve the solution,
 portability, accuracy evaluation, persistence, documentation, or operational
 safety. Model-family leaderboards are out of scope.
 

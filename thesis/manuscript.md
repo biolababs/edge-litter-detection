@@ -9,16 +9,16 @@ Prospective MSc research revision
 Litter in public spaces creates environmental, social, and economic costs, yet
 manual inspection is difficult to sustain across large urban areas. This study
 proposes an edge-computing system for detecting, classifying, tracking, and
-counting visible litter with a public open-vocabulary detector deployed on a
-confirmed NVIDIA Jetson Orin Nano 8 GB Super device. The system uses Grounding
-DINO Tiny behind a portable runtime adapter and does not require a newly
-trained project checkpoint. It will be evaluated on target-domain accuracy,
-class recall, count error, latency, throughput, memory, power, temperature, and
-sustained stability. The operational configuration contains 16 configurable
-litter prompts covering common containers, packaging, paper, cigarette waste,
-organics, textiles, tires, hazardous items, and other litter. Evaluation data
-will be grouped by collection site and session to reduce leakage from
-near-duplicate video frames.
+counting visible litter with one project-maintained RF-DETR Nano checkpoint
+deployed on a confirmed NVIDIA Jetson Orin Nano 8 GB Super device. Project
+maintainers train and publish the versioned litter checkpoint; deployment users
+download it automatically and do not train. The system will be evaluated on
+target-domain accuracy, class recall, count error, latency, throughput, memory,
+power, temperature, and sustained stability. The operational configuration
+contains 16 stable litter categories covering common containers, packaging,
+paper, cigarette waste, organics, textiles, tires, hazardous items, and other
+litter. Training and evaluation data will be grouped by original source, site,
+and session to reduce leakage from near-duplicate images and video frames.
 Privacy controls will exclude identity analysis and minimize the capture and
 retention of identifiable people, vehicles, and locations. At the time of this
 revision, representative evaluation data and Jetson testing have not
@@ -62,18 +62,20 @@ experiment around a current detector and a more capable edge platform.
 The revised system is portable and targets a confirmed NVIDIA Jetson Orin
 Nano Engineering Reference Developer Kit Super with 8 GB-class shared memory.
 The device runs JetPack 6.2.3/L4T 36.5.2 and is shared with active application
-and LLM services. Public Grounding DINO Tiny is the default implementation
-model. The reusable software separates detector inference from a standard
+and LLM services. A project-maintained RF-DETR Nano checkpoint is the selected
+release implementation. Grounding DINO Tiny remains a functional software
+bootstrap and data-review aid while that checkpoint is pending. The reusable
+software separates detector inference from a standard
 detection schema, tracking, class stabilization, counting, SQLite persistence,
 human review, and fleet integration. The deployment is accepted only if it can
 run with enough memory headroom for media processing, evidence logging, the
 operating system, and the device's existing workload.
 
-No project-specific training is required for the baseline study. The Jetson is
-reserved for runtime validation, inference, and systems evaluation during an
-approved test window. Optional custom model training, if later justified by
-measured errors, would occur off-device. The existing project and its services
-will not be stopped or reconfigured for this study.
+Training occurs centrally and off-device. It is an implementation step for one
+selected solution, not a comparison among model families and not a deployment
+requirement. The Jetson is reserved for runtime validation, inference, and
+systems evaluation during an approved test window. The existing project and
+its services will not be stopped or reconfigured for this study.
 
 ### 1.3 Aim
 
@@ -86,14 +88,14 @@ multiclass litter detection, tracking, and counting on an NVIDIA Jetson Orin
 1. Define an operational litter taxonomy and a documented annotation guide.
 2. Assemble a licensed evaluation dataset containing representative
    target-domain imagery.
-3. Prevent configuration-test leakage by grouping prompt-development and test
+3. Prevent configuration-test leakage by grouping training, validation, and test
    data at site, session, or video sequence level.
 4. Implement a portable detection schema and tracking-based counting pipeline.
-5. Configure and freeze the public Grounding DINO Tiny prompt catalog and
-   thresholds without training a new checkpoint.
-6. Validate the intended runtime on the target Jetson.
-7. Treat model export or custom training as optional optimization only when
-   baseline measurements justify it.
+5. Prepare a grouped, attributed TACO bootstrap dataset and add representative
+   target-domain training data.
+6. Train and freeze one RF-DETR Nano litter checkpoint, class schema, and
+   thresholds off-device.
+7. Validate the intended runtime on the target Jetson.
 8. Measure accuracy, count error, latency, throughput, memory, power,
    temperature, and sustained-run stability.
 9. Analyze detection and counting failures by class, object size, lighting,
@@ -103,10 +105,10 @@ multiclass litter detection, tracking, and counting on an NVIDIA Jetson Orin
 
 ### 1.5 Research questions
 
-- RQ1: How accurately does the Grounding DINO Tiny implementation detect and classify
-  litter on a held-out, target-representative test set?
-- RQ2: Does the exported edge artifact preserve acceptable detection and
-  classification accuracy?
+- RQ1: How accurately does the selected RF-DETR Nano litter implementation
+  detect and classify litter on a held-out, target-representative test set?
+- RQ2: Does the selected edge runtime preserve acceptable detection and
+  classification accuracy from the frozen checkpoint?
 - RQ3: Can the implementation meet the declared throughput, latency, memory,
   power, and thermal targets during sustained operation?
 - RQ4: Which classes and environmental conditions account for the largest
@@ -117,12 +119,13 @@ multiclass litter detection, tracking, and counting on an NVIDIA Jetson Orin
 ### 1.6 Contributions
 
 The intended contribution is not a new neural-network architecture. It is a
-well-documented applied study that connects a public reusable detector,
-configurable open-vocabulary categories, dataset governance, reusable hardware
-adapters, tracking-based counting, Jetson validation, systems benchmarking,
-privacy constraints, and honest publication of limitations. The repository is
-designed so that the application works before study results exist and the final
-claims can be traced to machine-readable evidence.
+well-documented applied study that connects a publicly downloadable
+litter-specific detector, dataset governance, reusable hardware adapters,
+tracking-based counting, Jetson validation, systems benchmarking, privacy
+constraints, and honest publication of limitations. The repository is designed
+so that the complete application can be exercised with a bootstrap model before
+the selected checkpoint is released and the final claims can be traced to
+machine-readable evidence.
 
 ## 2. Literature Review
 
@@ -165,13 +168,21 @@ re-parameterized convolution and auxiliary-head methods. It was not an
 Ultralytics model and should not be described as a derivative of YOLOv6 with a
 dual-stream attention head or Dice-loss replacement.
 
-Grounding DINO Tiny is the selected public implementation. Grounding DINO is an
-open-set detector that can detect objects described by text prompts. This
-supports an operational catalog that can be revised without training a new
-fixed-class output layer. Its Jetson candidacy remains conditional on stable
-execution on the exact target stack with acceptable accuracy, latency, and
-memory use. RF-DETR remains an optional future closed-set specialization, not
-the baseline requirement.
+RF-DETR Nano is the selected release architecture for this study. It provides a
+fixed output taxonomy suitable for versioned operational interfaces and
+supports deployment-oriented export. A project-maintained checkpoint will be
+trained centrally from licensed litter data and published for automatic
+download after validation. This choice defines the implementation to evaluate;
+the thesis does not compare RF-DETR against YOLO, Grounding DINO, or other
+families.
+
+Grounding DINO is an open-set detector that can locate objects described by
+text prompts. It is used only as a functional software bootstrap and possible
+data-review aid while the litter-specific checkpoint is pending. Its outputs
+are not treated as the final system's accuracy evidence. OmDet-Turbo Tiny is
+also integrated as a compact, confidence-scored no-training engineering screen.
+Neither open-vocabulary backend is a competing thesis model; only a
+configuration that passes the declared gates can be frozen for evaluation.
 
 ### 2.3 Edge AI and NVIDIA Jetson
 
@@ -256,14 +267,14 @@ The system shall:
 - preserve operational records across process and vehicle restarts;
 - operate within the target device's memory and thermal limits;
 - keep all mechanical actuation under an independent safety-rated controller;
-- download/cache the public model automatically and fail clearly when required
+- download/cache the published model automatically and fail clearly when required
   runtime assets or inputs are unavailable;
 - minimize retention of raw imagery and personally identifiable information.
 
 ### 3.3 Architecture
 
-The runtime path is camera or media input, Grounding DINO preprocessing, a
-public detector runtime, standard detection records, class-stabilized
+The runtime path is camera or media input, selected detector preprocessing, a
+versioned detector runtime, standard detection records, class-stabilized
 tracking, counting, and local event handling. It reports current visible
 objects separately from unique confirmed track IDs encountered during the
 session. Evidence is written as streaming JSON Lines plus an end-of-run
@@ -285,25 +296,25 @@ controller. A selected-frame VLM, if enabled later, is downstream and
 asynchronous.
 
 The reusable software is a deliverable separate from this manuscript. Its
-`startup.sh` entry point automates environment preparation, public-model
-download and caching, source discovery, inference, and timestamped evidence
+`startup.sh` entry point automates environment preparation, model download and
+checksum verification, source discovery, inference, and timestamped evidence
 output.
 The thesis will cite the exact public Git commit and artifact checksums used for
 each experiment; the software does not require the thesis in order to run.
 
-The baseline uses a public checkpoint and versioned prompts rather than a new
-training run. Each CPU, NVIDIA, AMD, or Jetson deployment retains its own
-manifest containing the model identifier, configuration, software versions,
-device details, and any optimized artifact checksum. Evidence from one device
-is not generalized to another.
+The implementation uses a centrally trained, public checkpoint with a versioned
+fixed taxonomy. Each CPU, NVIDIA, AMD, or Jetson deployment retains its own
+manifest containing the model identifier and checksum, configuration, software
+versions, device details, and any optimized artifact checksum. Evidence from
+one device is not generalized to another.
 
 ### 3.4 Implementation acceptance
 
-Grounding DINO Tiny is accepted for the use case only if it loads with
+The RF-DETR Nano litter checkpoint is accepted for the use case only if it loads with
 sufficient memory headroom, completes representative media without unsupported
 operators or crashes, and meets the frozen detection, classification, and
-counting accuracy requirements. An optimized runtime artifact is optional, but
-must preserve acceptable output if used.
+counting accuracy requirements. Any selected optimized runtime artifact must
+preserve acceptable output.
 
 For the human-assistance use case, acceptance also requires that separation
 destinations are configurable, uncertain items remain reviewable, corrections
@@ -322,15 +333,17 @@ counting accuracy must be re-evaluated before use.
 
 ### 4.1 Research design
 
-The study is an empirical design-and-evaluation project. It combines controlled
-prompt and threshold configuration with measurement of an implemented edge
-system. Prompt and threshold selection will use development data; the held-out
-test set will be used only after configuration choices are frozen.
+The study is an empirical design-and-evaluation project. It combines central
+training of one selected litter detector with measurement of the complete edge
+system. Model and threshold decisions will use training and validation data;
+the held-out test set will be used only after configuration choices are frozen.
 
 ### 4.2 Data acquisition
 
-The dataset will combine licensed public litter imagery with target-domain
-camera data. A source inventory will record dataset version, license,
+The dataset will combine an automatically prepared TACO bootstrap with
+target-domain camera data. The preparation command retains source URLs,
+licenses, annotations, image checksums, label mappings, and deterministic
+source-group splits. A source inventory will record dataset version, license,
 attribution, image count, annotation format, download date, and redistribution
 restrictions.
 
@@ -346,8 +359,8 @@ excluded or de-identified according to the approved protocol.
 The operational catalog begins with 16 categories: plastic bottle, glass
 bottle, metal can, paper, cardboard, plastic bag, food wrapper, disposable cup,
 cigarette butt, food waste, textile, tire, battery, electronic waste, broken
-glass, and other litter. The prompts can be revised without retraining, but the
-stable output schema will be versioned. A labeling review will test whether
+glass, and other litter. The fixed output schema will be versioned with the
+checkpoint. A labeling review will test whether
 these categories can be applied consistently. If material cannot be inferred
 reliably, the system will prefer an ambiguous/manual-review outcome.
 
@@ -372,33 +385,32 @@ reported before final evaluation.
 
 Adjacent video frames and repeated views of the same scene are highly
 correlated. Random image-level splitting can place nearly identical content in
-prompt-development and test sets and inflate performance. The data will
+training, validation, and test sets and inflate performance. The data will
 therefore be grouped by collection site, session, or source video before
-assignment to development and held-out test partitions.
+assignment to training, validation, and held-out test partitions.
 
-A grouped development/test split will be chosen after the source inventory is
-known and before prompt tuning. The test partition will be frozen and
+A grouped split will be chosen after the source inventory is known and before
+model and threshold decisions. The test partition will be frozen and
 checksummed before final accuracy evaluation.
 
-### 4.6 Public-model configuration
+### 4.6 Model training and configuration
 
-The baseline will use the public
-`IDEA-Research/grounding-dino-tiny` checkpoint. The versioned prompt catalog,
-confidence threshold, non-maximum-suppression threshold, package versions, Git
-revision, and model source will be retained in the run artifacts.
+The selected implementation will fine-tune one RF-DETR Nano checkpoint
+off-device. Training data, class schema, hyperparameters, package versions, Git
+revision, base model, output checkpoint, and checksums will be retained in
+machine-readable manifests.
 
-Prompt and threshold refinement, if performed, will use development data only.
-The scope of those changes will be disclosed. The held-out test set will not be
-used to select prompts, image size, confidence threshold, or review policy.
-Custom training is outside the baseline and will be undertaken only if measured
-deployment errors justify a separate specialized profile.
+Checkpoint and threshold selection will use training and validation data only.
+The held-out test set will not be used to select a checkpoint, image size,
+confidence threshold, or review policy. Classes without training and held-out
+support will block release or be removed from the published taxonomy.
 
-### 4.7 Runtime and optional optimization
+### 4.7 Runtime and export
 
-The public model will be evaluated first through a JetPack-compatible runtime
-without modifying the shared Jetson. If a target-specific export or optimized
-platform service is later required, its source model, format, precision, input
-shape, software versions, and checksum will be recorded.
+The selected checkpoint will be evaluated through a JetPack-compatible runtime
+without modifying the shared Jetson. The chosen target-specific export or
+runtime will record its source checkpoint, format, precision, input shape,
+software versions, and checksum.
 
 Lower precision will be evaluated only with representative calibration data
 and a repeated held-out accuracy check. An optimized artifact is accepted only
@@ -520,17 +532,17 @@ outside a frozen experiment period.
 
 Edge processing avoids continuous transmission of raw video but still consumes
 energy and hardware. The study will report power and energy-per-frame evidence
-where feasible. The selected runtime and prompt catalog will remain only as
-complex as required by the use-case accuracy target. Custom training will not
-be introduced unless measured errors show that the public baseline is
-insufficient.
+where feasible. The selected runtime and fixed taxonomy will remain only as
+complex as required by the use-case accuracy target. Central training and
+export work will be documented so their compute cost is not hidden.
 
 ## 6. Results: Pending Data and Testing
 
-No representative evaluation dataset or Jetson benchmark has been completed
-for this revised study. A read-only hardware inventory and runnable public-model
-software implementation have been completed; neither is a model-performance
-result. The remaining tables are templates and must not be read as results.
+No representative target-domain dataset or Jetson benchmark has been completed
+for this revised study. A read-only hardware inventory, runnable bootstrap
+software, and automated TACO preparation path have been completed; none is a
+final model-performance result. The remaining tables are templates and must
+not be read as results.
 
 ### 6.1 Confirmed target environment
 
@@ -562,19 +574,19 @@ result. The remaining tables are templates and must not be read as results.
 
 | Model | Precision | Recall | F1 | mAP50 | mAP50-95 |
 |---|---:|---:|---:|---:|---:|
-| Grounding DINO Tiny public profile | pending | pending | pending | pending | pending |
+| RF-DETR Nano litter release candidate | pending | pending | pending | pending | pending |
 
 ### 6.4 Counting results
 
 | Model / tracker | Frame-count MAE | Unique-count error | Duplicate-track rate | Missed-track rate |
 |---|---:|---:|---:|---:|
-| Grounding DINO Tiny + class-stabilized IoU | pending | pending | pending | pending |
+| RF-DETR Nano + class-stabilized IoU | pending | pending | pending | pending |
 
 ### 6.5 Jetson performance
 
 | Model | Power mode | FPS | p50 latency | p95 latency | RAM | Power | Peak temperature |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Grounding DINO Tiny runtime | MAXN_SUPER | pending | pending | pending | pending | pending | pending |
+| RF-DETR Nano selected runtime | MAXN_SUPER | pending | pending | pending | pending | pending | pending |
 
 ### 6.6 Error analysis
 
@@ -592,27 +604,29 @@ Complete after testing:
 ## 7. Discussion: Pending Results
 
 This chapter will interpret measured results against the research questions and
-the declared system targets. It will assess Grounding DINO detection, classification,
-tracking, counting, and full-pipeline operation and explain failure modes. It
-will not infer scalability, city-wide impact, cost-effectiveness, or
-environmental benefit solely from laboratory detection metrics.
+the declared system targets. It will assess the selected RF-DETR litter
+checkpoint's detection, classification, tracking, counting, and full-pipeline
+operation and explain failure modes. It will not infer scalability, city-wide
+impact, cost-effectiveness, or environmental benefit solely from laboratory
+detection metrics.
 
 ## 8. Conclusion and Planned Work
 
 This manuscript defines a technically corrected and reproducible plan for
 multiclass litter detection and counting on a confirmed Jetson Orin Nano 8 GB
-Super device. Public Grounding DINO Tiny is the implementation model;
-model-family comparison is out of scope. The design integrates a portable
-runtime adapter,
+Super device. A project-maintained RF-DETR Nano checkpoint is the selected
+implementation; model-family comparison is out of scope. The design integrates
+a portable runtime adapter,
 class-stabilized tracking, use-case acceptance gates, dataset leakage controls,
 annotation quality, hardware manifests, full-pipeline validation, privacy,
 security, and publication requirements.
 
-The next work is empirical: approve the data protocol, collect and label
-evaluation data, freeze prompts and thresholds, obtain an authorized Jetson
-test window, run the accuracy and operational validation, and populate the
-Results and Discussion chapters. The reusable software is already runnable,
-but it must not be described as a validated real-time deployment until those
+The next work is empirical: approve the data protocol, prepare TACO, collect
+and label representative field data, train and freeze the checkpoint and
+thresholds, obtain an authorized Jetson test window, run the accuracy and
+operational validation, and populate the Results and Discussion chapters. The
+reusable software is already runnable with its bootstrap, but the release model
+must not be described as a validated real-time deployment until those
 measurements are complete.
 
 ## References
@@ -659,11 +673,13 @@ Inference:
 
 Benchmark:
 
-`python benchmark.py --source data/litter/test-video.mp4 --output reports/generated/jetson-grounding-dino.json`
+`python benchmark.py --backend rfdetr --model models/rfdetr-nano-litter.pth --source data/litter/test-video.mp4 --output reports/generated/jetson-rfdetr.json`
 
-Optional custom training:
+Maintainer data preparation and training:
 
-`python train.py --data data/litter --model rfdetr-nano`
+`python prepare_training_data.py`
+
+`python train.py --data data/taco-operational-v1 --model rfdetr-nano`
 
 ## Appendix B. Completion gate
 
@@ -672,10 +688,9 @@ Optional custom training:
 - Approve ethics and privacy plan.
 - Obtain an authorized Jetson test window without disrupting the existing
   project.
-- Freeze prompt catalog, class guide, data version, and held-out split.
+- Freeze checkpoint, class guide, data version, and held-out split.
 - Complete accuracy, counting, latency, and memory acceptance gates.
-- Evaluate an optimized artifact only if the public reference runtime does not
-  meet the operational target.
+- Verify the selected exported artifact against the frozen checkpoint.
 - Capture accuracy, count error, latency, throughput, memory, power, and
   temperature.
 - Replace pending tables with traceable evidence.

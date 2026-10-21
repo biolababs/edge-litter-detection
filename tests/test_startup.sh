@@ -113,6 +113,19 @@ LITTER_PYTHON="$fake_python" \
 grep -F -- "--backend rfdetr" "$fake_log" >/dev/null
 grep -F -- "--model $fake_model" "$fake_log" >/dev/null
 
+: >"$fake_log"
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_PYTHON="$fake_python" \
+  "$repository_root/startup.sh" \
+  --skip-install \
+  --backend omdet_turbo \
+  --source 0 \
+  --no-display \
+  --max-frames 1 >/dev/null
+
+grep -F -- "--backend omdet_turbo" "$fake_log" >/dev/null
+grep -F -- "--model omlab/omdet-turbo-swin-tiny-hf" "$fake_log" >/dev/null
+
 stream_output="$(
   FAKE_PYTHON_LOG="$fake_log" \
   LITTER_PYTHON="$fake_python" \

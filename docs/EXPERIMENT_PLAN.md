@@ -2,24 +2,33 @@
 
 ## Question
 
-Does the public Grounding DINO Tiny implementation detect, classify, track, and
-count litter accurately and efficiently enough for the defined operational use
-case?
+Does the single versioned litter solution detect, classify, track, and count
+litter accurately and efficiently enough for the defined operational use case?
 
 The study evaluates the solution. It does not compare detector families or
 build a leaderboard.
+
+## Frozen implementation
+
+The evaluated implementation is the project-maintained RF-DETR Nano litter
+checkpoint, exact class schema, thresholds, tracking configuration, and runtime
+revision recorded in the release manifest.
+
+Grounding DINO is the functional bootstrap. OmDet-Turbo Tiny is a no-training
+engineering acceptance candidate. Neither is a second thesis contender; the
+reported study evaluates only the implementation ultimately frozen for release.
 
 ## Validation conditions
 
 | Condition | Purpose |
 |---|---|
-| Frozen public model ID, prompt catalog, and thresholds | Establish reproducible detection/classification behavior |
+| Frozen checkpoint checksum, class schema, and thresholds | Establish reproducible detection/classification behavior |
+| Frozen grouped held-out dataset | Prevent tuning on final evaluation scenes |
 | Full video application | Validate tracking, counting, persistence, and review behavior |
 | Intended edge runtime | Validate latency, memory, power, temperature, and stability |
 
-If an optimized runtime artifact is introduced, it is checked against the same
-frozen public-model configuration for unacceptable regression. That is runtime
-validation, not model comparison.
+An exported artifact is checked against the same selected checkpoint for
+unacceptable regression. That is runtime validation, not model comparison.
 
 ## Detection and classification
 
@@ -51,7 +60,7 @@ The application must:
 - avoid sustained memory growth and swap-dependent operation;
 - preserve declared memory for co-resident services;
 - avoid sustained thermal throttling;
-- record the model, prompts, hardware, and runtime environment.
+- record the model checksum, hardware, and runtime environment.
 
 The provisional Jetson target is at least 15 source-to-result frames per second
 under the declared coexistence condition. It is an acceptance target, not an
@@ -59,21 +68,18 @@ achieved result.
 
 ## Procedure
 
-1. Freeze the model revision, class schema, prompts, source inventory, and
-   grouped development/test split.
-2. Annotate representative images and videos, including persistent object
-   identities for the count subset.
-3. Refine prompts and confidence/tracking thresholds using development data
-   only.
-4. Freeze configuration before opening the held-out test set.
-5. Measure detection, classification, review, and count accuracy.
-6. Run sustained full-application tests on the intended device.
-7. Capture throughput, latency, memory, temperature, power, and failure
-   evidence.
-8. Analyze false detections, misses, class errors, duplicate counts, missed
-   counts, and track merges.
-9. Consider an optimized runtime or custom model only when the measured
-   baseline fails a documented acceptance requirement.
+1. Build the attributed TACO bootstrap dataset with grouped splits.
+2. Add representative field and vehicle-mounted data.
+3. Supply examples for every released class and document annotation rules.
+4. Freeze the class schema and a held-out test partition.
+5. Train one release candidate off-device.
+6. Tune thresholds and tracking using development data only.
+7. Freeze configuration before opening the held-out test set.
+8. Measure detection, classification, review, and count accuracy.
+9. Run sustained full-application tests on the intended device.
+10. Capture throughput, latency, memory, temperature, power, and failure
+    evidence.
+11. Publish weights only after all declared release gates pass.
 
 ## Pending results
 
@@ -87,7 +93,7 @@ achieved result.
 
 | Frame-count MAE | Unique-count error | Duplicate-track rate | Missed-track rate |
 |---:|---:|---:|---:|
-| pending | pending | pending | pending |
+| pending | pending | pending | pending | pending |
 
 ### Operational acceptance
 

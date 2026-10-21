@@ -4,7 +4,7 @@ train: images/train
 val: images/val
 test: images/test
 
-# Optional custom RF-DETR training example. Keep aligned with classes.yaml.
+# RF-DETR release taxonomy example. Keep aligned with classes.yaml.
 names:
   0: plastic_bottle
   1: glass_bottle

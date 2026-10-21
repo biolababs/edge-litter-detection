@@ -38,14 +38,14 @@ Usage: ./startup.sh [options]
 
 Default behavior:
   1. Create .venv and install the application.
-  2. Download/cache the public Grounding DINO Tiny model on first use.
+  2. Download/cache the current functional bootstrap model on first use.
   3. Select the first working camera, or the first file under media/.
   4. Run detection, classification, tracking, counting, and separation guidance.
   5. Persist operational counts to state/litter-edge.db.
 
 Options:
   --source VALUE         Image, video, camera index, stream URL, or "auto".
-  --backend NAME         grounding_dino (default) or rfdetr.
+  --backend NAME         grounding_dino (default), omdet_turbo, or rfdetr.
   --model VALUE          Public model ID or local RF-DETR checkpoint path.
   --model-url URL        Optional HTTPS URL for an RF-DETR checkpoint.
   --model-sha256 DIGEST  Required SHA-256 for --model-url.
@@ -236,16 +236,21 @@ case "$(printf '%s' "$backend_value" | tr '[:upper:]-' '[:lower:]_')" in
   grounding_dino)
     backend_value="grounding_dino"
     ;;
+  omdet_turbo|omdet)
+    backend_value="omdet_turbo"
+    ;;
   rfdetr)
     backend_value="rfdetr"
     ;;
   *)
-    fail "--backend must be grounding_dino or rfdetr."
+    fail "--backend must be grounding_dino, omdet_turbo, or rfdetr."
     ;;
 esac
 if [[ "$model_was_set" != true ]]; then
   if [[ "$backend_value" == "rfdetr" ]]; then
     model_path="$project_root/models/rfdetr-nano-litter.pth"
+  elif [[ "$backend_value" == "omdet_turbo" ]]; then
+    model_path="omlab/omdet-turbo-swin-tiny-hf"
   else
     model_path="IDEA-Research/grounding-dino-tiny"
   fi
@@ -329,7 +334,7 @@ fi
 if [[ "$install_profile" == "runtime" || "$install_profile" == "runtime-headless" ]]; then
   install_profile="$install_profile-$backend_value"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.8.1"
+install_marker="$venv_dir/.edge-litter-$install_profile-0.9.0"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip

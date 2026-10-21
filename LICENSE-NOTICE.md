@@ -18,8 +18,12 @@ third-party or research artifacts:
 4. do not describe an academic/open-source release as suitable for proprietary
    commercial deployment without a separate licensing review.
 
-The optional demo downloader retrieves a small selection from the TACO
-dataset. TACO annotations are distributed under CC BY 4.0, while individual
-images can use different licenses recorded in the downloaded
-`media/taco-demo/manifest.json`. The repository does not redistribute those
-images.
+The OmDet-Turbo Tiny Hugging Face checkpoint and upstream OmDet repository
+declare Apache-2.0. The project downloads that checkpoint from its upstream
+source and does not include it in Git.
+
+The demo and training-data downloaders retrieve material from the TACO dataset.
+TACO annotations are distributed under CC BY 4.0, while individual images can
+use different licenses recorded in the generated manifests under
+`media/taco-demo/` or `data/taco-operational-v1/`. The repository does not
+redistribute those images.

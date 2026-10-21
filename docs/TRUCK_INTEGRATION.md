@@ -218,7 +218,7 @@ The useful system-level outcomes are:
 - database/outbox backlog during network loss;
 - inference availability during a shift.
 
-Accuracy is evaluated for the frozen public-model configuration used by the
+Accuracy is evaluated for the frozen release-model configuration used by the
 solution. The product evaluation focuses on whether the complete workflow helps
 collection teams find, separate, and account for litter safely; it does not
 rank detector families.

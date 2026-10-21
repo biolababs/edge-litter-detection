@@ -2,93 +2,87 @@
 
 ## Decision
 
-Use public Grounding DINO Tiny as the default detector for the reusable
-application.
+Use one project-maintained RF-DETR Nano checkpoint as the release detector for
+the litter application.
 
-This decision makes a fresh clone useful without requiring every user to build
-a dataset, train a model, obtain a private checkpoint, or configure an API key.
-The model is loaded through Hugging Face Transformers and cached locally after
-the first download.
+This is a requirement-based implementation decision, not a model comparison.
+The selected detector must support the fixed operational taxonomy, public
+weight distribution, checksum verification, edge-oriented export, and a
+runtime that fits the truck, sorting, and monitoring workflows.
 
-The application remains a single litter use case, not a model-comparison
-project. RF-DETR is retained only as an optional closed-set profile for teams
-that later choose to create or license a specialized checkpoint.
+Ordinary users do not train. Project maintainers prepare licensed data, train
+the checkpoint centrally, evaluate it, publish a versioned artifact, and update
+`config/model-release.json`. The launcher then downloads and verifies the
+artifact automatically.
 
-## Why an open-vocabulary default
+## Current bootstrap state
 
-An open-vocabulary detector accepts text labels at inference time. Therefore:
+Grounding DINO Tiny remains the automatically downloaded functional bootstrap
+until the project checkpoint is published. It allows any contributor to test:
 
-- the operational catalog is not limited to the five thesis-planning classes;
-- class prompts can be revised without changing code;
-- a municipality or operator can add locally relevant litter categories;
-- the standard tracking, counting, persistence, review, and integration layers
-  work before custom training data exists.
+- camera, image, video, and stream ingestion;
+- detection normalization, tracking, and counting;
+- SQLite persistence and queries;
+- the human-review queue;
+- annotated evidence and integration events.
 
-The versioned output names and detector prompts are separate in
-`config/classes.yaml`. Stable output names support databases and APIs while
-prompts can be tuned for the target environment.
+The bootstrap is not the production accuracy claim. Open-vocabulary prompts
+are useful for rapid functional work and data review, but the release gate is
+the measured performance of the litter-specific checkpoint.
 
-## Default catalog
+OmDet-Turbo Tiny is integrated as a stronger no-training acceptance candidate.
+It is a compact Apache-2.0 open-vocabulary detector with direct confidence
+scores and backend-specific prompts. It uses the complete product runtime but
+does not become the release detector unless representative accuracy, counting,
+and edge-device gates pass.
 
-The repository supplies 16 practical prompts covering containers, paper,
+## Operational catalog
+
+The stable product catalog contains 16 categories covering containers, paper,
 packaging, cigarette waste, organics, textiles, tires, batteries, electronic
 waste, broken glass, and other litter.
 
-This catalog is a starting operational policy, not a claim that visual
-appearance always reveals material composition. Batteries, electronic waste,
-broken glass, generic litter, and low-confidence results enter the human
-review workflow.
+A released closed-set checkpoint must use the exact class ID/name mapping
+recorded in `config/classes.yaml`. No class can be advertised as supported when
+its training and held-out evaluation coverage is missing.
 
-## Use-case acceptance
+## Data path
 
-The implementation is assessed on whether it:
+`prepare_training_data.py` creates an attributed COCO dataset from TACO:
 
-1. detects visible litter with a bounding box;
-2. assigns a configured operational category;
-3. maintains a stable track while an item remains visible;
-4. reports current visible counts;
-5. counts confirmed track IDs once per run;
-6. persists evidence and review records offline;
-7. exposes integration events to a truck or fleet system; and
-8. operates within the measured limits of the target device.
+- source images and annotations are checksummed;
+- fine-grained TACO categories are conservatively mapped to product classes;
+- source collection batches stay together in grouped train, validation, and
+  test splits;
+- image-level license metadata is retained;
+- classes with no training instances are reported as release blockers.
 
-Accuracy, latency, memory, sustained throughput, and failure conditions must be
-measured using representative scenes. Open-vocabulary capability does not make
-those measurements unnecessary.
+TACO is bootstrap data. It does not replace representative vehicle-mounted,
+roadside, sorting, lighting, weather, distance, blur, and occlusion data.
 
-## Operational profiles
+## Release gates
 
-### Public profile
+The project checkpoint becomes the normal one-command default only after it:
 
-- Backend: `grounding_dino`
-- Model: `IDEA-Research/grounding-dino-tiny`
-- Training required: no
-- API key required: no
-- Classes: configured as text prompts
-- Intended role: immediate reusable baseline and reference deployment
-
-### Optional specialized profile
-
-- Backend: `rfdetr`
-- Model: user-supplied compatible checkpoint
-- Training required: only if the organization chooses to create a custom model
-- Classes: fixed by the checkpoint
-- Intended role: later accuracy, size, latency, or export optimization
-
-These profiles are implementation choices for the same product workflow. The
-project does not rank model families or publish a leaderboard.
+1. has labeled training and held-out coverage for every released class;
+2. meets the frozen detection and classification acceptance criteria;
+3. meets count-error requirements on track-annotated video;
+4. meets sustained latency, memory, thermal, and stability requirements on the
+   intended edge device;
+5. includes a model card, data statement, exact class schema, and checksums;
+6. downloads successfully through the standard launcher.
 
 ## LLM/VLM role
 
-An LLM is not needed in the continuous detection, tracking, or counting loop.
-Language prompts configure the Grounding DINO detector, but a separate
-generative LLM service is not required.
+An LLM is not required in the continuous detection, tracking, or counting loop.
+A language or open-vocabulary model can assist maintainers with data discovery
+or review, but it is not required on every deployed edge device.
 
 ## Primary references
 
-- Grounding DINO repository: https://github.com/IDEA-Research/GroundingDINO
-- Grounding DINO Tiny model card:
-  https://huggingface.co/IDEA-Research/grounding-dino-tiny
-- Transformers Grounding DINO documentation:
-  https://huggingface.co/docs/transformers/model_doc/grounding-dino
 - RF-DETR repository: https://github.com/roboflow/rf-detr
+- RF-DETR documentation: https://rfdetr.roboflow.com/
+- TACO repository: https://github.com/pedropro/TACO
+- Grounding DINO repository: https://github.com/IDEA-Research/GroundingDINO
+- OmDet-Turbo checkpoint:
+  https://huggingface.co/omlab/omdet-turbo-swin-tiny-hf

@@ -1,6 +1,6 @@
 import unittest
 
-from litter_edge.benchmark import _memory_evidence
+from litter_edge.benchmark import _accelerator_memory_evidence, _memory_evidence
 
 
 class MemoryEvidenceTests(unittest.TestCase):
@@ -48,6 +48,36 @@ class MemoryEvidenceTests(unittest.TestCase):
 
         self.assertEqual(evidence["preferred_status"], "exceeded")
         self.assertEqual(evidence["hard_gate_status"], "fail")
+
+    def test_summarizes_accelerator_memory_without_nvidia_smi(self) -> None:
+        evidence = _accelerator_memory_evidence(
+            [
+                {
+                    "accelerator": "Test GPU",
+                    "accelerator_allocated_gib": 1.0,
+                    "accelerator_reserved_gib": 1.2,
+                    "accelerator_peak_allocated_gib": 1.1,
+                    "accelerator_peak_reserved_gib": 1.3,
+                    "accelerator_free_gib": 6.8,
+                    "accelerator_total_gib": 8.0,
+                },
+                {
+                    "accelerator": "Test GPU",
+                    "accelerator_allocated_gib": 1.4,
+                    "accelerator_reserved_gib": 1.8,
+                    "accelerator_peak_allocated_gib": 1.6,
+                    "accelerator_peak_reserved_gib": 1.9,
+                    "accelerator_free_gib": 6.2,
+                    "accelerator_total_gib": 8.0,
+                },
+            ]
+        )
+
+        self.assertEqual(evidence["status"], "measured")
+        self.assertEqual(evidence["device"], "Test GPU")
+        self.assertEqual(evidence["maximum_allocated_gib"], 1.4)
+        self.assertEqual(evidence["peak_reserved_gib"], 1.9)
+        self.assertEqual(evidence["minimum_free_gib"], 6.2)
 
 
 if __name__ == "__main__":

@@ -35,3 +35,20 @@ prompts:
   13: discarded electronic device
   14: broken glass litter
   15: discarded trash or litter
+omdet_turbo_prompts:
+  0: clear plastic bottle
+  1: glass bottle
+  2: drink can
+  3: sheet of paper
+  4: cardboard litter
+  5: plastic carrier bag
+  6: plastic wrapper
+  7: disposable cup
+  8: cigarette butt
+  9: food waste
+  10: discarded clothing
+  11: tire
+  12: battery
+  13: discarded electronic device
+  14: broken glass
+  15: small piece of trash

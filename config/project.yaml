@@ -1,6 +1,7 @@
 project_name: litter
-# Public open-vocabulary defaults: no private checkpoint or training is needed.
-# Transformers downloads and caches this model on first use.
+# Functional bootstrap while the project-maintained RF-DETR release checkpoint
+# is being trained and validated. Transformers downloads and caches this public
+# model on first use. It is not the production accuracy claim.
 backend: grounding_dino
 model: IDEA-Research/grounding-dino-tiny
 class_names: config/classes.yaml
@@ -63,15 +64,18 @@ target:
     - development_tools
 
 implementation:
-  model_family: grounding_dino
-  variant: tiny
+  selected_release_model_family: rfdetr
+  selected_release_variant: nano
+  release_status: pending_trained_checkpoint
+  bootstrap_model_family: grounding_dino
+  bootstrap_variant: tiny
   purpose: litter_detection_classification_and_counting
   model_comparison_in_scope: false
 
-# Not used by startup.sh or the public model. This section exists only for
-# teams that intentionally choose to build an optional closed-set RF-DETR
-# checkpoint from licensed representative data.
-custom_training:
+# Maintainer workflow for the single project release model. Ordinary deployers
+# will download the published, checksum-verified checkpoint automatically and
+# will not need this section.
+release_training:
   backend: rfdetr
   base_model: rfdetr-nano
   image_size: 640
@@ -82,7 +86,7 @@ custom_training:
   deterministic: true
   patience: 30
   output_dir: runs/litter
-  run_name: rfdetr-nano-custom
+  run_name: rfdetr-nano-litter-release-candidate
 
 validation:
   accuracy_metrics:

@@ -2,12 +2,14 @@
 
 ## Decision
 
-Use a portable application core with a public Grounding DINO Tiny adapter as
-the default detector. The model is downloaded automatically and configured with
-text prompts, so users do not need a project-specific training run.
+Use a portable application core with one project-maintained RF-DETR Nano
+checkpoint as the selected release detector. Users download the versioned,
+checksum-verified artifact; they do not train it.
 
-RF-DETR remains an optional adapter for a later specialized checkpoint. This is
-one litter solution with multiple deployment profiles, not a model leaderboard.
+Grounding DINO Tiny remains the default functional bootstrap. OmDet-Turbo Tiny
+is an integrated no-training acceptance candidate with confidence-scored
+open-vocabulary output. This is one litter solution with bootstrap and release
+paths, not a model leaderboard.
 
 ## Components
 
@@ -16,9 +18,10 @@ one litter solution with multiple deployment profiles, not a model leaderboard.
    - Source identifiers are sanitized before evidence is written.
 
 2. **Detection and classification**
-   - Grounding DINO Tiny is the public open-vocabulary default.
-   - Stable class names and configurable prompts come from
-     `config/classes.yaml`.
+   - RF-DETR Nano is the selected fixed-taxonomy release detector.
+   - Grounding DINO Tiny is the default functional bootstrap.
+   - OmDet-Turbo Tiny is the no-training acceptance candidate.
+   - Stable class IDs and names come from `config/classes.yaml`.
    - Adapters normalize output into the common `Detection` schema.
 
 3. **Duplicate suppression**
@@ -50,7 +53,7 @@ one litter solution with multiple deployment profiles, not a model leaderboard.
 image / video / camera / stream
                 |
                 v
-       public/custom adapter
+      bootstrap/release adapter
                 |
                 v
       standard Detection records
@@ -84,7 +87,7 @@ targets, not measured results.
 ## Failure behavior
 
 - Missing model runtime, configuration, or source: fail clearly.
-- First public-model download unavailable: retain no false success state and
+- First model download unavailable: retain no false success state and
   report the connection/cache error.
 - Camera disconnect: record failure and allow a process supervisor to restart.
 - Low-confidence or ambiguous object: preserve it for review.

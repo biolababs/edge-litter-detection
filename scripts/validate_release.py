@@ -17,6 +17,10 @@ REQUIRED = [
     "tests/test_startup.sh",
     "prepare_test_data.py",
     "tests/test_demo_data.py",
+    "tests/test_omdet_turbo_adapter.py",
+    "prepare_training_data.py",
+    "tests/test_training_data.py",
+    "tests/test_train.py",
     "LICENSE",
     "LICENSE-NOTICE.md",
     "MODEL_CARD.md",
@@ -48,6 +52,9 @@ REQUIRED = [
     "src/litter_edge/discover.py",
     "src/litter_edge/model_fetch.py",
     "src/litter_edge/demo_data.py",
+    "src/litter_edge/adapters/omdet_turbo.py",
+    "src/litter_edge/training_data.py",
+    "src/litter_edge/train.py",
     "src/litter_edge/evaluate.py",
     "src/litter_edge/evaluate_counts.py",
     "schemas/detection-event.schema.json",
@@ -82,7 +89,22 @@ def main() -> None:
         if not path.is_file() or ".git" in path.parts:
             continue
         if any(
-            part in {"data", "models", "runs", "generated", "state"}
+            part
+            in {
+                ".venv",
+                ".pytest_cache",
+                ".mypy_cache",
+                ".ruff_cache",
+                "__pycache__",
+                "build",
+                "data",
+                "dist",
+                "models",
+                "node_modules",
+                "runs",
+                "generated",
+                "state",
+            }
             for part in path.parts
         ):
             continue
@@ -190,13 +212,24 @@ def main() -> None:
     if class_names != separation_names:
         errors.append("separation destinations must match configured class names")
     if project_config.get("backend") != "grounding_dino":
-        errors.append("the default backend must remain the public grounding_dino profile")
+        errors.append(
+            "the bootstrap backend must remain grounding_dino until the "
+            "release checkpoint is published"
+        )
     if project_config.get("model") != "IDEA-Research/grounding-dino-tiny":
-        errors.append("the default public model ID changed without release review")
+        errors.append("the bootstrap public model ID changed without release review")
+    implementation = project_config.get("implementation") or {}
+    if implementation.get("selected_release_model_family") != "rfdetr":
+        errors.append("selected release model family must be rfdetr")
+    if implementation.get("selected_release_variant") != "nano":
+        errors.append("selected release model variant must be nano")
     prompts = class_config.get("prompts")
     names = class_config.get("names")
     if not isinstance(prompts, dict) or set(prompts) != set(names):
         errors.append("open-vocabulary prompt IDs must match class IDs")
+    omdet_prompts = class_config.get("omdet_turbo_prompts")
+    if not isinstance(omdet_prompts, dict) or set(omdet_prompts) != set(names):
+        errors.append("OmDet-Turbo prompt IDs must match class IDs")
     if len(class_names) < 10:
         errors.append("the reusable default catalog must not regress to a narrow pilot")
     gitkeep_files = list(ROOT.rglob(".gitkeep"))

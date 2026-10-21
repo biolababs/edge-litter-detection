@@ -33,10 +33,18 @@ def load_class_names(path: str | Path) -> dict[int, str]:
 def load_class_prompts(
     path: str | Path,
     class_names: dict[int, str] | None = None,
+    profile: str | None = None,
 ) -> dict[int, str]:
     source, payload = _load_payload(path)
     names = class_names or load_class_names(source)
-    raw_prompts = payload.get("prompts")
+    profile_key = (
+        f"{profile.strip().lower().replace('-', '_')}_prompts"
+        if profile
+        else None
+    )
+    raw_prompts = payload.get(profile_key) if profile_key else None
+    if raw_prompts is None:
+        raw_prompts = payload.get("prompts")
     if raw_prompts is None:
         return {
             class_id: class_name.replace("_", " ")

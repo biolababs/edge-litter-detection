@@ -1,35 +1,41 @@
-# Evaluation and optional custom-model data
+# Evaluation and maintainer training data
 
-Data files are intentionally excluded from Git. The public Grounding DINO
-profile does not need a training dataset, but representative labeled media is
-required to measure detection and counting accuracy.
+Data files are intentionally excluded from Git. Ordinary users do not need a
+training dataset. Maintainers need licensed, representative labeled media to
+build and evaluate the published RF-DETR checkpoint.
 
-If a team chooses the optional RF-DETR training profile, an expected YOLO
-layout is:
+Prepare the attributed TACO COCO bootstrap automatically:
 
-```text
-data/litter/
-├── data.yaml
-├── images/
-│   ├── train/
-│   ├── val/
-│   └── test/
-└── labels/
-    ├── train/
-    ├── val/
-    └── test/
+```bash
+python prepare_training_data.py
 ```
 
-RF-DETR accepts YOLO-format data when `data.yaml` is present at the dataset
-root. A COCO-format dataset is also supported. The frozen data manifest must
-state which format and schema version were used.
+This creates:
+
+```text
+data/taco-operational-v1/
+├── classes.yaml
+├── manifest.json
+├── train/
+│   └── _annotations.coco.json
+├── valid/
+│   └── _annotations.coco.json
+└── test/
+    └── _annotations.coco.json
+```
+
+Images are downloaded into their assigned split directories and remain ignored
+by Git. The manifest records sources, licenses, checksums, mapping decisions,
+group assignments, class counts, and release blockers.
 
 For held-out test evaluation, a YOLO `data.yaml` must declare `test`, or a COCO
 dataset must contain `test/_annotations.coco.json`. The evaluator fails instead
 of silently reporting validation metrics as test metrics.
 
-Split by collection site/session before augmentation. Do not randomly distribute
-near-duplicate video frames across train, validation, and test sets.
+TACO is bootstrap data only. Add representative field data and examples for
+every released class. Split new data by collection site/session before
+augmentation. Do not distribute near-duplicate video frames across train,
+validation, and test sets.
 
 ## Counting evaluation
 
