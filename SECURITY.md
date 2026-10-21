@@ -28,6 +28,18 @@
   mounts.
 - Stream credentials and URL query parameters are removed from generated event
   and summary evidence. Do not place secrets in local filenames or model paths.
+- Protect the SQLite database because it can contain operational route,
+  vehicle, review, and collection records.
+
+## Vehicle and machinery integration
+
+- Detection events are advisory and must not directly actuate a collection arm.
+- Keep final motion authority in a safety-rated controller with emergency-stop,
+  exclusion-zone, limit, and stale-signal interlocks.
+- Treat `litter.object.confirmed` as an observed-object candidate, not a
+  collection confirmation.
+- Write `litter.collection.confirmed` only from an authenticated human or
+  controller workflow that has positive pickup evidence.
 
 ## Reporting
 

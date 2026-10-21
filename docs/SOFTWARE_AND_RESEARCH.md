@@ -6,7 +6,7 @@ and release rules.
 
 | Area | Reusable software | Research work |
 |---|---|---|
-| Purpose | Run detection, classification, tracking, counting, APIs, and evidence output | Evaluate accuracy and edge-device operation |
+| Purpose | Run detection, classification, tracking, counting, human review, separation guidance, persistence, APIs, and evidence output | Evaluate accuracy and edge-device operation |
 | Location | `src/`, `config/`, `deploy/`, `schemas/`, and operational docs | `thesis/` and experiment documents |
 | License | Apache-2.0, subject to `LICENSE-NOTICE.md` | Separate academic and artifact rights |
 | Data | User-supplied input media | Frozen, licensed study dataset |
@@ -17,7 +17,9 @@ and release rules.
 
 Users can clone the repository, run `startup.sh`, inspect cameras or other
 inputs, install a verified checkpoint, run the CLI or API, and consume the
-documented JSON schema. None of those operations require the thesis manuscript.
+documented JSON schema. SQLite persistence, vehicle/route context, the human
+review queue, and integration outbox are part of the reusable software. None of
+those operations require the thesis manuscript.
 
 The default application classes are:
 

@@ -6,6 +6,9 @@
   "required": [
     "run_id",
     "source",
+    "edge_device_id",
+    "vehicle_id",
+    "route_id",
     "frame_index",
     "timestamp_seconds",
     "inference_ms",
@@ -22,6 +25,22 @@
     },
     "source": {
       "type": "string"
+    },
+    "edge_device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vehicle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "route_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "frame_index": {
       "type": "integer",
@@ -77,7 +96,9 @@
         "class_id",
         "class_name",
         "track_id",
-        "confirmed"
+        "confirmed",
+        "separation_destination",
+        "review_required"
       ],
       "properties": {
         "bbox_xyxy": {
@@ -119,6 +140,15 @@
           "minimum": 1
         },
         "confirmed": {
+          "type": "boolean"
+        },
+        "separation_destination": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_required": {
           "type": "boolean"
         }
       },

@@ -35,15 +35,22 @@ but it must not replace detector evaluation.
 5. **Event handling**
    - Detection class, confidence, box, frame identifier, and timing.
    - Streaming JSON Lines, an end-of-run summary, and optional annotated media.
+   - SQLite runs, frame counts, reviews, collection confirmations, and durable
+     integration outbox events.
    - No face or identity analytics.
 
-6. **Evidence**
+6. **Human-assisted separation**
+   - Map material classes to operator-configured separation streams.
+   - Mark low-confidence and `other_litter` items for review.
+   - Preserve human confirmations and corrections separately from model output.
+
+7. **Evidence**
    - JSON run manifest.
    - Environment and software versions.
    - Benchmark timing.
    - Separate `tegrastats` capture for power, memory, and thermals.
 
-7. **Optional VLM**
+8. **Optional VLM**
    - Triggered only for selected frames or offline review.
    - Receives a de-identified image plus detector output.
    - Produces natural-language summaries that are never treated as ground truth.
@@ -57,6 +64,8 @@ but it must not replace detector evaluation.
 - Detector incremental memory target: at most 1.5 GiB preferred, 2.0 GiB hard
   initial limit.
 - Preserve at least 2.0 GiB available memory during coexistence testing.
+- Mechanical actuation remains outside this process and under a safety-rated
+  controller.
 - No camera was present during inventory, so use recorded video for the first
   smoke test.
 - Training remains off-device.
@@ -72,6 +81,10 @@ object. Hardware-specific adapters convert model output into that schema.
 TensorRT engines remain platform-specific and must be produced for a compatible
 target stack. Keep original checkpoints and export manifests so all deployment
 artifacts are traceable.
+
+SQLite is the offline operational boundary. Detection events can be consumed by
+an operator interface, fleet connector, or task planner, but only an external
+human/controller workflow can create a collection confirmation.
 
 ## Failure behavior
 

@@ -15,7 +15,7 @@ COPY config ./config
 RUN python -m pip install --upgrade pip \
     && python -m pip install ".[runtime-headless,api,rfdetr]"
 
-RUN mkdir -p /app/models /app/reports/generated \
+RUN mkdir -p /app/models /app/reports/generated /app/state \
     && chown -R litter:litter /app
 
 USER litter

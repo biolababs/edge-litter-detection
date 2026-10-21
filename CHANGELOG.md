@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 - 2026-10-21
+
+- Added default offline SQLite persistence for runs, frame counts, class
+  totals, optional detection rows, and externally confirmed collections.
+- Added truck, route, and edge-device identifiers throughout events and
+  summaries.
+- Added configurable separation guidance and a human review queue for uncertain
+  classifications.
+- Added durable integration outbox events for confirmed objects, reviews,
+  run completion, and collection confirmation.
+- Added count, run, review, collection, and integration API workflows.
+
 ## 0.5.0 - 2026-10-20
 
 - Replaced the manual-first README with a professional standalone software

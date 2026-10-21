@@ -25,6 +25,7 @@ REQUIRED = [
     "compose.yaml",
     "config/classes.yaml",
     "config/project.yaml",
+    "config/separation.yaml",
     "config/model-release.json",
     "config/data.example.yaml",
     "data/count-ground-truth.example.json",
@@ -39,14 +40,24 @@ REQUIRED = [
     "src/litter_edge/schema.py",
     "src/litter_edge/tracking.py",
     "src/litter_edge/runtime.py",
+    "src/litter_edge/sorting.py",
+    "src/litter_edge/storage.py",
+    "src/litter_edge/query.py",
     "src/litter_edge/discover.py",
     "src/litter_edge/model_fetch.py",
     "src/litter_edge/evaluate.py",
     "src/litter_edge/evaluate_counts.py",
     "schemas/detection-event.schema.json",
     "schemas/count-ground-truth.schema.json",
+    "schemas/integration-event.schema.json",
     "docs/INPUT_SOURCES.md",
     "docs/SOFTWARE_AND_RESEARCH.md",
+    "docs/TRUCK_INTEGRATION.md",
+    "docs/INTEGRATION_EVENTS.md",
+    "deploy/systemd/litter-edge-truck.service.example",
+    "query_counts.py",
+    "state/.gitkeep",
+    "state/README.md",
     "thesis/manuscript.md",
 ]
 
@@ -68,7 +79,10 @@ def main() -> None:
     for path in ROOT.rglob("*"):
         if not path.is_file() or ".git" in path.parts:
             continue
-        if any(part in {"data", "models", "runs", "generated"} for part in path.parts):
+        if any(
+            part in {"data", "models", "runs", "generated", "state"}
+            for part in path.parts
+        ):
             continue
         try:
             text = path.read_text(encoding="utf-8")
@@ -157,6 +171,19 @@ def main() -> None:
             errors.append("published model release requires a SHA-256 digest")
     elif release_url is not None or release_sha256 is not None:
         errors.append("pending model release must not define url or sha256")
+
+    class_config = yaml.safe_load(
+        (ROOT / "config/classes.yaml").read_text(encoding="utf-8")
+    )
+    separation_config = yaml.safe_load(
+        (ROOT / "config/separation.yaml").read_text(encoding="utf-8")
+    )
+    class_names = {str(value) for value in class_config["names"].values()}
+    separation_names = {
+        str(value) for value in separation_config["destinations"].keys()
+    }
+    if class_names != separation_names:
+        errors.append("separation destinations must match configured class names")
 
     if errors:
         print("\n".join(f"ERROR: {error}" for error in errors), file=sys.stderr)

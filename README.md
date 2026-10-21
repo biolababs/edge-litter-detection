@@ -6,12 +6,14 @@
 [![Model](https://img.shields.io/badge/Detector-RF--DETR%20Nano-7B61FF.svg)](https://github.com/roboflow/rf-detr)
 
 Portable software for real-time litter detection, multiclass classification,
-tracking, and counting on edge-AI devices.
+tracking, counting, and human-assisted material separation on edge-AI devices.
 
 The application accepts an image, downloaded video, local camera, or live
-stream and produces annotated media plus structured JSON evidence. The
-software is independent of the MSc thesis; the thesis uses this repository as
-its reference implementation.
+stream and produces annotated media, structured JSON evidence, and a durable
+offline SQLite record. It can operate as a perception component on a cleanup
+or refuse-collection truck while exposing reviewed observations to a larger
+fleet platform. The software is independent of the MSc thesis; the thesis uses
+this repository as its reference implementation.
 
 ## Project status
 
@@ -20,6 +22,9 @@ its reference implementation.
 | Image, video, camera, and stream runtime | Implemented |
 | Five-class RF-DETR adapter | Implemented |
 | Tracking, class stabilization, and counting | Implemented |
+| Offline SQLite observation and count store | Implemented |
+| Human review and configurable separation guidance | Implemented |
+| Vehicle/route metadata and integration outbox | Implemented |
 | Source discovery and input probing | Implemented |
 | CLI, HTTP API, container, tests, and schemas | Implemented |
 | Trained litter checkpoint | Pending data and training |
@@ -39,8 +44,11 @@ its reference implementation.
 - visible counts for each frame;
 - stable track IDs across video frames;
 - unique confirmed-track counts for the active run;
+- configurable separation-stream guidance for each material class;
+- review flags for low-confidence and `other_litter` observations;
 - streaming JSON Lines events;
 - an end-of-run JSON summary;
+- persistent SQLite run, frame-count, review, and integration records;
 - optional annotated images and videos.
 
 One object visible in 100 frames is normally counted once, not 100 times. See
@@ -61,7 +69,8 @@ available Python 3.10–3.12 interpreter.
 
 The launcher creates the Python environment, installs the application,
 discovers a camera or media file, validates the source, runs inference, and
-writes timestamped output under `reports/generated/`.
+writes timestamped output under `reports/generated/`. It also creates the
+offline database at `state/litter-edge.db`; no database server is required.
 
 After the project checkpoint is released, its URL and checksum will be recorded
 in `config/model-release.json`. A fresh clone will then need no model flags.
@@ -104,8 +113,18 @@ export LITTER_STREAM_URL="rtsp://camera-host/live"
 # Headless edge device
 ./startup.sh --source "$LITTER_STREAM_URL" --no-display
 
+# Truck/route operational context
+./startup.sh \
+  --source 0 \
+  --edge-device-id edge-truck-01 \
+  --vehicle-id truck-12 \
+  --route-id route-a
+
 # HTTP API
 ./startup.sh --api
+
+# Counts, review, and integration API; a model is not required
+./startup.sh --counts-api
 ```
 
 Press `q` in the display window or `Ctrl+C` in the terminal to finish a live
@@ -120,10 +139,46 @@ still call the individual Python commands directly. See
 | Annotated image/video | Visual boxes, labels, confidence, and track IDs |
 | JSONL event stream | One durable event for every processed frame |
 | JSON summary | Run metadata, throughput, peak visible counts, and unique counts |
+| SQLite database | Runs, frame counts, optional detections, review queue, confirmed collections, and integration events |
 
 Every frame event follows
 [`schemas/detection-event.schema.json`](schemas/detection-event.schema.json).
 Stream credentials and URL query strings are removed from recorded evidence.
+Fleet/outbox payloads follow
+[`schemas/integration-event.schema.json`](schemas/integration-event.schema.json).
+
+## Persistent operational counts
+
+SQLite persistence is enabled by default:
+
+```text
+state/litter-edge.db
+```
+
+Inspect aggregate counts:
+
+```bash
+python query_counts.py summary
+python query_counts.py summary --vehicle-id truck-12 --route-id route-a
+python query_counts.py runs --limit 20
+python query_counts.py reviews --status pending
+python query_counts.py outbox
+```
+
+The store uses write-ahead logging so inference and local API readers can use
+the database concurrently. Count records survive application and vehicle
+restarts. Full per-detection rows are disabled by default to control disk use;
+enable them with `./startup.sh --persist-detections`.
+
+The database deliberately separates:
+
+- **observed litter:** model detections and unique tracks;
+- **human-reviewed classification:** confirmed, corrected, or rejected review
+  items;
+- **confirmed collected material:** a separate record submitted by a human,
+  arm controller, or sensor-fusion component.
+
+A model detection never becomes a collection claim automatically.
 
 ## HTTP API
 
@@ -154,6 +209,33 @@ curl \
 
 HTTP requests are independent images. Stateful tracking and unique-session
 counting use the CLI.
+
+Read truck and route counts:
+
+```bash
+curl "http://127.0.0.1:8088/v1/counts/summary?vehicle_id=truck-12&route_id=route-a"
+curl "http://127.0.0.1:8088/v1/review-queue?status=pending"
+curl "http://127.0.0.1:8088/v1/integration/events"
+```
+
+Confirm that a detected item was physically collected:
+
+```bash
+curl \
+  -H "Content-Type: application/json" \
+  -d '{
+    "run_id": "RUN_ID",
+    "track_id": 7,
+    "class_name": "plastic",
+    "method": "human",
+    "confirmed_by": "operator-1",
+    "external_reference": "pickup-0001"
+  }' \
+  http://127.0.0.1:8088/v1/collections
+```
+
+Use `method: "arm_controller"` only when a separate controller has positively
+confirmed the pickup. Detection alone is not confirmation.
 
 ## Container
 
@@ -243,13 +325,39 @@ image / video / camera / stream
                 |
                 v
      visible + unique run counts
-        /           |          \
-     JSONL      JSON summary   annotated media
+        /          |          |           \
+     JSONL    JSON summary   SQLite    annotated media
+                                |
+                    review queue + outbox/API
 ```
 
 The tracking, counting, event, and API layers are independent of accelerator
 hardware. Runtime-specific adapters can be added without rewriting the
 application core.
+
+## Cleanup-truck integration
+
+The repository is designed as a perception and evidence component rather than
+a standalone robot controller. A typical deployment connects:
+
+```text
+truck camera -> edge inference -> SQLite/WAL -> worker display
+                         |              |
+                         |              +-> fleet API/cloud sync
+                         +-> candidate event -> planner -> safety PLC -> arm
+                                                      |
+                                      pickup confirmation -> SQLite/API
+```
+
+The worker display shows the detected class, confidence, track ID, suggested
+separation stream, and a red `REVIEW` marker when human judgment is required.
+Mappings are operator-configurable in
+[`config/separation.yaml`](config/separation.yaml).
+
+The perception process must not directly energize or move a collection arm.
+Emergency stops, exclusion zones, proximity sensing, motion limits, interlocks,
+and final actuation authority belong to a safety-rated truck controller. See
+[Truck integration](docs/TRUCK_INTEGRATION.md).
 
 ## Supported deployment profiles
 
@@ -282,6 +390,7 @@ evaluated. See [Software and research](docs/SOFTWARE_AND_RESEARCH.md).
 src/litter_edge/     application package
 config/              class and runtime configuration
 schemas/             stable JSON integration contracts
+state/               ignored local SQLite operational state
 deploy/              CPU, NVIDIA, AMD, and service examples
 docs/                operational and research documentation
 tests/               dependency-light unit tests

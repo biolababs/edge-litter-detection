@@ -26,6 +26,12 @@ tracking:
   max_missed_frames: 30
   min_confirmed_hits: 2
   class_mismatch_penalty: 0.75
+separation:
+  policy: config/separation.yaml
+storage:
+  database: state/litter-edge.db
+  flush_frames: 15
+  persist_detections: false
 target:
   device: jetson-orin-nano-8gb-super
   board: p3768-0000+p3767-0005-super

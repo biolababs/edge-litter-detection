@@ -28,6 +28,11 @@ The application also reports the number of visible detections and the number of
 confirmed track IDs encountered during the active run. Counting performance
 must be validated separately from detection accuracy.
 
+In a cleanup-truck workflow, the application may show a worker the predicted
+class, confidence, and operator-configured separation stream. Uncertain items
+must remain reviewable. A detection is not evidence that an item was physically
+collected.
+
 The system is decision support. It must not be used to identify, profile,
 penalize, or track people.
 
@@ -39,6 +44,7 @@ penalize, or track people.
 - Hazardous-waste identification without a dedicated, validated dataset.
 - Claims of material composition based solely on appearance.
 - Safety-critical operation without human oversight and independent validation.
+- Direct control of a hydraulic, pneumatic, or electric collection arm.
 
 ## Provisional classes
 
@@ -90,6 +96,9 @@ Report at minimum:
 - interference with the existing shared-device workload.
 - repeated counts after long occlusion, scene cuts, or fast camera motion;
 - track merges when litter objects overlap.
+- incorrect separation guidance when material cannot be determined visually;
+- unsafe reliance on a detection when an independent controller, proximity
+  sensor, or human safety check disagrees.
 
 ## Use-case release gate
 

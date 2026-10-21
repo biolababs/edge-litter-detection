@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/biolababs/edge-litter-detection/schemas/integration-event.schema.json",
+  "title": "Edge litter integration event",
+  "type": "object",
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_type",
+    "meaning"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "event_type": {
+      "enum": [
+        "litter.object.confirmed",
+        "litter.review.completed",
+        "litter.run.completed",
+        "litter.collection.confirmed"
+      ]
+    },
+    "meaning": {
+      "enum": [
+        "detected_object_candidate_not_collection_confirmation",
+        "human_reviewed_classification_not_collection_confirmation",
+        "observed_litter_not_confirmed_collected_material",
+        "externally_confirmed_collected_material"
+      ]
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "track_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "edge_device_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vehicle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "route_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

@@ -37,6 +37,10 @@ class ProjectSettings:
     tracking_max_missed_frames: int
     tracking_min_confirmed_hits: int
     tracking_class_mismatch_penalty: float
+    separation_policy_file: Path
+    storage_database: Path
+    storage_flush_frames: int
+    storage_persist_detections: bool
 
 
 def _required(mapping: dict[str, Any], key: str) -> Any:
@@ -52,6 +56,8 @@ def load_settings(path: str | Path) -> ProjectSettings:
 
     target = raw.get("target") or {}
     tracking = raw.get("tracking") or {}
+    separation = raw.get("separation") or {}
+    storage = raw.get("storage") or {}
     validation = raw.get("validation") or {}
     required_gates = validation.get("operational_gates") or {}
     settings = ProjectSettings(
@@ -91,6 +97,12 @@ def load_settings(path: str | Path) -> ProjectSettings:
         tracking_class_mismatch_penalty=float(
             tracking.get("class_mismatch_penalty", 0.75)
         ),
+        separation_policy_file=Path(
+            separation.get("policy", "config/separation.yaml")
+        ),
+        storage_database=Path(storage.get("database", "state/litter-edge.db")),
+        storage_flush_frames=int(storage.get("flush_frames", 15)),
+        storage_persist_detections=bool(storage.get("persist_detections", False)),
     )
     validate_settings(settings)
     return settings
@@ -132,4 +144,6 @@ def validate_settings(settings: ProjectSettings) -> None:
         raise ValueError("tracking.min_confirmed_hits must be positive.")
     if not 0.0 < settings.tracking_class_mismatch_penalty <= 1.0:
         raise ValueError("tracking.class_mismatch_penalty must be in (0, 1].")
+    if settings.storage_flush_frames <= 0:
+        raise ValueError("storage.flush_frames must be positive.")
 

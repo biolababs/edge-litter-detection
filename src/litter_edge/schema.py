@@ -17,6 +17,8 @@ class Detection:
     class_name: str
     track_id: int | None = None
     confirmed: bool = False
+    separation_destination: str | None = None
+    review_required: bool = False
 
     @property
     def bbox(self) -> tuple[float, float, float, float]:

@@ -1,0 +1,24 @@
+[Unit]
+Description=Truck-mounted litter perception and counting
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=litter-edge
+Group=litter-edge
+WorkingDirectory=/opt/edge-litter-detection
+EnvironmentFile=/etc/edge-litter-detection.env
+ExecStart=/opt/edge-litter-detection/startup.sh --skip-install --no-display
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGINT
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/edge-litter-detection/reports/generated /opt/edge-litter-detection/state
+
+[Install]
+WantedBy=multi-user.target

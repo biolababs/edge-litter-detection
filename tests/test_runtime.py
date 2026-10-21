@@ -7,6 +7,7 @@ import unittest
 
 from litter_edge.runtime import _safe_source_label, run
 from litter_edge.schema import Detection
+from litter_edge.storage import summarize_counts
 
 
 class FakeDetector:
@@ -47,6 +48,7 @@ class RuntimeTests(unittest.TestCase):
                 backend=None,
                 model=None,
                 class_names=None,
+                separation_config=None,
                 source="rtsp://user:secret@example.test/live?token=abc",
                 device="cpu",
                 confidence=None,
@@ -56,6 +58,13 @@ class RuntimeTests(unittest.TestCase):
                 annotated_output=None,
                 events_output=str(events),
                 output=str(output),
+                database=str(root / "observations.db"),
+                no_database=False,
+                database_flush_frames=1,
+                persist_detections=False,
+                edge_device_id="edge-test",
+                vehicle_id="truck-test",
+                route_id="route-test",
                 max_frames=0,
             )
             with patch(
@@ -76,11 +85,14 @@ class RuntimeTests(unittest.TestCase):
             events_text = events.read_text(encoding="utf-8")
             event_rows = [json.loads(line) for line in events_text.splitlines()]
             saved_summary = json.loads(output.read_text(encoding="utf-8"))
+            stored_counts = summarize_counts(root / "observations.db")
 
         self.assertEqual(summary["unique_session_counts"], {"plastic": 1})
         self.assertEqual(saved_summary["source"], "rtsp://example.test/live")
         self.assertEqual(len(event_rows), 2)
         self.assertEqual(event_rows[1]["unique_session_counts"], {"plastic": 1})
+        self.assertEqual(event_rows[1]["vehicle_id"], "truck-test")
+        self.assertEqual(stored_counts["run_unique_detected_counts"], {"plastic": 1})
         self.assertNotIn("secret", events_text)
 
 

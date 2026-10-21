@@ -25,6 +25,9 @@ case "${1:-}" in
     ;;
   *infer.py)
     ;;
+  *serve.py)
+    printf 'counts-only=%s\n' "${LITTER_COUNTS_ONLY:-false}" >>"$FAKE_PYTHON_LOG"
+    ;;
   *)
     printf 'Unexpected fake-Python invocation: %s\n' "$*" >&2
     exit 1
@@ -65,3 +68,13 @@ if grep -F "user:secret" <<<"$stream_output" >/dev/null; then
   printf 'Launcher output exposed stream credentials.\n' >&2
   exit 1
 fi
+
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_PYTHON="$fake_python" \
+  "$repository_root/startup.sh" \
+  --skip-install \
+  --counts-api \
+  --database "$test_directory/counts.db" >/dev/null
+
+grep -F "$repository_root/serve.py" "$fake_log" >/dev/null
+grep -F "counts-only=true" "$fake_log" >/dev/null

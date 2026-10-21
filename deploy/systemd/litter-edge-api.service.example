@@ -16,7 +16,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/edge-litter-detection/reports/generated
+ReadWritePaths=/opt/edge-litter-detection/reports/generated /opt/edge-litter-detection/state
 
 [Install]
 WantedBy=multi-user.target

@@ -10,12 +10,19 @@ model_path="${LITTER_MODEL:-$project_root/models/rfdetr-nano-litter.pth}"
 model_url="${LITTER_MODEL_URL:-}"
 model_sha256="${LITTER_MODEL_SHA256:-}"
 device_value="${LITTER_DEVICE:-auto}"
+database_path="${LITTER_DATABASE:-$project_root/state/litter-edge.db}"
+edge_device_id="${LITTER_EDGE_DEVICE_ID:-edge-node}"
+vehicle_id="${LITTER_VEHICLE_ID:-}"
+route_id="${LITTER_ROUTE_ID:-}"
+separation_config="${LITTER_SEPARATION_CONFIG:-$project_root/config/separation.yaml}"
 mode="infer"
 display_mode="auto"
 skip_install=false
 reinstall=false
 list_cameras=false
 force_model_download=false
+database_enabled=true
+persist_detections=false
 max_frames=0
 
 usage() {
@@ -26,7 +33,8 @@ Default behavior:
   1. Create .venv and install the application.
   2. Use models/rfdetr-nano-litter.pth.
   3. Select the first working camera, or the first file under media/.
-  4. Run detection, classification, tracking, and counting.
+  4. Run detection, classification, tracking, counting, and separation guidance.
+  5. Persist operational counts to state/litter-edge.db.
 
 Options:
   --source VALUE         Image, video, camera index, stream URL, or "auto".
@@ -34,10 +42,18 @@ Options:
   --model-url URL        HTTPS URL used when the checkpoint is absent.
   --model-sha256 DIGEST  Required SHA-256 for --model-url.
   --device VALUE         auto, cpu, cuda, cuda:0, etc.
+  --database PATH        SQLite count/observation store.
+  --no-database          Disable SQLite persistence for this run.
+  --persist-detections   Store every detection row, not only counts/events.
+  --edge-device-id ID    Stable identifier for this edge computer.
+  --vehicle-id ID        Optional truck or collection vehicle identifier.
+  --route-id ID          Optional route, shift, or work-order identifier.
+  --separation-config P  Material-to-separation-stream policy.
   --display              Force the live display window.
   --no-display           Disable the display window.
   --max-frames N         Stop after N frames; zero means unlimited.
   --api                   Start the HTTP API instead of media inference.
+  --counts-api            Start the database/review API without requiring a model.
   --list-cameras          Install dependencies and list attached cameras.
   --skip-install          Reuse the existing environment without pip install.
   --reinstall             Refresh dependencies even if setup already completed.
@@ -46,7 +62,8 @@ Options:
 
 Environment equivalents:
   LITTER_SOURCE, LITTER_MODEL, LITTER_MODEL_URL, LITTER_MODEL_SHA256,
-  LITTER_DEVICE, LITTER_VENV, and LITTER_PYTHON.
+  LITTER_DEVICE, LITTER_DATABASE, LITTER_EDGE_DEVICE_ID, LITTER_VEHICLE_ID,
+  LITTER_ROUTE_ID, LITTER_SEPARATION_CONFIG, LITTER_VENV, and LITTER_PYTHON.
 EOF
 }
 
@@ -105,6 +122,39 @@ while [[ $# -gt 0 ]]; do
       device_value="$2"
       shift 2
       ;;
+    --database)
+      [[ $# -ge 2 ]] || fail "--database requires a path."
+      database_path="$2"
+      shift 2
+      ;;
+    --no-database)
+      database_enabled=false
+      shift
+      ;;
+    --persist-detections)
+      persist_detections=true
+      shift
+      ;;
+    --edge-device-id)
+      [[ $# -ge 2 ]] || fail "--edge-device-id requires a value."
+      edge_device_id="$2"
+      shift 2
+      ;;
+    --vehicle-id)
+      [[ $# -ge 2 ]] || fail "--vehicle-id requires a value."
+      vehicle_id="$2"
+      shift 2
+      ;;
+    --route-id)
+      [[ $# -ge 2 ]] || fail "--route-id requires a value."
+      route_id="$2"
+      shift 2
+      ;;
+    --separation-config)
+      [[ $# -ge 2 ]] || fail "--separation-config requires a path."
+      separation_config="$2"
+      shift 2
+      ;;
     --display)
       display_mode="on"
       shift
@@ -120,6 +170,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --api)
       mode="api"
+      shift
+      ;;
+    --counts-api)
+      mode="counts_api"
       shift
       ;;
     --list-cameras)
@@ -149,6 +203,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ "$max_frames" =~ ^[0-9]+$ ]] || fail "--max-frames must be a non-negative integer."
+if [[ "$mode" != "infer" && "$database_enabled" != true ]]; then
+  fail "--no-database is supported only for media inference."
+fi
 
 if [[ -z "$python_command" ]]; then
   if [[ "$skip_install" == true && ! -x "$venv_dir/bin/python" ]]; then
@@ -179,6 +236,15 @@ fi
 if [[ "$model_path" != /* ]]; then
   model_path="$project_root/$model_path"
 fi
+if [[ "$database_path" != /* ]]; then
+  database_path="$project_root/$database_path"
+fi
+if [[ "$separation_config" != /* ]]; then
+  separation_config="$project_root/$separation_config"
+fi
+[[ -n "$edge_device_id" ]] || fail "--edge-device-id cannot be empty."
+[[ -f "$separation_config" ]] || fail \
+  "Separation configuration not found: $separation_config"
 
 install_profile="runtime"
 install_extras="runtime,rfdetr"
@@ -188,8 +254,11 @@ if [[ "$list_cameras" == true ]]; then
 elif [[ "$mode" == "api" ]]; then
   install_profile="api"
   install_extras="runtime,rfdetr,api"
+elif [[ "$mode" == "counts_api" ]]; then
+  install_profile="counts-api"
+  install_extras="api"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.5.0"
+install_marker="$venv_dir/.edge-litter-$install_profile-0.6.0"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip
@@ -204,7 +273,10 @@ if [[ "$list_cameras" == true ]]; then
 fi
 
 model_release_file="$project_root/config/model-release.json"
-if [[ ( ! -f "$model_path" || "$force_model_download" == true ) && -z "$model_url" && -f "$model_release_file" ]]; then
+if [[ "$mode" != "counts_api" && \
+  ( ! -f "$model_path" || "$force_model_download" == true ) && \
+  -z "$model_url" && -f "$model_release_file" ]]
+then
   IFS=$'\t' read -r configured_model_url configured_model_sha256 < <(
     "$python_command" -c '
 import json
@@ -224,7 +296,7 @@ print(url + "\t" + sha256)
   fi
 fi
 
-if [[ ! -f "$model_path" && -z "$model_url" ]]; then
+if [[ "$mode" != "counts_api" && ! -f "$model_path" && -z "$model_url" ]]; then
   discovered_model="$(
     find "$project_root/models" -maxdepth 1 -type f -name '*.pth' -print |
       sort | head -n 1
@@ -242,7 +314,9 @@ if [[ ! -f "$model_path" && -z "$model_url" ]]; then
   fi
 fi
 
-if [[ ! -f "$model_path" || "$force_model_download" == true ]]; then
+if [[ "$mode" != "counts_api" && \
+  ( ! -f "$model_path" || "$force_model_download" == true ) ]]
+then
   if [[ -n "$model_url" ]]; then
     [[ -n "$model_sha256" ]] || fail \
       "LITTER_MODEL_SHA256 or --model-sha256 is required for model download."
@@ -268,9 +342,17 @@ The official project checkpoint is pending data collection and training."
   fi
 fi
 
-if [[ "$mode" == "api" ]]; then
+if [[ "$mode" == "api" || "$mode" == "counts_api" ]]; then
   export LITTER_MODEL="$model_path"
   export LITTER_DEVICE="$device_value"
+  export LITTER_DATABASE="$database_path"
+  export LITTER_EDGE_DEVICE_ID="$edge_device_id"
+  export LITTER_VEHICLE_ID="$vehicle_id"
+  export LITTER_ROUTE_ID="$route_id"
+  export LITTER_SEPARATION_CONFIG="$separation_config"
+  if [[ "$mode" == "counts_api" ]]; then
+    export LITTER_COUNTS_ONLY=true
+  fi
   exec "$python_command" "$project_root/serve.py"
 fi
 
@@ -331,10 +413,28 @@ inference_arguments=(
   --source "$source_value"
   --model "$model_path"
   --device "$device_value"
+  --separation-config "$separation_config"
   --events-output "$events_output"
   --output "$summary_output"
   --max-frames "$max_frames"
 )
+if [[ "$database_enabled" == true ]]; then
+  inference_arguments+=(
+    --database "$database_path"
+    --edge-device-id "$edge_device_id"
+  )
+  if [[ -n "$vehicle_id" ]]; then
+    inference_arguments+=(--vehicle-id "$vehicle_id")
+  fi
+  if [[ -n "$route_id" ]]; then
+    inference_arguments+=(--route-id "$route_id")
+  fi
+  if [[ "$persist_detections" == true ]]; then
+    inference_arguments+=(--persist-detections)
+  fi
+else
+  inference_arguments+=(--no-database --edge-device-id "$edge_device_id")
+fi
 
 source_lower="$(printf '%s' "$source_value" | tr '[:upper:]' '[:lower:]')"
 source_is_camera=false
@@ -366,5 +466,15 @@ printf '  source: %s\n' "$(source_for_log "$source_value")"
 printf '  model:  %s\n' "$model_path"
 printf '  events: %s\n' "$events_output"
 printf '  summary: %s\n' "$summary_output"
+if [[ "$database_enabled" == true ]]; then
+  printf '  database: %s\n' "$database_path"
+fi
+printf '  edge device: %s\n' "$edge_device_id"
+if [[ -n "$vehicle_id" ]]; then
+  printf '  vehicle: %s\n' "$vehicle_id"
+fi
+if [[ -n "$route_id" ]]; then
+  printf '  route: %s\n' "$route_id"
+fi
 
 exec "${inference_arguments[@]}"

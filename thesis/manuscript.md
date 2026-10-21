@@ -228,6 +228,11 @@ The system shall:
 - return class, confidence, and bounding-box information;
 - assign stable track IDs where video continuity permits;
 - report visible counts and unique confirmed-track counts by class;
+- persist run and count records locally when the network is unavailable;
+- associate observations with an edge device, vehicle, and route;
+- show a human the predicted material and configured separation destination;
+- queue uncertain items for human confirmation, correction, or rejection;
+- distinguish observed litter from externally confirmed collected material;
 - optionally save annotated media and structured JSON evidence;
 - run through a replaceable model and accelerator adapter;
 - continue detecting when the optional VLM is unavailable;
@@ -242,7 +247,9 @@ The system shall:
 - use a fixed and documented class schema;
 - expose confidence, IoU, image size, and maximum detections as configuration;
 - produce repeatable benchmark artifacts;
+- preserve operational records across process and vehicle restarts;
 - operate within the target device's memory and thermal limits;
+- keep all mechanical actuation under an independent safety-rated controller;
 - fail clearly when required models, data, or calibration inputs are absent;
 - minimize retention of raw imagery and personally identifiable information.
 
@@ -253,7 +260,21 @@ optimized detector runtime, standard detection records, class-stabilized
 tracking, counting, and local event handling. It reports current visible
 objects separately from unique confirmed track IDs encountered during the
 session. Evidence is written as streaming JSON Lines plus an end-of-run
-summary. A selected-frame VLM, if enabled later, is downstream and asynchronous.
+summary. An offline SQLite store retains run metadata, per-frame count
+snapshots, optional detections, human-review tasks, explicit collection
+confirmations, and durable events for a fleet connector. Vehicle, route, and
+edge-device identifiers make the records usable by a larger truck platform.
+
+The runtime applies an operator-configured separation policy after tracking.
+The display presents the predicted material and destination, while
+low-confidence and other-litter observations are placed in a review queue.
+Detected objects remain observations; they are not recorded as collected until
+a human, arm controller, sensor-fusion component, or reviewed import provides a
+separate positive confirmation. Perception output may inform a task planner but
+must not directly actuate a collection arm; final motion authority, emergency
+stops, exclusion zones, and interlocks remain in an independent safety-rated
+controller. A selected-frame VLM, if enabled later, is downstream and
+asynchronous.
 
 The reusable software is a deliverable separate from this manuscript. Its
 `startup.sh` entry point automates environment preparation, verified checkpoint
@@ -274,6 +295,10 @@ RF-DETR Nano is accepted for the use case only if it exports to a supported
 edge runtime, loads with sufficient memory headroom, completes representative
 media without unsupported operators or crashes, and meets the frozen detection,
 classification, and counting accuracy requirements.
+
+For the human-assistance use case, acceptance also requires that separation
+destinations are configurable, uncertain items remain reviewable, corrections
+are auditable, and detected-versus-collected counts cannot be conflated.
 
 The preferred detector incremental memory is at most 1.5 GiB. The deployment
 fails the initial gate if it exceeds 2.0 GiB incremental memory, leaves less

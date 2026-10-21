@@ -47,6 +47,16 @@ count; object-detection accuracy alone does not validate counting accuracy.
 
 ## Persistence
 
-Unique counts are session-scoped by design. Restarting the process starts a new
-session. Long-term site counts should be persisted by a downstream application
-using run IDs, timestamps, camera IDs, and a documented deduplication policy.
+Unique counts remain session-scoped, but they are persisted automatically to
+`state/litter-edge.db` with the run ID, edge-device ID, vehicle ID, route ID,
+and timestamps. Restarting the process creates a new run rather than erasing
+previous records.
+
+Use `python query_counts.py summary` to inspect persisted totals. Summing unique
+counts across runs can still count the same physical item twice; route-level or
+geospatial deduplication remains an integration responsibility.
+
+The database stores externally confirmed pickups separately from model
+observations. A detection or unique track must never be reported as collected
+unless a human, arm controller, sensor-fusion component, or reviewed import
+submits a collection confirmation.

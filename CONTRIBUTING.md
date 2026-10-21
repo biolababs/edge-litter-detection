@@ -3,9 +3,10 @@
 ## Scope
 
 This repository implements one use case with RF-DETR Nano: litter detection,
-multiclass classification, tracking, and counting. Contributions should improve
-that implementation, its portability, accuracy evaluation, documentation, or
-operational safety. Model-family leaderboards are out of scope.
+multiclass classification, tracking, counting, human-assisted separation, and
+operational integration. Contributions should improve that implementation, its
+portability, accuracy evaluation, persistence, documentation, or operational
+safety. Model-family leaderboards are out of scope.
 
 ## Development setup
 

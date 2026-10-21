@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m pip install build PyYAML
+      - run: python -m pip install build PyYAML "fastapi>=0.115,<1" "uvicorn>=0.32,<1"
       - run: python -m build
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - run: PYTHONPATH=src python scripts/validate_release.py
@@ -23,9 +23,11 @@ jobs:
       - run: python infer.py --help
       - run: python discover_sources.py --help
       - run: python download_model.py --help
+      - run: python query_counts.py --help
       - run: python train.py --help
       - run: python evaluate.py --help
       - run: python evaluate_counts.py --help
       - run: python export_model.py --help
       - run: python benchmark.py --help
       - run: python serve.py --help
+      - run: PYTHONPATH=src python -c "from litter_edge.api import app; assert len(app.routes) >= 10"

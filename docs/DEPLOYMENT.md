@@ -24,7 +24,11 @@ The normal entry point automates environment setup, input selection, and
 runtime output:
 
 ```bash
-./startup.sh --source sample.mp4
+./startup.sh \
+  --source sample.mp4 \
+  --edge-device-id edge-truck-01 \
+  --vehicle-id truck-12 \
+  --route-id route-a
 ```
 
 Use `./startup.sh --help` for camera, stream, model-download, headless, API, and
@@ -32,7 +36,8 @@ environment options. Install the hardware-appropriate PyTorch build first on
 accelerator targets, or set `LITTER_PYTHON` to an existing vendor-compatible
 environment. The launcher deliberately refuses a generic first-time PyTorch
 installation on Jetson. The trained project checkpoint is intentionally not
-present yet.
+present yet. SQLite state is stored at `state/litter-edge.db` unless
+`LITTER_DATABASE` or `--database` selects another path.
 
 ## Image API
 
@@ -60,6 +65,10 @@ curl \
 Independent HTTP images return per-image counts. Use the CLI for stateful video
 tracking and unique-session counts.
 
+The same API exposes persisted counts, review items, collection confirmations,
+and durable integration events. `./startup.sh --counts-api` starts these
+interfaces without requiring the detector checkpoint.
+
 ## Container
 
 The root Dockerfile is a portable CPU/reference image:
@@ -70,7 +79,9 @@ docker compose up
 ```
 
 Mount the trained checkpoint under `models/`. Do not treat this CPU image as an
-optimized Jetson or ROCm image.
+optimized Jetson or ROCm image. The Compose configuration mounts `/app/state`
+from the `litter-state` named volume so the SQLite database survives container
+replacement.
 
 For NVIDIA or AMD, start from a vendor-supported container or environment that
 already contains the correct PyTorch accelerator build, then install this

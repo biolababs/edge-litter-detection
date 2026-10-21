@@ -75,7 +75,7 @@ def download_model(
         )
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    request = Request(url, headers={"User-Agent": "edge-litter-detection/0.5"})
+    request = Request(url, headers={"User-Agent": "edge-litter-detection/0.6"})
     temporary_path: Path | None = None
     digest = hashlib.sha256()
     downloaded_bytes = 0

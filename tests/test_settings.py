@@ -46,6 +46,12 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(settings.engine_workspace_gb, 1)
         self.assertEqual(settings.maximum_incremental_memory_gb, 2.0)
         self.assertTrue(settings.tracking_enabled)
+        self.assertEqual(
+            settings.separation_policy_file,
+            Path("config/separation.yaml"),
+        )
+        self.assertEqual(settings.storage_database, Path("state/litter-edge.db"))
+        self.assertEqual(settings.storage_flush_frames, 15)
 
     def test_rejects_non_stride_aligned_image_size(self) -> None:
         with TemporaryDirectory() as temporary:

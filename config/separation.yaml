@@ -1,0 +1,13 @@
+# Operator-configurable separation guidance. These labels are workflow
+# destinations, not universal recycling rules.
+schema_version: "1.0"
+destinations:
+  glass: glass_stream
+  metal: metal_stream
+  paper_cardboard: fiber_stream
+  plastic: plastic_stream
+  other_litter: manual_sort
+review:
+  confidence_below: 0.55
+  always_review:
+    - other_litter
