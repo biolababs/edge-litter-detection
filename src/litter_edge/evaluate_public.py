@@ -80,9 +80,7 @@ def _iou(
     y2 = min(left[3], right[3])
     intersection = max(0.0, x2 - x1) * max(0.0, y2 - y1)
     left_area = max(0.0, left[2] - left[0]) * max(0.0, left[3] - left[1])
-    right_area = max(0.0, right[2] - right[0]) * max(
-        0.0, right[3] - right[1]
-    )
+    right_area = max(0.0, right[2] - right[0]) * max(0.0, right[3] - right[1])
     union = left_area + right_area - intersection
     return intersection / union if union > 0 else 0.0
 
@@ -216,8 +214,7 @@ def _operating_point_metrics(
             "precision": micro_precision,
             "recall": micro_recall,
             "f1": (
-                2.0 * micro_precision * micro_recall
-                / (micro_precision + micro_recall)
+                2.0 * micro_precision * micro_recall / (micro_precision + micro_recall)
                 if micro_precision + micro_recall
                 else 0.0
             ),
@@ -241,6 +238,130 @@ def _operating_point_metrics(
             ),
         },
         "per_class": per_class,
+    }
+
+
+def _diagnostic_class_confusion(
+    ground_truth: list[dict[str, Any]],
+    predictions: list[dict[str, Any]],
+    class_names: dict[int, str],
+    *,
+    iou_threshold: float = 0.5,
+) -> dict[str, Any]:
+    """Describe cross-class errors after localization at one operating point.
+
+    This is deliberately separate from COCO AP and the class-aware
+    operating-point metrics. Predictions are matched to ground-truth boxes
+    across all classes, so an overlapping wrong-class prediction can be
+    reported as a diagnostic confusion rather than only as one false positive
+    plus one false negative.
+    """
+
+    ground_truth_by_image: dict[
+        int, list[tuple[int, tuple[float, float, float, float]]]
+    ] = defaultdict(list)
+    predictions_by_image: dict[
+        int,
+        list[
+            tuple[
+                float,
+                int,
+                tuple[float, float, float, float],
+            ]
+        ],
+    ] = defaultdict(list)
+
+    for annotation in ground_truth:
+        if int(annotation.get("iscrowd", 0)):
+            continue
+        ground_truth_by_image[int(annotation["image_id"])].append(
+            (
+                int(annotation["category_id"]),
+                _xywh_to_xyxy([float(value) for value in annotation["bbox"]]),
+            )
+        )
+
+    for prediction in predictions:
+        predictions_by_image[int(prediction["image_id"])].append(
+            (
+                float(prediction["score"]),
+                int(prediction["category_id"]),
+                _xywh_to_xyxy([float(value) for value in prediction["bbox"]]),
+            )
+        )
+
+    confusion_counts: Counter[tuple[int, int]] = Counter()
+    correct_class_matches = 0
+    wrong_class_matches = 0
+    unmatched_predictions = 0
+    unmatched_ground_truth = 0
+
+    image_ids = set(ground_truth_by_image) | set(predictions_by_image)
+    for image_id in image_ids:
+        reference_objects = ground_truth_by_image[image_id]
+        matched_reference_indices: set[int] = set()
+        candidate_predictions = sorted(
+            predictions_by_image[image_id],
+            key=lambda item: item[0],
+            reverse=True,
+        )
+        for _, predicted_class_id, predicted_box in candidate_predictions:
+            best_index = None
+            best_iou = 0.0
+            for index, (_, reference_box) in enumerate(reference_objects):
+                if index in matched_reference_indices:
+                    continue
+                overlap = _iou(predicted_box, reference_box)
+                if overlap > best_iou:
+                    best_iou = overlap
+                    best_index = index
+            if best_index is None or best_iou < iou_threshold:
+                unmatched_predictions += 1
+                continue
+
+            matched_reference_indices.add(best_index)
+            reference_class_id = reference_objects[best_index][0]
+            if reference_class_id == predicted_class_id:
+                correct_class_matches += 1
+            else:
+                wrong_class_matches += 1
+                confusion_counts[(reference_class_id, predicted_class_id)] += 1
+        unmatched_ground_truth += len(reference_objects) - len(
+            matched_reference_indices
+        )
+
+    top_confusions = [
+        {
+            "ground_truth": class_names[reference_class_id],
+            "predicted": class_names[predicted_class_id],
+            "count": count,
+        }
+        for (
+            reference_class_id,
+            predicted_class_id,
+        ), count in confusion_counts.most_common()
+    ]
+    localized_matches = correct_class_matches + wrong_class_matches
+    return {
+        "purpose": (
+            "diagnostic cross-class analysis after localization; not a "
+            "replacement for COCO AP"
+        ),
+        "iou_threshold": iou_threshold,
+        "matching": (
+            "score-ordered greedy one-to-one matching within image across all classes"
+        ),
+        "crowd_annotations": "excluded",
+        "correct_class_matches": correct_class_matches,
+        "wrong_class_matches": wrong_class_matches,
+        "localized_matches": localized_matches,
+        "correct_class_share_of_localized_matches": (
+            correct_class_matches / localized_matches if localized_matches else None
+        ),
+        "unmatched_predictions": unmatched_predictions,
+        "unmatched_ground_truth": unmatched_ground_truth,
+        "nonzero_confusion_pair_count": len(confusion_counts),
+        "top_confusions": top_confusions,
     }
 
 
@@ -304,9 +425,7 @@ def _coco_metrics(
                 float(np.mean(valid_precision)) if valid_precision.size else None
             ),
             "ap_50": (
-                float(np.mean(valid_precision_50))
-                if valid_precision_50.size
-                else None
+                float(np.mean(valid_precision_50)) if valid_precision_50.size else None
             ),
             "ar_100": float(np.mean(valid_recall)) if valid_recall.size else None,
         }
@@ -376,6 +495,11 @@ def main() -> None:
         configured_model=settings.model,
     )
     device = resolve_torch_device(args.device or str(settings.device))
+    class_prompts = load_class_prompts(
+        class_names_path,
+        class_names,
+        profile=backend,
+    )
     detector = create_detector(
         backend=backend,
         model=model_reference,
@@ -383,11 +507,7 @@ def main() -> None:
         confidence=confidence,
         device=device,
         optimize=True,
-        class_prompts=load_class_prompts(
-            class_names_path,
-            class_names,
-            profile=backend,
-        ),
+        class_prompts=class_prompts,
         iou=settings.iou,
         max_detections=settings.max_detections,
     )
@@ -442,9 +562,7 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    dataset_manifest_payload = json.loads(
-        dataset_manifest.read_text(encoding="utf-8")
-    )
+    dataset_manifest_payload = json.loads(dataset_manifest.read_text(encoding="utf-8"))
     image_records = sorted(
         (
             {
@@ -472,6 +590,11 @@ def main() -> None:
             "confidence_threshold": confidence,
             "nms_iou_threshold": settings.iou,
             "maximum_detections": settings.max_detections,
+            "prompt_profile": f"{backend}_prompts",
+            "class_prompts": {
+                class_names[class_id]: class_prompts[class_id]
+                for class_id in sorted(class_names)
+            },
             "dataset": _portable_path(dataset),
             "dataset_name": dataset_manifest_payload.get("dataset"),
             "dataset_manifest": _portable_path(dataset_manifest),
@@ -504,6 +627,12 @@ def main() -> None:
                 class_names,
                 iou_threshold=0.5,
             ),
+            "diagnostic_class_confusion_iou_50": _diagnostic_class_confusion(
+                ground_truth,
+                predictions,
+                class_names,
+                iou_threshold=0.5,
+            ),
             "predictions_output": _portable_path(predictions_path),
             "predictions_sha256": _sha256(predictions_path),
             "interpretation": {
@@ -522,6 +651,10 @@ def main() -> None:
                 "claim_boundary": (
                     "preliminary public-data zero-shot accuracy only; not target-"
                     "domain, vehicle, sorting-floor, or counting validation"
+                ),
+                "prompt_status": (
+                    "exact prompt strings are recorded; no prompt ablation or "
+                    "test-set prompt tuning was performed"
                 ),
             },
         }
