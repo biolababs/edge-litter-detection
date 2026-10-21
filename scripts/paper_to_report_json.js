@@ -145,9 +145,9 @@ function main() {
   const report = {
     metadata: {
       title:
-        "An Open and Reproducible Edge-AI System for Litter Detection, Multiclass Classification, Tracking, and Counting",
+        "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
       subtitle:
-        "Systems and reproducibility preprint — verified software evidence and preliminary engineering validation",
+        "Software architecture and reproducibility preprint — preliminary engineering and Jetson validation",
       date: "21 October 2026",
       author: "Abiola A. Babsalaam — Independent Researcher",
       confidential: false,

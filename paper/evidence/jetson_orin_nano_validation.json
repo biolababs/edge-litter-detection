@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0",
+  "status": "measured_preliminary_engineering_evidence",
+  "created_at": "2026-10-21",
+  "scope": "Authorized coexistence validation on the intended Jetson device",
+  "platform": {
+    "product": "NVIDIA Jetson Orin Nano Engineering Reference Developer Kit Super",
+    "physical_memory_gib": 7.4,
+    "power_mode": "MAXN_SUPER",
+    "operating_system": "Ubuntu 22.04.5 LTS",
+    "jetpack": "6.2.3",
+    "l4t": "36.5.2",
+    "camera_attached": false,
+    "co_resident_services_remained_active": true
+  },
+  "software": {
+    "repository": "https://github.com/biolababs/edge-litter-detection",
+    "version": "0.10.1",
+    "git_revision": "756fa2ae0b8686bb4b97940911710dc73f8efd90",
+    "backend": "omdet_turbo",
+    "model": "omlab/omdet-turbo-swin-tiny-hf",
+    "container_image": "dustynv/l4t-pytorch@sha256:a05c85def9139c21014546451d3baab44052d7cabe854d937f163390bfd5201b",
+    "container_image_classification": "pinned community L4T PyTorch image; not an NVIDIA-supported production base image",
+    "python": "3.10.12",
+    "torch": "2.4.0",
+    "torchvision": "0.19.0a0+48b1edf",
+    "transformers": "4.57.6",
+    "tensorrt": "10.4.0",
+    "device": "cuda"
+  },
+  "isolation": {
+    "system_python_modified": false,
+    "system_packages_modified": false,
+    "existing_services_stopped_or_reconfigured": false,
+    "container_memory_limit_gib": 4.0,
+    "container_memory_plus_swap_limit_gib": 4.0,
+    "container_pids_limit": 512,
+    "api_host_exposure": "loopback-only test port"
+  },
+  "repeated_image_benchmark": {
+    "source": "media/taco-demo/taco-000866.jpg",
+    "image_size": 640,
+    "warmup_calls": 10,
+    "samples": 50,
+    "observed_throughput_fps": 5.543978347080745,
+    "inference_ms": {
+      "mean": 174.30404214013834,
+      "median": 173.03849149902817,
+      "p95": 175.65464400104247,
+      "maximum": 213.3355280093383
+    },
+    "memory_gib": {
+      "peak_accelerator_allocated": 0.7001094818115234,
+      "peak_accelerator_reserved": 0.740234375,
+      "maximum_process_rss": 2.2004470825195312,
+      "observed_system_available_delta": 0.9477767944335938,
+      "minimum_system_available": 2.5356407165527344
+    },
+    "tegrastats": {
+      "samples": 39,
+      "maximum_ram_used_mb": 4878.0,
+      "maximum_gpu_utilization_percent": 99.0,
+      "maximum_gpu_temperature_c": 55.156,
+      "mean_board_input_power_mw": 8327.179487179486,
+      "maximum_board_input_power_mw": 16615.0,
+      "swap_before_mib": 155,
+      "swap_after_mib": 158
+    }
+  },
+  "full_video_smoke": {
+    "source": "attributed Wikimedia recycling-facility demonstration video",
+    "frames": 120,
+    "wall_seconds": 25.937085580007988,
+    "source_to_result_fps": 4.626579945917078,
+    "mean_detector_call_ms": 192.7991111757971,
+    "tracking_enabled": true,
+    "sqlite_persistence_verified": true,
+    "jsonl_evidence_verified": true,
+    "annotated_mp4_verified": true,
+    "interrupted": false,
+    "tegrastats": {
+      "samples": 43,
+      "maximum_ram_used_mb": 4845.0,
+      "maximum_gpu_utilization_percent": 99.0,
+      "maximum_gpu_temperature_c": 57.125,
+      "mean_board_input_power_mw": 10507.53488372093,
+      "maximum_board_input_power_mw": 14693.0,
+      "swap_before_mib": 158,
+      "swap_after_mib": 158
+    }
+  },
+  "full_video_stability": {
+    "source": "complete attributed Wikimedia recycling-facility demonstration video",
+    "source_frames": 3622,
+    "source_duration_seconds": 120.8541875208542,
+    "processing_wall_seconds": 733.5437683729979,
+    "source_to_result_fps": 4.937674009600826,
+    "mean_detector_call_ms": 178.59608976668432,
+    "tracking_enabled": true,
+    "sqlite_persistence_verified": true,
+    "jsonl_evidence_verified": true,
+    "annotated_mp4_verified": true,
+    "interrupted": false,
+    "artifacts": {
+      "annotated_mp4_mib": 215,
+      "jsonl_mib": 8.4,
+      "sqlite_mib_after_run": 3.6
+    },
+    "tegrastats": {
+      "samples": 741,
+      "maximum_ram_used_mb": 4851.0,
+      "maximum_gpu_utilization_percent": 99.0,
+      "mean_gpu_temperature_c": 63.855234817814114,
+      "maximum_gpu_temperature_c": 66.312,
+      "mean_board_input_power_mw": 14529.23076923077,
+      "maximum_board_input_power_mw": 15811.0,
+      "swap_before_mib": 158,
+      "swap_after_mib": 147
+    }
+  },
+  "dashboard_api_smoke": {
+    "dashboard_http_status": 200,
+    "security_headers_verified": true,
+    "stream_frames": 30,
+    "stream_status": "completed",
+    "annotated_jpeg_verified": true,
+    "counts_api_verified": true,
+    "sqlite_run_query_verified": true,
+    "source_to_result_fps_including_lazy_model_load": 1.7686253089713453
+  },
+  "acceptance_interpretation": {
+    "functional_workflow": "pass",
+    "coexistence_minimum_available_memory_gate": "pass",
+    "provisional_15_fps_target": "not_met",
+    "accuracy_or_count_error": "not_evaluated",
+    "bounded_full_video_stability": "pass",
+    "multi_hour_endurance": "not_evaluated",
+    "production_readiness": "not_established"
+  },
+  "evidence_files": [
+    {
+      "path": "paper/evidence/jetson_orin_nano_omdet_benchmark.json",
+      "sha256": "fd1f6a01b5c2596df49da00dddd5174db8ca77b704ca072c1a29dd2b180306e8"
+    },
+    {
+      "path": "paper/evidence/jetson_orin_nano_benchmark_tegrastats.log",
+      "sha256": "4ea2c0e233b8c3ab3469598a2590311b16cbff98c0da612dd1d2ff43c2bc0d26"
+    },
+    {
+      "path": "paper/evidence/jetson_orin_nano_video_smoke_summary.json",
+      "sha256": "ea197be632e37856f24c5ad335e5c0a0d4acfab483731666305e433eeca19502"
+    },
+    {
+      "path": "paper/evidence/jetson_orin_nano_video_tegrastats.log",
+      "sha256": "7ede6e6b9bc4528f12925042391ef72ec0d604a498fc542021b8348493029a68"
+    },
+    {
+      "path": "paper/evidence/jetson_orin_nano_dashboard_tegrastats.log",
+      "sha256": "2b10899e3485cb2f8a7881b437e3613fd5ade9c84393cdb690b3ab691a214cb6"
+    },
+    {
+      "path": "paper/evidence/jetson_orin_nano_full_video_summary.json",
+      "sha256": "47a8136178c2c2178591017a64ff90016d51b493ef94948d1e2c0154247cb6fd"
+    },
+    {
+      "path": "paper/evidence/jetson_orin_nano_full_video_tegrastats.log",
+      "sha256": "e35575403f02a93dfd0590ff6540fd57386e899d23a77f16a741273d06606a2d"
+    }
+  ],
+  "limitations": [
+    "The public demonstration video is not labeled for the operational taxonomy, so detections and counts are functional evidence only.",
+    "The test did not use an attached camera.",
+    "The benchmark and full-file run were each measured once; three-repeat and multi-hour endurance evidence remain pending.",
+    "Board input power includes the complete Jetson and its co-resident services; it is not detector-only power.",
+    "The pinned validation container is a community image and requires replacement or separate approval for a production supply chain.",
+    "No AMD target was tested."
+  ],
+  "notice": "All claims and evidence require independent author verification before publication or deployment."
+}

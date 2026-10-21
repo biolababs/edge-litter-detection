@@ -60,8 +60,10 @@ The control set was organized against:
    Use representative accuracy evaluation and human review.
 5. The software is not a safety-rated motion controller and cannot authorize
    machinery movement.
-6. Jetson Orin 8 GB and AMD Strix Halo performance, thermals, and power remain
-   target-device validation items.
+6. Jetson Orin 8 GB completed a constrained coexistence validation and a
+   3,622-frame stability run, but the community container base still requires
+   production supply-chain approval and multi-hour endurance remains pending.
+   AMD Strix Halo remains untested.
 7. GitHub branch rules and mandatory reviewer policies require repository-owner
    workflow decisions and are not enabled automatically.
 

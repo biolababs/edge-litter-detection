@@ -23,6 +23,7 @@
 - [Data and labeling plan](DATA_AND_LABELING_PLAN.md)
 - [Experiment plan](EXPERIMENT_PLAN.md)
 - [Jetson setup](JETSON_SETUP.md)
+- [Jetson validation — 21 October 2026](JETSON_VALIDATION_2026-10-21.md)
 
 ## Maintainers
 

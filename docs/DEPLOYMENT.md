@@ -9,9 +9,9 @@ all devices.
 | Target | Reference runtime | Device value | Status |
 |---|---|---|---|
 | CPU host | PyTorch | `cpu` | Functional reference path |
-| NVIDIA CUDA | Vendor PyTorch | `cuda` | Code path implemented; benchmark required |
+| NVIDIA CUDA | Vendor PyTorch | `cuda` | Functional; Tesla T4 benchmark completed |
 | AMD ROCm / Strix Halo | Vendor PyTorch | `cuda` | Code path implemented; benchmark required |
-| Jetson Orin 8 GB | JetPack-compatible PyTorch or optimized platform service | `cuda` or service-specific | Deployment pending authorized maintenance window |
+| Jetson Orin 8 GB | JetPack-compatible PyTorch or optimized platform service | `cuda` or service-specific | Full workflow verified; current public-model path measured below 15 FPS target |
 | Target export | ONNX/OpenVINO/TensorRT adapter | provider-specific | Optional optimization |
 
 PyTorch exposes ROCm accelerators through its `cuda` device API. This does not
@@ -47,6 +47,12 @@ LITTER_PYTHON=/path/to/vendor/environment/bin/python \
 The launcher refuses to create a generic first-time environment on detected
 Jetson systems. This protects the JetPack-compatible software stack and avoids
 changing a shared device unexpectedly.
+
+The validated Jetson path used a digest-pinned, memory-limited container and a
+separate model cache, leaving system Python and existing services unchanged.
+See `JETSON_VALIDATION_2026-10-21.md`. That community validation image is not
+automatically a production-approved base image; select a reviewed
+vendor-supported image for production or explicitly approve the alternative.
 
 ## Dashboard and API
 

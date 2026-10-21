@@ -81,7 +81,7 @@ achieved result.
     evidence.
 11. Publish weights only after all declared release gates pass.
 
-## Pending results
+## Results status
 
 ### Detection and classification
 
@@ -99,4 +99,10 @@ achieved result.
 
 | Runtime | FPS | p95 latency | Incremental memory | Peak temperature | Sustained run |
 |---|---:|---:|---:|---:|---|
-| pending | pending | pending | pending | pending | pending |
+| Jetson OmDet repeated-image detector benchmark | 5.54 | 175.65 ms | 0.95 GiB observed system-available delta; 2.20 GiB max process RSS | 55.16 °C | 50 samples after 10 warm-ups |
+| Jetson complete video workflow | 4.94 | not separately captured | 4,851 MB peak total Jetson RAM used | 66.31 °C | 3,622 frames / 733.54 s |
+
+Both rows are preliminary single-run coexistence evidence. The 15 FPS target
+was not met, and repeated plus multi-hour endurance runs remain pending.
+Detection/classification accuracy and count error remain pending labeled
+representative data.

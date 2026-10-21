@@ -50,17 +50,40 @@ The application and OmDet-Turbo path were functionally exercised on an AWS
 This is useful implementation evidence, but it is not a sustained camera,
 full-pipeline, Jetson, AMD, thermal, or power benchmark.
 
+An authorized coexistence validation then exercised the intended Jetson Orin
+Nano 8 GB while its existing services remained active. With OmDet-Turbo Tiny,
+PyTorch 2.4.0, automatic mixed precision, and a constrained container:
+
+- the 50-sample repeated-image benchmark measured 5.54 FPS, 174.30 ms mean
+  detector latency, and 175.65 ms p95 latency;
+- peak accelerator allocation was 0.70 GiB, maximum process RSS was 2.20 GiB,
+  and at least 2.54 GiB system memory remained available;
+- a complete 3,622-frame video run measured 4.94 source-to-result FPS and
+  178.60 ms mean detector-call latency over 733.54 seconds;
+- the full-file run reached 66.31 °C maximum GPU temperature and 15.81 W
+  maximum whole-board input power, while swap decreased from 158 MiB to
+  147 MiB;
+  and
+- annotated MP4, JSONL, summary, SQLite, dashboard, annotated-frame, and counts
+  API paths completed successfully.
+
+The measured public-model path is functional for low-rate operation but did
+not meet the provisional 15 FPS target. These are single-run engineering
+results on unlabelled demonstration media, not accuracy, count-error,
+multi-hour endurance, or production-readiness evidence.
+
 ## Platform status
 
 | Platform | Status |
 |---|---|
 | CPU | Functional reference path |
 | NVIDIA CUDA | Functional path; Tesla T4 smoke and model benchmark completed |
-| NVIDIA Jetson Orin 8 GB | Deployment path documented; target validation pending |
+| NVIDIA Jetson Orin 8 GB | Full workflow and dashboard verified; preliminary coexistence performance measured |
 | AMD ROCm / Ryzen AI Max / Strix Halo | PyTorch path implemented; target validation pending |
 | Apple silicon | MPS development path available; target validation pending |
 
-The shared Jetson device was not modified during repository development.
+See `JETSON_VALIDATION_2026-10-21.md` for the exact runtime, isolation,
+telemetry, acceptance interpretation, and evidence checksums.
 
 ## Capacity planning
 

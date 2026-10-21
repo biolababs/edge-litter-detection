@@ -1,4 +1,4 @@
-# Jetson Orin Nano 8 GB Super deployment plan
+# Jetson Orin Nano 8 GB Super deployment and validation
 
 ## Confirmed hardware
 
@@ -38,23 +38,23 @@ python scripts/jetson_healthcheck.py \
   --output reports/generated/jetson_environment.json
 ```
 
-## Installation rule
+## Validated installation rule
 
-No installation is currently authorized.
-
-In a later approved test window, prefer an isolated JetPack-compatible
-container or dedicated environment. Do not modify the system Python used by the
-existing project. Any PyTorch build must match the installed JetPack/CUDA stack;
-a generic wheel is not assumed to provide working Jetson GPU support.
+The authorized validation used an isolated JetPack-compatible container and
+did not modify the system Python, system packages, existing services, power
+mode, or clock configuration. Any PyTorch build must match the installed
+JetPack/CUDA stack; a generic wheel is not assumed to provide working Jetson
+GPU support.
 
 Preferred options:
 
-1. A version-pinned NVIDIA-compatible container with explicit memory and port
+1. A digest-pinned NVIDIA-compatible container with explicit memory and port
    limits.
 2. A dedicated environment using NVIDIA-compatible framework builds, only if a
    container cannot support the selected detector runtime.
 
-The commands below are a future procedure, not authorization to execute them:
+The following dedicated-environment path remains an alternative and was not
+used for the reported Jetson result:
 
 Then:
 
@@ -138,6 +138,21 @@ complete runtime before deciding whether it passes the use case.
 Any optimized path must preserve the configured prompt/output contract and be
 re-evaluated on the same held-out data. INT8 is deferred until representative
 calibration data and a validated runtime path exist.
+
+## Measured result
+
+The authorized coexistence test completed on 21 October 2026. OmDet-Turbo Tiny
+measured 5.54 FPS in a 50-sample repeated-image benchmark and 4.94 FPS through
+the complete 3,622-frame video, tracking, annotation, JSONL, and SQLite path.
+Minimum system-available memory was 2.54 GiB; the 733.54-second processing run
+reached 66.31 °C and 15.81 W peak whole-board input power. Dashboard stream
+control, annotated frame delivery, and counts queries also passed.
+
+The workflow is functional, but the provisional 15 FPS target was not met.
+Accuracy, count error, repeatability, multi-hour endurance, and production
+readiness remain unproven.
+See `JETSON_VALIDATION_2026-10-21.md` and `paper/evidence/` for the complete
+protocol and machine-readable evidence.
 
 ## Official references
 

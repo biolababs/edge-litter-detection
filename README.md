@@ -15,9 +15,10 @@ camera, image, video, HTTP source, or RTSP stream; shows an operations
 dashboard; and stores durable evidence in SQLite.
 
 > Project status: functional open-source application under active validation.
-> Public models make the complete workflow usable today. Production accuracy,
-> sustained throughput, power, and thermal acceptance must still be measured on
-> representative data and the intended edge device.
+> Public models make the complete workflow usable today. A coexistence test on
+> Jetson Orin Nano 8 GB completed the full video, persistence, dashboard, and
+> API paths. Production accuracy, high-rate throughput, and endurance still
+> require representative data and deployment-specific acceptance.
 
 ## Research preprint
 
@@ -30,9 +31,11 @@ evidence, and the frozen protocol for target-domain and edge-device validation:
 - [ResearchGate submission record](paper/RESEARCHGATE_SUBMISSION.md)
 
 The manuscript cites software version `0.10.1` at Git commit
-`0624677b72cf1d16b59a335b78d9003f2b479786`. It is a preprint and must not be
-described as peer reviewed. Accuracy, count-error, Jetson, AMD, power, thermal,
-and field-outcome results remain pending their declared evaluations.
+`756fa2ae0b8686bb4b97940911710dc73f8efd90`. It is a preprint and must not be
+described as peer reviewed. Preliminary Jetson functionality, throughput,
+memory, temperature, and whole-device power have been measured; accuracy,
+count-error, endurance, AMD, and field-outcome results remain pending their
+declared evaluations.
 
 ## What the solution provides
 
@@ -247,12 +250,15 @@ status:
 |---|---|
 | CPU | Functional reference path |
 | NVIDIA CUDA | Functional; Tesla T4 smoke and model benchmark completed |
-| Jetson Orin 8 GB | Deployment path documented; target validation pending |
+| Jetson Orin 8 GB | Full workflow verified; 5.54 detector FPS and 4.94 FPS across a 3,622-frame full-file stability run |
 | AMD ROCm / Ryzen AI Max / Strix Halo | Runtime path implemented; target validation pending |
 | Apple silicon | MPS development path available; target validation pending |
 
-See [hardware requirements](docs/HARDWARE_REQUIREMENTS.md) for the measured T4
-evidence, storage planning, and validation boundaries.
+See [hardware requirements](docs/HARDWARE_REQUIREMENTS.md) and the
+[Jetson validation report](docs/JETSON_VALIDATION_2026-10-21.md) for measured
+evidence, storage planning, and validation boundaries. The current Jetson path
+does not meet the provisional 15 FPS target and must not be presented as an
+accuracy or production-readiness result.
 
 ## Architecture
 
@@ -331,7 +337,9 @@ LITTER_PYTHON=/path/to/vendor/environment/bin/python \
 
 The launcher refuses to create a generic first-time PyTorch environment on a
 detected Jetson because that could conflict with JetPack. The shared Jetson used
-by another project was not modified.
+for validation was tested through a pinned, constrained container without
+changing its system Python, system packages, power mode, clocks, or existing
+services.
 
 ## Development and validation
 

@@ -8,8 +8,8 @@ remain clearly labeled until it is accepted by a journal or conference.
 
 ## Title
 
-An Open and Reproducible Edge-AI System for Litter Detection, Multiclass
-Classification, Tracking, and Counting
+An Open and Reproducible Edge-AI Software Architecture for Litter Detection,
+Multiclass Classification, Tracking, and Counting
 
 ## Author
 
@@ -43,15 +43,22 @@ clean-clone workflow uses the public OmDet-Turbo Tiny open-vocabulary model,
 while a litter-specific RF-DETR checkpoint may be trained and published later
 if representative evaluation shows that adaptation is required. Preliminary
 engineering validation confirms installation, real inference, persistence,
-application tests, and model-only execution on NVIDIA CUDA and Apple silicon.
-On an AWS g4dn.xlarge with a Tesla T4, a repeated-image OmDet-Turbo benchmark
-measured 16.53 frames per second, 58.98 ms mean detector latency, 61.03 ms p95
-latency, and 0.55 GiB peak allocated GPU memory. These measurements do not
-establish target-domain accuracy, full-pipeline sustained performance, or
-Jetson and AMD deployment performance. The paper therefore contributes a
-reusable system, explicit count semantics, a safety and security boundary, and
-a predeclared evaluation protocol while clearly separating verified
-software evidence from pending empirical claims.
+application tests, and execution on NVIDIA CUDA, Apple silicon, and the
+intended Jetson Orin Nano 8 GB. On an AWS g4dn.xlarge with a Tesla T4, a
+repeated-image OmDet-Turbo benchmark measured 16.53 frames per second,
+58.98 ms mean detector latency, 61.03 ms p95 latency, and 0.55 GiB peak
+allocated GPU memory. In a coexistence test on the 8 GB Jetson, the same
+public-model path measured 5.54 detector frames per second and 4.94 frames per
+second through all 3,622 frames of a video, tracking, annotation, JSONL, and
+SQLite workflow; the 733.54-second processing run reached 66.31 °C and 15.81 W
+peak whole-board input power. The Jetson workflow, dashboard, and counts API
+completed, but the
+provisional 15 FPS target was not met. These measurements do not establish
+target-domain accuracy, count error, endurance, AMD deployment performance, or
+production readiness. The paper therefore contributes a reusable system,
+explicit count semantics, a safety and security boundary, and a predeclared
+evaluation protocol while clearly separating verified software evidence from
+pending empirical claims.
 
 ## Keywords
 
@@ -63,7 +70,7 @@ recycling; reproducible software
 
 - Code: `https://github.com/biolababs/edge-litter-detection`
 - Software revision:
-  `0624677b72cf1d16b59a335b78d9003f2b479786`
+  `756fa2ae0b8686bb4b97940911710dc73f8efd90`
 - Software version: `0.10.1`
 
 The manuscript has no DOI at this stage. Do not invent one. A DOI can be added
@@ -75,10 +82,11 @@ repository.
 This systems and reproducibility preprint presents an open-source edge-AI
 application for litter detection, multiclass classification, tracking,
 counting, SQLite evidence, human review, and integration with cleanup vehicles
-or sorting workflows. It reports preliminary engineering validation and
-provides a frozen protocol for the pending target-domain and target-device
-evaluation. Source code and reproduction instructions are available in the
-linked GitHub repository.
+or sorting workflows. It reports preliminary engineering validation, including
+a constrained Jetson Orin Nano full-workflow run, and provides a frozen
+protocol for pending accuracy, count-error, endurance, and AMD evaluation.
+Source code and reproduction instructions are available in the linked GitHub
+repository.
 
 ## Files to upload
 
@@ -111,8 +119,9 @@ linked GitHub repository.
 3. Optionally archive that release with a DOI provider.
 4. Upload the PDF to ResearchGate as a preprint.
 5. Add the GitHub URL and, when available, the software DOI.
-6. After field testing, publish a revised manuscript with accuracy, counting,
-   power, thermal, and operational results.
+6. After labeled-data, endurance, optimization, and field testing, publish a
+   revised manuscript with accuracy, counting, reliability, and operational
+   results.
 
 ## Notice
 

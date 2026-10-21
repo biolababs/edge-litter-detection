@@ -10,15 +10,27 @@ software.
 - `Edge_Litter_Detection_Preprint.pdf`: upload-ready preprint;
 - `RESEARCHGATE_SUBMISSION.md`: title, abstract, keywords, rights checks, and
   upload checklist;
+- `CRITICAL_REVIEW_RESPONSE.md`: point-by-point disposition of the major
+  preprint review;
 - `evidence/preliminary_validation.json`: machine-readable evidence boundary;
-- `evidence/t4_omdet_preliminary.json`: transcribed Tesla T4 benchmark record.
+- `evidence/t4_omdet_preliminary.json`: transcribed Tesla T4 benchmark record;
+- `evidence/jetson_orin_nano_validation.json`: Jetson protocol, measured
+  outcomes, checksums, acceptance interpretation, and limitations;
+- `evidence/jetson_orin_nano_omdet_benchmark.json`: raw Jetson benchmark output;
+- `evidence/jetson_orin_nano_video_smoke_summary.json`: complete video run
+  summary; and
+- `evidence/jetson_orin_nano_full_video_summary.json`: 3,622-frame full-file
+  stability summary;
+- `evidence/jetson_orin_nano_*_tegrastats.log`: raw device telemetry.
 
 ## Publication status
 
 This is a systems and reproducibility preprint. It reports verified software
-functionality and preliminary engineering measurements. Target-domain
-detection accuracy, video counting accuracy, Jetson and AMD sustained
-performance, power, thermals, and field outcomes remain pending.
+functionality, preliminary engineering measurements, and one constrained
+Jetson Orin Nano coexistence validation. Target-domain detection accuracy,
+video counting accuracy, repeated/multi-hour Jetson acceptance, AMD
+performance, and field outcomes remain pending. The measured Jetson path is
+functional but did not meet the provisional 15 FPS target.
 
 Do not describe the manuscript as peer reviewed unless it is later accepted by
 a peer-reviewed venue. Before upload, the author should independently verify
@@ -29,7 +41,7 @@ manuscript license.
 
 The paper references Edge Litter Detection version 0.10.1 at Git commit:
 
-`0624677b72cf1d16b59a335b78d9003f2b479786`
+`756fa2ae0b8686bb4b97940911710dc73f8efd90`
 
 Repository:
 

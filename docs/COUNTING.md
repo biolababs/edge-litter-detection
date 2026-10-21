@@ -32,6 +32,22 @@ Default controls:
 | Maximum missed frames | 30 | Preserve identity through a short gap |
 | Class mismatch penalty | 0.75 | Prefer class-consistent matches without forcing them |
 
+Exact association procedure:
+
+```text
+increment missed_frames for every active track
+build detection-track candidates where IoU >= 0.30
+multiply a candidate score by 0.75 when classes differ
+greedily accept descending one-to-one candidates
+update matched tracks and create tracks for unmatched detections
+use the modal accumulated class vote as the stable class
+confirm after 2 hits and count the confirmed track ID once
+expire after more than 30 missed frames
+```
+
+The built-in tracker has no motion model, appearance embedding, or global
+assignment solver. Its purpose is a transparent dependency-light baseline.
+
 ## Important limitation
 
 The built-in tracker is intentionally small and dependency-free. It is a strong

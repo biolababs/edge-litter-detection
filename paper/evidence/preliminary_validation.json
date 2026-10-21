@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
   "paper": {
-    "title": "An Open and Reproducible Edge-AI System for Litter Detection, Multiclass Classification, Tracking, and Counting",
-    "version": "preprint-1.0",
+    "title": "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
+    "version": "preprint-1.1",
     "date": "2026-10-21"
   },
   "software": {
     "name": "Edge Litter Detection, Multiclass Classification, Tracking, and Counting",
     "version": "0.10.1",
     "repository": "https://github.com/biolababs/edge-litter-detection",
-    "git_revision": "0624677b72cf1d16b59a335b78d9003f2b479786",
+    "git_revision": "756fa2ae0b8686bb4b97940911710dc73f8efd90",
     "license": "Apache-2.0"
   },
   "verified_scope": [
@@ -18,15 +18,18 @@
     "camera, image, video, HTTP, and RTSP source paths in the application design",
     "normalized detections, tracking, count semantics, JSON evidence, and SQLite persistence",
     "browser dashboard and private API paths",
-    "73 automated software tests at the cited revision",
+    "76 automated software tests at the cited revision",
     "preliminary repeated-image model benchmark on NVIDIA Tesla T4",
     "preliminary repeated-image model benchmark on Apple MPS",
-    "read-only inventory of the target Jetson Orin Nano 8 GB device"
+    "preliminary repeated-image detector benchmark on the target Jetson Orin Nano 8 GB device",
+    "3,622-frame Jetson video, tracking, annotation, JSONL, and SQLite stability workflow",
+    "Jetson dashboard stream control, annotated frame delivery, counts API, temperature, and whole-board power capture"
   ],
   "not_yet_claimed": [
     "target-domain detection or classification accuracy",
     "video counting accuracy",
-    "Jetson inference throughput, memory, power, thermals, or sustained stability",
+    "Jetson repeated-run and multi-hour endurance acceptance",
+    "Jetson production readiness or thermal-throttling behavior",
     "AMD ROCm or Strix Halo inference throughput, memory, power, thermals, or sustained stability",
     "field productivity, collection-rate, sorting-quality, cost, or environmental benefit"
   ],
@@ -42,6 +45,12 @@
       "platform": "Apple silicon / MPS",
       "backend": "omdet_turbo",
       "scope": "repeated-image model benchmark"
+    },
+    {
+      "evidence": "paper/evidence/jetson_orin_nano_validation.json",
+      "platform": "NVIDIA Jetson Orin Nano 8 GB / CUDA",
+      "backend": "omdet_turbo",
+      "scope": "coexistence detector benchmark, full video smoke, and dashboard/API smoke"
     }
   ],
   "notice": "All manuscript claims and references require independent author verification before publication."

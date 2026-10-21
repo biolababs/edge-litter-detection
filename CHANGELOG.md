@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Fixed OmDet-Turbo loading on JetPack-compatible PyTorch when Swin
+  non-persistent attention buffers remain on the meta device.
+- Constrained Transformers to the PyTorch-2.4-compatible 4.x series and fixed
+  CUDA memory measurement on JetPack versions that require an indexed device.
+- Added measured Jetson Orin Nano 8 GB coexistence evidence for a 50-sample
+  detector benchmark, 3,622-frame full-file stability workflow, SQLite persistence,
+  annotated output, dashboard stream control, counts API, thermals, and
+  whole-board power.
+- Documented that the current public-model Jetson path is functional at 5.54
+  detector FPS and 4.94 full-pipeline FPS but does not meet the provisional
+  15 FPS target.
 - Reworked the GitHub landing page around outcomes, five-minute setup, input
   sources, durable outputs, architecture, deployment, and minimum/recommended
   hardware tiers.

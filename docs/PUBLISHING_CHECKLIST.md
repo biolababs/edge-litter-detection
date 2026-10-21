@@ -29,9 +29,11 @@ for every deployment.
 - [ ] Train and freeze the project checkpoint and exact class schema.
 - [x] Prepare detection/classification and aggregate counting evaluators.
 - [ ] Run detection/classification and counting accuracy evaluation.
-- [ ] Recapture the Jetson inventory before the authorized validation run.
-- [ ] Obtain a test window that does not disrupt the existing project.
-- [ ] Complete operational acceptance checks.
+- [x] Recapture the Jetson state before the authorized validation run.
+- [x] Obtain and use a test window without stopping the existing project.
+- [ ] Complete repeated and multi-hour endurance operational acceptance; the
+      3,622-frame full-file stability run passed, but the 15 FPS target was not
+      met.
 - [ ] Replace every `pending` result with measured evidence or retain an
       explicit limitation.
 
