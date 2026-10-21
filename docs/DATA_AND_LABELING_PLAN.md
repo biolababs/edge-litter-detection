@@ -3,8 +3,12 @@
 ## Goal
 
 Create the evidence and training data needed for one reusable litter solution.
-End users do not train; maintainers publish a validated model that the launcher
-downloads automatically.
+Normal deployment does not require training; maintainers can publish a
+validated model that the launcher downloads automatically.
+
+Teams that need a site-specific checkpoint can follow the complete
+[training with your own data](TRAINING_YOUR_DATA.md) workflow. The public
+backends remain usable without training.
 
 ## Automated TACO bootstrap
 

@@ -9,7 +9,7 @@ deliverables.
 | Location | `src/`, `config/`, `deploy/`, `schemas/`, and operational docs | `thesis/` and experiment documents |
 | License | Apache-2.0 for original project code and software documentation | Academic text, datasets, weights, and results can have separate terms |
 | Detector | Grounding DINO bootstrap, OmDet-Turbo no-training screen, and published RF-DETR Nano fallback release path | Only the final frozen release configuration is evaluated |
-| Training | Maintainers publish weights; deployers do not train | Training is an implementation step, not a model-comparison study |
+| Training | Public backends require no training; maintainers or advanced site teams can optionally fine-tune and publish weights | Training is an implementation step, not a model-comparison study |
 | Claims | Implemented interfaces and behavior | Measured accuracy, latency, memory, power, and limitations |
 
 ## What a user can do immediately
@@ -45,10 +45,11 @@ accuracy, frame rate, memory footprint, or safety rating.
 
 ## Central model release
 
-Maintainers train one closed-set RF-DETR Nano litter checkpoint using licensed
-bootstrap and target-domain data. They publish weights only after the declared
-accuracy, counting, and target-device gates pass. This is not a task for normal
-deployers.
+Maintainers or advanced site teams can train one closed-set RF-DETR Nano litter
+checkpoint using licensed bootstrap and target-domain data. They publish
+weights only after the declared accuracy, counting, and target-device gates
+pass. Normal deployers continue to use the public or published model without a
+training environment. See [training with your own data](TRAINING_YOUR_DATA.md).
 
 If a custom artifact is produced, record:
 

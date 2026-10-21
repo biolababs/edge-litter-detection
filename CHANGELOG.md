@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added a complete optional custom-data training guide covering class
+  contracts, COCO layout, representative collection, leakage-resistant splits,
+  smoke training, held-out evaluation, runtime testing, and checkpoint release.
+- Clarified that the public backends work out of the box while maintainers and
+  advanced site teams can fine-tune for deployment-specific accuracy.
+
 ## 0.10.1 - 2026-10-21
 
 - Replaced the road-driving functional demo with an attributed,

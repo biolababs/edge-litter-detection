@@ -31,7 +31,8 @@ The selected release architecture is a project-maintained, litter-specific
 RF-DETR Nano checkpoint. Maintainers train and validate it centrally, publish
 versioned weights and a SHA-256 digest, and update the release manifest. Once
 published, ordinary users will continue to use the same one-command launcher;
-they will not train a model.
+they will not need to train a model. Advanced teams can optionally fine-tune a
+site-specific checkpoint using the documented COCO workflow.
 
 The software is designed as a practical perception component for cleanup
 vehicles, refuse-collection trucks, fixed monitoring points, and
@@ -148,6 +149,41 @@ export LITTER_STREAM_URL="rtsp://camera-host/live"
 
 Press `q` in the display window or `Ctrl+C` in the terminal to stop a live run.
 Run `./startup.sh --help` for all options.
+
+## Improve accuracy with your own data (optional)
+
+The public Grounding DINO and OmDet-Turbo backends work without training.
+Training is an optional improvement path when a particular truck camera,
+sorting line, litter stream, lighting condition, or location needs higher
+accuracy.
+
+The repository supports central RF-DETR Nano fine-tuning with a COCO detection
+dataset:
+
+```bash
+python3 -m venv .venv-train
+source .venv-train/bin/activate
+python -m pip install -e ".[runtime,train]"
+
+python train.py \
+  --data data/my-litter-v1 \
+  --model rfdetr-nano \
+  --device cuda \
+  --epochs 100 \
+  --batch 4 \
+  --name my-litter-v1
+```
+
+The custom dataset must contain `train`, `valid`, and frozen `test` directories
+with `_annotations.coco.json` files. Its numeric class IDs and names must
+exactly match `config/classes.yaml`. Split complete videos, routes, sites, or
+capture sessions together so near-identical frames cannot leak between
+training and evaluation.
+
+See [training with your own data](docs/TRAINING_YOUR_DATA.md) for collection,
+annotation, directory layout, smoke training, evaluation, local checkpoint
+testing, and release guidance. Normal deployment remains one-command and does
+not require this workflow.
 
 ## Browser operations dashboard
 
@@ -404,10 +440,10 @@ The public repository does not claim a particular accuracy, frame rate, memory
 use, or power result until measurements are produced from representative data
 on the target deployment.
 
-## Maintainer model-release workflow
+## Optional training and model-release workflow
 
-Training is not part of deployment. Project maintainers use the following
-workflow to build the one published litter checkpoint:
+Training is not required for deployment. Project maintainers or advanced site
+teams can use the following bootstrap workflow to build a candidate checkpoint:
 
 ```bash
 python -m pip install -e ".[runtime,train]"
@@ -420,6 +456,11 @@ maps its fine-grained labels to the operational taxonomy, and creates grouped
 COCO train/validation/test splits. It also reports classes with no examples.
 TACO is bootstrap data; representative truck, roadside, motion, weather, and
 camera data must be added before a model release.
+
+For a custom dataset, follow
+[training with your own data](docs/TRAINING_YOUR_DATA.md). A trained checkpoint
+must pass held-out accuracy, count, and intended-device checks before it is
+published as the project release.
 
 ## Software and MSc thesis
 
