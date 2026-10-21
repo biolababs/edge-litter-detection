@@ -1,9 +1,22 @@
 import unittest
 
-from litter_edge.benchmark import _accelerator_memory_evidence, _memory_evidence
+from litter_edge.benchmark import (
+    _accelerator_memory_evidence,
+    _cuda_device_reference,
+    _memory_evidence,
+)
 
 
 class MemoryEvidenceTests(unittest.TestCase):
+    def test_plain_cuda_uses_current_device_index(self) -> None:
+        class FakeCuda:
+            @staticmethod
+            def current_device() -> int:
+                return 2
+
+        self.assertEqual(_cuda_device_reference(FakeCuda(), "cuda"), 2)
+        self.assertEqual(_cuda_device_reference(FakeCuda(), "cuda:0"), "cuda:0")
+
     def test_passes_hard_and_preferred_memory_gates(self) -> None:
         evidence = _memory_evidence(
             [

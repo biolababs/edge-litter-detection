@@ -115,6 +115,11 @@ def _memory_evidence(
     }
 
 
+def _cuda_device_reference(cuda: Any, device: str) -> str | int:
+    """Return an indexed reference for PyTorch versions that reject plain cuda."""
+    return cuda.current_device() if device == "cuda" else device
+
+
 def _accelerator_memory_snapshot(device: str) -> dict[str, Any]:
     empty = {
         "accelerator": None,
@@ -133,21 +138,26 @@ def _accelerator_memory_snapshot(device: str) -> dict[str, Any]:
         if not torch.cuda.is_available():
             return empty
         gib = 1024**3
-        free_bytes, total_bytes = torch.cuda.mem_get_info(device)
+        cuda_device = _cuda_device_reference(torch.cuda, device)
+        free_bytes, total_bytes = torch.cuda.mem_get_info(cuda_device)
         return {
-            "accelerator": torch.cuda.get_device_name(device),
-            "accelerator_allocated_gib": torch.cuda.memory_allocated(device) / gib,
-            "accelerator_reserved_gib": torch.cuda.memory_reserved(device) / gib,
+            "accelerator": torch.cuda.get_device_name(cuda_device),
+            "accelerator_allocated_gib": (
+                torch.cuda.memory_allocated(cuda_device) / gib
+            ),
+            "accelerator_reserved_gib": (
+                torch.cuda.memory_reserved(cuda_device) / gib
+            ),
             "accelerator_peak_allocated_gib": (
-                torch.cuda.max_memory_allocated(device) / gib
+                torch.cuda.max_memory_allocated(cuda_device) / gib
             ),
             "accelerator_peak_reserved_gib": (
-                torch.cuda.max_memory_reserved(device) / gib
+                torch.cuda.max_memory_reserved(cuda_device) / gib
             ),
             "accelerator_free_gib": free_bytes / gib,
             "accelerator_total_gib": total_bytes / gib,
         }
-    except (ImportError, RuntimeError, AssertionError):
+    except (ImportError, RuntimeError, AssertionError, ValueError):
         return empty
 
 
@@ -282,8 +292,10 @@ def main() -> None:
             import torch
 
             if torch.cuda.is_available():
-                torch.cuda.reset_peak_memory_stats(device)
-        except (ImportError, RuntimeError, AssertionError):
+                torch.cuda.reset_peak_memory_stats(
+                    _cuda_device_reference(torch.cuda, device)
+                )
+        except (ImportError, RuntimeError, AssertionError, ValueError):
             pass
 
     source = _source_value(args.source)
