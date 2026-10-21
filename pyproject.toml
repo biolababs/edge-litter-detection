@@ -59,7 +59,7 @@ runtime = [
 runtime-headless = [
   "numpy==1.26.4; python_version < '3.13'",
   "numpy>=2.4,<3; python_version >= '3.13'",
-  "opencv-python-headless>=4.10,<5",
+  "opencv-python-headless>=4.10,<6",
 ]
 api = [
   "fastapi>=0.115,<1",
