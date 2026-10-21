@@ -62,7 +62,7 @@ Options:
   --no-display           Disable the display window.
   --max-frames N         Stop after N frames; zero means unlimited.
   --demo                  Download attributed public test images and run one.
-  --demo-video            Download an attributed public-domain test video.
+  --demo-video            Download an attributed recycling-line test video.
   --demo-limit N          Number of test images to cache (default: 8).
   --api                   Start the HTTP API and browser dashboard.
   --dashboard             Alias for --api.
@@ -351,7 +351,7 @@ fi
 if [[ "$install_profile" == "runtime" || "$install_profile" == "runtime-headless" ]]; then
   install_profile="$install_profile-$backend_value"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.10.0"
+install_marker="$venv_dir/.edge-litter-$install_profile-0.10.1"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip
@@ -379,11 +379,11 @@ if [[ "$demo_data" == true ]]; then
 fi
 
 if [[ "$demo_video" == true ]]; then
-  printf 'Preparing attributed public-domain demo video...\n'
+  printf 'Preparing attributed recycling-line demo video...\n'
   source_value="$(
     "$python_command" "$project_root/prepare_demo_video.py" \
       --output \
-      "$project_root/media/demo-video/wsdot-adopt-a-highway-safety.mp4" \
+      "$project_root/media/demo-video/recycling-facility.webm" \
       --format path
   )"
   [[ -f "$source_value" ]] || fail \
@@ -511,7 +511,7 @@ for camera in payload.get("cameras", []):
       find "$project_root/media" -maxdepth 1 -type f \
         \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \
         -o -iname '*.webp' -o -iname '*.mp4' -o -iname '*.mov' \
-        -o -iname '*.mkv' -o -iname '*.avi' \) \
+        -o -iname '*.mkv' -o -iname '*.avi' -o -iname '*.webm' \) \
         -print | sort | head -n 1
     )"
   fi

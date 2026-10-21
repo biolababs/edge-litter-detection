@@ -109,7 +109,7 @@ and processes the first image through the normal detection, classification,
 counting, evidence, and SQLite path. No test image is committed to this
 repository.
 
-Run an attributed public-domain video through the streaming, tracking,
+Run an attributed recycling-facility video through the streaming, tracking,
 counting, SQLite, and annotated-output path:
 
 ```bash
@@ -117,9 +117,10 @@ counting, SQLite, and annotated-output path:
 ```
 
 The video is downloaded into the ignored `media/demo-video/` directory. Its
-source, creator, Public Domain Mark, and checksums are recorded in
-`media/demo-video/manifest.json`. It is functional test media, not a labelled
-accuracy dataset.
+source, creator, CC BY-SA 3.0 attribution, permission status, and checksums are
+recorded in `media/demo-video/manifest.json`. The two-minute sample shows mixed
+recyclables moving through conveyors and human separation stations. It is
+functional test media, not a labelled accuracy dataset.
 
 Choose an input explicitly when needed:
 
@@ -177,7 +178,7 @@ Prepare the reusable demonstration and dashboard in one command:
   --device auto
 ```
 
-In the dashboard, select **Use public demo video**, then start detection.
+In the dashboard, select **Use sorting-floor demo**, then start detection.
 The API binds to localhost by default. Use an authenticated reverse proxy or an
 SSH tunnel for a remote edge device; do not expose the unauthenticated port
 directly to the internet.

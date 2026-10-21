@@ -8,33 +8,31 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote, urlsplit
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from . import __version__
 
 
-ARCHIVE_IDENTIFIER = "WsdotAdopt-a-highwaySafetyVideo"
-ARCHIVE_FILENAME = "WSDOT_Adopt-a-Highway_Safety.mp4"
 VIDEO_URL = (
-    "https://archive.org/download/"
-    f"{ARCHIVE_IDENTIFIER}/{quote(ARCHIVE_FILENAME)}"
+    "https://upload.wikimedia.org/wikipedia/commons/d/d4/"
+    "Recycling_Video.webm"
 )
-SOURCE_PAGE = f"https://archive.org/details/{ARCHIVE_IDENTIFIER}"
-EXPECTED_SHA1 = "7ece11d9f9fc5c33eb793f7a85a8ad9bf1e009e5"
+SOURCE_PAGE = "https://commons.wikimedia.org/wiki/File:Recycling_Video.webm"
+EXPECTED_SHA1 = "ad3b141fdf60830572e091dd3f8e9df1cc2df6ed"
 MAX_VIDEO_BYTES = 80 * 1024 * 1024
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Download an attributed public-domain roadside-cleanup video for "
+            "Download an attributed recycling-facility conveyor video for "
             "functional stream testing. The video remains excluded from Git."
         )
     )
     parser.add_argument(
         "--output",
-        default="media/demo-video/wsdot-adopt-a-highway-safety.mp4",
+        default="media/demo-video/recycling-facility.webm",
     )
     parser.add_argument("--timeout", type=float, default=60.0)
     parser.add_argument("--refresh", action="store_true")
@@ -49,24 +47,35 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _manifest(target: Path, sha256: str) -> dict[str, Any]:
     return {
-        "title": "WSDOT Adopt-a-Highway Safety Video",
-        "creator": "Washington State Department of Transportation",
+        "title": "Recycling Video",
+        "creator": "Ireland4me (Wikimedia Commons contributor)",
+        "attribution": (
+            '"Recycling Video" by Ireland4me, licensed under CC BY-SA 3.0, '
+            "via Wikimedia Commons."
+        ),
         "purpose": (
-            "Functional video-stream testing only; this is not a labelled "
-            "accuracy dataset."
+            "Functional recycling-line video-stream testing only; this is "
+            "not a labelled accuracy dataset."
         ),
         "source_page": SOURCE_PAGE,
         "download_url": VIDEO_URL,
-        "archive_identifier": ARCHIVE_IDENTIFIER,
+        "upstream_permission": "Wikimedia VRTS permission confirmed",
         "license": {
-            "name": "Public Domain Mark 1.0",
-            "url": "https://creativecommons.org/publicdomain/mark/1.0/",
+            "name": "Creative Commons Attribution-ShareAlike 3.0",
+            "identifier": "CC-BY-SA-3.0",
+            "url": "https://creativecommons.org/licenses/by-sa/3.0/",
         },
         "local_file": target.name,
         "sha1": EXPECTED_SHA1,
         "sha256": sha256,
         "downloaded_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def _is_supported_video(prefix: bytes) -> bool:
+    is_webm = prefix.startswith(b"\x1a\x45\xdf\xa3")
+    is_mp4 = len(prefix) >= 12 and b"ftyp" in prefix[4:32]
+    return is_webm or is_mp4
 
 
 def _read_cached(target: Path, manifest_path: Path) -> dict[str, Any] | None:
@@ -144,13 +153,15 @@ def prepare_demo_video(
                         raise ValueError(
                             f"Demo video exceeds {MAX_VIDEO_BYTES} bytes."
                         )
-                    if len(prefix) < 16:
-                        prefix += chunk[: 16 - len(prefix)]
+                    if len(prefix) < 32:
+                        prefix += chunk[: 32 - len(prefix)]
                     sha1.update(chunk)
                     sha256.update(chunk)
                     temporary.write(chunk)
-        if len(prefix) < 12 or b"ftyp" not in prefix[4:16]:
-            raise ValueError("Downloaded demo content is not an MP4 file.")
+        if not _is_supported_video(prefix):
+            raise ValueError(
+                "Downloaded demo content is not a supported WebM or MP4 file."
+            )
         observed_sha1 = sha1.hexdigest()
         if observed_sha1.lower() != expected_sha1.lower():
             raise ValueError(

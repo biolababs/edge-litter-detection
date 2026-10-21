@@ -359,9 +359,9 @@ elements.stop.addEventListener("click", stopStream);
 elements.refresh.addEventListener("click", refreshOperations);
 elements.demoSource.addEventListener("click", () => {
   elements.source.value =
-    "media/demo-video/wsdot-adopt-a-highway-safety.mp4";
+    "media/demo-video/recycling-facility.webm";
   showNotice(
-    "Run prepare_demo_video.py once if the public demonstration has not been downloaded.",
+    "Selected the recycling-facility conveyor demo. Run prepare_demo_video.py once if it has not been downloaded.",
   );
 });
 elements.imageInput.addEventListener("change", (event) => {

@@ -35,7 +35,7 @@ The dashboard is served at `http://127.0.0.1:8088`. It starts a server-side
 capture session, so camera indexes and local paths refer to the edge device
 rather than the operator's browser computer.
 
-Download attributed functional video media:
+Download an attributed recycling-facility conveyor video:
 
 ```bash
 python prepare_demo_video.py --format path
@@ -46,6 +46,12 @@ Or download it and run the command-line pipeline automatically:
 ```bash
 ./startup.sh --backend omdet_turbo --demo-video --no-display
 ```
+
+The downloaded `media/demo-video/recycling-facility.webm` sample shows mixed
+recyclables moving through a material-recovery facility. Its creator, source,
+CC BY-SA 3.0 license, permission status, and checksums are retained in the
+adjacent generated manifest. It is functional stream media rather than a
+labelled accuracy dataset.
 
 ## Discover and probe
 
@@ -69,7 +75,7 @@ frame dimensions, reported frame rate, and the OpenCV capture backend.
 | Source | Example | Notes |
 |---|---|---|
 | Image | `./media/site.jpg` | JPEG, PNG, BMP, TIFF, and WebP |
-| Video | `./media/site.mp4` | Codec support depends on OpenCV/FFmpeg |
+| Video | `./media/site.mp4` or `.webm` | Codec support depends on OpenCV/FFmpeg |
 | Camera | `0` | Camera indexes normally start at zero |
 | RTSP stream | `rtsp://camera-host/live` | Prefer an environment variable for credentials |
 | HTTP stream | `https://camera-host/stream` | Must be supported by the OpenCV build |

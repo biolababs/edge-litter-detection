@@ -32,12 +32,12 @@ class FakeResponse:
 
 class DemoVideoTests(unittest.TestCase):
     def test_downloads_verifies_and_attributes_video(self) -> None:
-        video = b"\x00\x00\x00\x18ftypmp42" + b"demo-video"
+        video = b"\x1a\x45\xdf\xa3" + b"demo-video"
         sha1 = hashlib.sha1(video).hexdigest()
-        url = "https://example.test/litter.mp4"
+        url = "https://example.test/recycling.webm"
 
         with TemporaryDirectory() as temporary:
-            output = Path(temporary) / "demo.mp4"
+            output = Path(temporary) / "demo.webm"
             with patch(
                 "litter_edge.demo_video.urlopen",
                 return_value=FakeResponse(video, url),
@@ -54,15 +54,19 @@ class DemoVideoTests(unittest.TestCase):
             saved = output.read_bytes()
 
         self.assertEqual(saved, video)
-        self.assertEqual(result["license"]["name"], "Public Domain Mark 1.0")
+        self.assertEqual(
+            result["license"]["identifier"],
+            "CC-BY-SA-3.0",
+        )
         self.assertEqual(manifest["sha1"], sha1)
         self.assertIn("not a labelled", manifest["purpose"])
+        self.assertIn("Ireland4me", manifest["attribution"])
 
     def test_rejects_checksum_mismatch_without_publishing_file(self) -> None:
-        video = b"\x00\x00\x00\x18ftypmp42" + b"demo-video"
-        url = "https://example.test/litter.mp4"
+        video = b"\x1a\x45\xdf\xa3" + b"demo-video"
+        url = "https://example.test/recycling.webm"
         with TemporaryDirectory() as temporary:
-            output = Path(temporary) / "demo.mp4"
+            output = Path(temporary) / "demo.webm"
             with patch(
                 "litter_edge.demo_video.urlopen",
                 return_value=FakeResponse(video, url),
@@ -78,8 +82,8 @@ class DemoVideoTests(unittest.TestCase):
     def test_rejects_non_https_source(self) -> None:
         with self.assertRaisesRegex(ValueError, "HTTPS"):
             prepare_demo_video(
-                "unused.mp4",
-                video_url="http://example.test/video.mp4",
+                "unused.webm",
+                video_url="http://example.test/video.webm",
             )
 
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.1 - 2026-10-21
+
+- Replaced the road-driving functional demo with an attributed,
+  checksum-verified material-recovery-facility video showing mixed recyclables,
+  conveyor flow, manual separation, and baled material.
+- Added WebM integrity validation and documented the demo's separate CC BY-SA
+  3.0 license and Wikimedia permission confirmation.
+- Updated the browser dashboard to select the sorting-floor demonstration.
+
 ## 0.10.0 - 2026-10-21
 
 - Added a responsive browser operations dashboard served by the existing API.

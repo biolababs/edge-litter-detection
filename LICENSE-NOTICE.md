@@ -27,3 +27,10 @@ TACO annotations are distributed under CC BY 4.0, while individual images can
 use different licenses recorded in the generated manifests under
 `media/taco-demo/` or `data/taco-operational-v1/`. The repository does not
 redistribute those images.
+
+The optional sorting-floor demo downloader retrieves "Recycling Video" by the
+Wikimedia Commons contributor Ireland4me. The video is licensed separately
+under CC BY-SA 3.0 and has Wikimedia VRTS permission confirmation. It is stored
+outside Git with its attribution, source URL, permission status, and checksums
+in `media/demo-video/manifest.json`; the Apache-2.0 software license does not
+relicense that video.
