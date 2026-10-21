@@ -73,9 +73,23 @@ PyTorch 2.4.0, automatic mixed precision, and a constrained container:
   API paths completed successfully.
 
 The measured public-model path is functional for low-rate operation but did
-not meet the provisional 15 FPS target. These are single-run engineering
-results on unlabelled demonstration media, not accuracy, count-error,
-multi-hour endurance, or production-readiness evidence.
+not meet the provisional 15 FPS target.
+
+A subsequent secured-runtime profile used PyTorch 2.7.0, torchvision 0.22.0,
+Transformers 5.20.2, and three 300-frame repetitions after 10 warm-up calls:
+
+- mean source-to-result throughput was 5.1877 FPS with 0.0104 FPS population
+  standard deviation;
+- model forward averaged 71.10% of wall time, preprocessing 13.69%, and
+  annotation/output 10.59%;
+- tracking, JSONL, and SQLite together averaged 0.91% of wall time;
+- minimum system-available memory was 2,280 MiB, peak GPU temperature was
+  63.94 °C, and peak whole-board input power was 15.10 W; and
+- all three runs emitted identical counts on the fixed video.
+
+These are short engineering results on unlabelled demonstration media, not
+target-domain accuracy, count-error, multi-hour endurance, or
+production-readiness evidence.
 
 ## Platform status
 
@@ -85,7 +99,7 @@ multi-hour endurance, or production-readiness evidence.
 | NVIDIA CUDA | Functional path; Tesla T4 smoke and model benchmark completed |
 | NVIDIA Jetson Orin 8 GB | Full workflow and dashboard verified; preliminary coexistence performance measured |
 | AMD ROCm / Ryzen AI Max / Strix Halo | PyTorch path implemented; target validation pending |
-| Apple silicon | MPS development path available; target validation pending |
+| Apple silicon | MPS path exercised on the 212-image public-data evaluation |
 
 See `JETSON_VALIDATION_2026-10-21.md` for the exact runtime, isolation,
 telemetry, acceptance interpretation, and evidence checksums.

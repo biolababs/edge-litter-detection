@@ -1,11 +1,20 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from litter_edge.evaluate_public import _operating_point_metrics
+from litter_edge.evaluate_public import _operating_point_metrics, _portable_path
 
 
 class PublicEvaluationTests(unittest.TestCase):
+    def test_records_repository_relative_paths_when_possible(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            nested = root / "data" / "test.json"
+
+            self.assertEqual(_portable_path(nested, root), "data/test.json")
+
     def test_scores_operating_point_by_class(self) -> None:
         metrics = _operating_point_metrics(
             ground_truth=[

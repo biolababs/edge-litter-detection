@@ -15,10 +15,12 @@ camera, image, video, HTTP source, or RTSP stream; shows an operations
 dashboard; and stores durable evidence in SQLite.
 
 > Project status: functional open-source application under active validation.
-> Public models make the complete workflow usable today. A coexistence test on
-> Jetson Orin Nano 8 GB completed the full video, persistence, dashboard, and
-> API paths. Production accuracy, high-rate throughput, and endurance still
-> require representative data and deployment-specific acceptance.
+> Public models make the complete workflow usable today, but the current
+> zero-shot checkpoint is not production-accepted: a grouped TACO screen
+> measured 7.65% mAP50–95 and 7.49% micro F1. A coexistence test on Jetson Orin
+> Nano 8 GB completed the full video, persistence, dashboard, and API paths.
+> Target-domain accuracy, high-rate throughput, and endurance still require
+> representative data and deployment-specific acceptance.
 
 ## Research preprint
 
@@ -30,12 +32,14 @@ evidence, and the frozen protocol for target-domain and edge-device validation:
 - [editable manuscript](paper/edge_litter_detection_preprint.md)
 - [ResearchGate submission record](paper/RESEARCHGATE_SUBMISSION.md)
 
-The manuscript cites software version `0.10.1` at Git commit
-`756fa2ae0b8686bb4b97940911710dc73f8efd90`. It is a preprint and must not be
-described as peer reviewed. Preliminary Jetson functionality, throughput,
-memory, temperature, and whole-device power have been measured; accuracy,
-count-error, endurance, AMD, and field-outcome results remain pending their
-declared evaluations.
+The manuscript describes software version `0.11.0`. Its principal warmed
+Jetson profile uses Git commit
+`618954e5921305addbd147ccc96ea1d78fe34c6e`. It is a preprint and must not be
+described as peer reviewed. Preliminary grouped public-data accuracy and
+Jetson functionality, throughput, component timing, memory, temperature, and
+whole-device power have been measured. Target-domain accuracy, count error,
+endurance, AMD, and field-outcome results remain pending their declared
+evaluations.
 
 ## What the solution provides
 
@@ -317,6 +321,11 @@ comparison. TACO has no official train/test partition, so the command uses the
 repository's seed-42 source-group split and records the annotation, manifest,
 image-set, and prediction checksums. The result is public-data bootstrap
 evidence, not target-camera or counting accuracy.
+
+The frozen preliminary OmDet-Turbo result on 212 test images and 680 mapped
+annotations was 0.0765 mAP50–95, 0.1016 mAP50, and 0.0749 micro F1. This is a
+clear signal that the public checkpoint is suitable for software bring-up and
+data collection, not production classification or automated separation.
 
 Optional site-specific improvement uses a COCO detection dataset:
 

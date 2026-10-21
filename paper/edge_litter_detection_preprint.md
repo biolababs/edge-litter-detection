@@ -2,7 +2,7 @@
 
 Abiola A. Babsalaam  
 Independent Researcher  
-Preprint version 1.1 — 21 October 2026
+Preprint version 1.2 — 21 October 2026
 
 ## Abstract
 
@@ -10,36 +10,38 @@ Litter monitoring is often treated as an object-detection exercise, although a
 deployable solution must also ingest operational video, maintain stable class
 contracts, avoid repeated counting, persist evidence, support human review, and
 integrate safely with collection or sorting workflows. This paper presents an
-open and reproducible edge-AI system that addresses those requirements as one
-portable application. The software accepts attached cameras, images, recorded
-video, HTTP media, and RTSP streams. It normalizes public or custom detector
-output into a common schema, applies duplicate suppression and
-class-stabilized tracking, reports visible and unique-session counts, and
-stores run evidence in SQLite and JSON. A browser interface exposes annotated
-video, counts, review tasks, and source controls. The default operational
-taxonomy contains 16 litter categories and can map uncertain or hazardous
-items to human review and site-specific separation guidance. The detector is
-an interchangeable component rather than the product boundary: the current
-clean-clone workflow uses the public OmDet-Turbo Tiny open-vocabulary model,
-while a litter-specific RF-DETR checkpoint may be trained and published later
-if representative evaluation shows that adaptation is required. Preliminary
-engineering validation confirms installation, real inference, persistence,
-application tests, and execution on NVIDIA CUDA, Apple silicon, and the
-intended Jetson Orin Nano 8 GB. On an AWS g4dn.xlarge with a Tesla T4, a
-repeated-image OmDet-Turbo benchmark measured 16.53 frames per second,
-58.98 ms mean detector latency, 61.03 ms p95 latency, and 0.55 GiB peak
-allocated GPU memory. In a coexistence test on the 8 GB Jetson, the same
-public-model path measured 5.54 detector frames per second and 4.94 frames per
-second through all 3,622 frames of a video, tracking, annotation, JSONL, and
-SQLite workflow; the 733.54-second processing run reached 66.31 °C and 15.81 W
-peak whole-board input power. The Jetson workflow, dashboard, and counts API
-completed, but the
-provisional 15 FPS target was not met. These measurements do not establish
-target-domain accuracy, count error, endurance, AMD deployment performance, or
-production readiness. The paper therefore contributes a reusable system,
-explicit count semantics, a safety and security boundary, and a predeclared
-evaluation protocol while clearly separating verified software evidence from
-pending empirical claims.
+open and reproducible edge-AI software architecture that addresses those
+requirements as one portable application. The software accepts cameras,
+images, recorded video, HTTP media, and RTSP streams; normalizes public or
+custom detector output; applies duplicate suppression and class-stabilized
+tracking; reports visible and unique-session counts; and stores auditable
+SQLite and JSON evidence. A browser interface exposes annotated video, counts,
+review tasks, and source controls. The default 16-class operational taxonomy
+supports human review and configurable separation guidance.
+
+The detector is interchangeable rather than the product boundary. A clean
+clone runs with the public OmDet-Turbo Tiny open-vocabulary checkpoint, while a
+validated litter-specific checkpoint can be introduced later without changing
+downstream contracts. A preliminary zero-shot evaluation on a deterministic,
+source-grouped TACO test partition of 212 images and 680 mapped annotations
+measured 7.65% COCO mAP50–95, 10.16% mAP50, and 7.49% micro F1 at the frozen
+operating point. This result establishes an accuracy signal and also shows that
+the unadapted public checkpoint is a functional bootstrap, not a
+production-accepted litter model.
+
+Engineering validation confirms installation, inference, persistence,
+automated checks, and execution on NVIDIA CUDA, Apple silicon, and an NVIDIA
+Jetson Orin Nano 8 GB. A prior complete 3,622-frame Jetson run measured
+4.94 source-to-result FPS. Three subsequent 300-frame full-pipeline
+repetitions, each after 10 warm-up calls, measured 5.188 ± 0.010 FPS. Model
+forward time accounted for 71.10% of wall time, detector preprocessing 13.69%,
+and annotation/output 10.59%; tracking, JSONL, and SQLite together accounted
+for less than 1%. The provisional 15 FPS target was not met. These measurements
+do not establish target-domain accuracy, counting error, endurance, AMD
+performance, or production readiness. The contribution is therefore the
+reusable architecture, explicit count semantics, safety and security boundary,
+traceable preliminary evidence, and a protocol for the remaining empirical
+work.
 
 **Keywords:** edge AI; litter detection; waste classification; object tracking;
 object counting; open-vocabulary detection; human-in-the-loop; NVIDIA Jetson;
@@ -80,10 +82,10 @@ available model and later accept a validated site-specific checkpoint without
 changing downstream data contracts.
 
 The contribution is therefore a software-systems and reproducibility
-architecture, not a claim that a new detector or a validated accuracy result is
-presented. Until labeled target-domain results are available, the system
-should be judged by the completeness and reproducibility of its implemented
-workflow, not by unreported model quality.
+architecture, not a new detector. This revision adds a preliminary public-data
+accuracy result, but it is not a target-domain validation. The low zero-shot
+result is reported because deployability requires both working software and an
+honest model-acceptance boundary.
 
 The result is the open-source Edge Litter Detection application [7]. A user can
 clone the repository and run one launcher that prepares an isolated
@@ -93,12 +95,11 @@ application supports a local dashboard, a private HTTP API, SQLite queries,
 human review, and integration events for a larger vehicle or facility system.
 
 This paper is released as a systems and reproducibility preprint. It documents
-the implemented design, preliminary technical evidence, and one authorized
-Jetson coexistence run while the target-domain dataset, repeated device tests,
-and multi-hour endurance acceptance remain pending. This distinction is deliberate:
-model detections on demonstration media are functional evidence, not accuracy
-evidence, and a short technical run is not proof of sustained camera or field
-performance.
+the implemented design, a public-data zero-shot evaluation, and authorized
+Jetson coexistence measurements while target-domain data, video count ground
+truth, multi-hour endurance, and field outcomes remain pending. This
+distinction is deliberate: public-data accuracy is not field accuracy, and a
+short technical run is not proof of sustained operational performance.
 
 ### 1.1 Research questions
 
@@ -135,8 +136,9 @@ The principal contributions are:
   silicon;
 - model, data, privacy, security, and safety boundaries intended for reuse in
   real collection and sorting workflows; and
-- a predeclared empirical protocol that prevents preliminary engineering
-  observations from being reported as final accuracy or target-device results.
+- a deterministic public-data zero-shot evaluation and a predeclared empirical
+  protocol that prevent preliminary engineering observations from being
+  reported as final target-domain results.
 
 ## 2. Related Work
 
@@ -226,18 +228,29 @@ connected to a source, model, configuration, device, and Git revision.
 Existing integrated platforms illustrate that operational value extends beyond
 one detector metric. Litterati combines mobile image collection, mapping, and
 analytics for identifying litter patterns and evaluating interventions [22].
+A comparison with municipal audits found that its app-based records captured
+similar broad composition patterns while also showing population-correlated
+spatial sampling bias, illustrating both the value and limitations of
+crowdsourced litter evidence [25].
 The US Environmental Protection Agency describes TrashBot as a machine-learning
 system that sorts material at the point of disposal and provides disposal
 guidance [23]. AMP Vision applies continuous material identification and
 analytics inside material-recovery facilities [24].
 
-These examples occupy different product boundaries: community and municipal
-measurement, smart disposal, and industrial recovery. The present work does
-not claim equivalent deployment maturity. Its narrower contribution is an
-open, locally deployable perception-and-evidence component with explicit count
-semantics, model interchangeability, offline persistence, and a machinery
-safety boundary that can be integrated into a larger cleanup or sorting
-solution.
+Recent research prototypes also move beyond an isolated detector. DWaste
+packages waste recognition for mobile and edge use, including offline
+operation and deployment-oriented model selection [26]. Arora presents an
+edge-assisted smart-city application combining 16 trash categories with
+privacy-aware face anonymization [27]. These systems, together with the
+commercial examples, occupy different product boundaries: community and
+municipal measurement, smart disposal, roadside monitoring, and industrial
+recovery.
+
+The present work does not claim equivalent deployment maturity. Its narrower
+contribution is an open, locally deployable perception-and-evidence component
+with explicit count semantics, model interchangeability, offline persistence,
+and a machinery-safety boundary that can be integrated into a larger cleanup
+or sorting solution.
 
 ## 3. Requirements and Use Cases
 
@@ -437,6 +450,18 @@ This simplicity makes the behavior reproducible and lightweight but also
 explains the stated limitations under rapid motion, long occlusion, and dense
 overlap.
 
+The overlap threshold gives an image-plane failure boundary. For two
+equal-sized boxes of width \(w\) with horizontal displacement \(d\) and no
+vertical displacement, their intersection over union is
+\((w-d)/(w+d)\). The configured requirement of IoU at least 0.30 therefore
+requires \(d \leq 0.538w\) between processed frames. A 40-pixel-wide item can
+move only about 21.5 pixels per processed frame before this simplified case
+becomes unmatchable. At 5 FPS that is approximately 108 image pixels per
+second. This is not responsibly convertible to vehicle speed without camera
+calibration, mounting geometry, depth, and object size. It does show why higher
+processed frame rates, motion compensation, or a stronger tracker are required
+for rapid vehicle motion and some conveyor conditions.
+
 ### 4.4 Persistence and offline operation
 
 The application writes streaming JSON Lines events, an end-of-run JSON
@@ -503,12 +528,12 @@ object was observed” and “an object was collected.”
 ### 5.1 Software release
 
 The implementation described in this preprint is Edge Litter Detection version
-0.10.1 at Git commit
-`756fa2ae0b8686bb4b97940911710dc73f8efd90` [7]. Code and project
+0.11.0 at Git commit
+`618954e5921305addbd147ccc96ea1d78fe34c6e` [7]. Code and project
 documentation are released under Apache License 2.0. Model checkpoints and
 datasets retain their own licenses and are not relicensed by the repository.
 
-The primary entry point is:
+The primary clean-clone demonstration is:
 
 ```bash
 git clone https://github.com/biolababs/edge-litter-detection.git
@@ -523,28 +548,11 @@ for public dependency, model, and attributed demonstration downloads.
 
 The launcher creates or reuses a virtual environment, installs the selected
 runtime, downloads attributed demonstration media when requested, downloads a
-pinned public checkpoint, runs inference, and writes evidence. Attached
-cameras and network streams use the same path:
-
-```bash
-./startup.sh --source 0 --backend omdet_turbo
-
-export LITTER_STREAM_URL="rtsp://camera-host/live"
-./startup.sh --source "$LITTER_STREAM_URL" --backend omdet_turbo --no-display
-```
-
-The dashboard is started with:
-
-```bash
-./startup.sh --dashboard --demo-video --backend omdet_turbo --device auto
-```
-
-Counts remain queryable after the process exits:
-
-```bash
-.venv/bin/python query_counts.py runs --limit 1
-.venv/bin/python query_counts.py summary
-```
+pinned public checkpoint, runs inference, and writes evidence. Cameras,
+network streams, the dashboard, count queries, evaluation, profiling, and
+security checks use the same release. Exact commands are maintained in the
+repository README and the accompanying supplementary reproducibility record,
+rather than duplicated throughout the manuscript.
 
 ### 5.2 Model artifact controls
 
@@ -578,9 +586,14 @@ Jetson-oriented paths. Each target must retain its own environment and
 benchmark record. Results measured on a Tesla T4 cannot be presented as
 Jetson, AMD, or Apple results.
 
+The maintained public-model dependency line uses PyTorch 2.6 or newer,
+torchvision 0.21 or newer, and Transformers 5.20 or newer. Jetson deployments
+must use compatible vendor or container builds rather than replacing the
+device's JetPack system packages.
+
 ### 5.4 Software verification and secure development
 
-At the reported revision, 76 automated tests cover configuration, model
+At the reported revision, 86 automated tests cover configuration, model
 adapters, tracking, storage, streaming, benchmark output, training-data
 preparation, evaluation, and API security behavior. The release workflow also
 checks command-line help paths, shell syntax, package structure, startup
@@ -664,17 +677,19 @@ Systems evaluation will separate:
 - preprocessing, inference, and postprocessing latency;
 - observed source-to-result throughput;
 - first-inference and steady-state latency;
-- p50 and p95 latency;
+- mean, population standard deviation, p50, p95, p99, minimum, and maximum
+  latency;
 - process, system, and accelerator memory;
 - power and energy per processed frame where supported;
 - temperature, clocks, and throttling state; and
 - sustained-run failures, memory growth, camera interruptions, and restart
   behavior.
 
-Warm-up must precede repeated samples. Principal target-device conditions
-should be repeated at least three times. Input resolution, precision, power
-mode, cooling, camera or media source, co-resident workload, software versions,
-and optimized artifact checksum must remain recorded with the result.
+At least 10 detector calls must precede measured target-device samples.
+Principal target-device conditions must be repeated at least three times.
+Input resolution, precision, power mode, cooling, camera or media source,
+co-resident workload, software versions, and optimized artifact checksum must
+remain recorded with the result.
 
 ### 6.6 Target-device acceptance
 
@@ -696,7 +711,8 @@ accepted merely because it is faster.
 ### 7.1 Scope
 
 Preliminary validation establishes that the software can be installed,
-executed, tested, and measured. It does not establish target-domain detection
+executed, tested, and measured. The public-data result below establishes a
+preliminary zero-shot accuracy signal, but not target-domain detection
 accuracy, counting accuracy, operational benefit, environmental impact, or
 performance on every supported hardware family.
 
@@ -705,7 +721,7 @@ performance on every supported hardware family.
 The clean-clone workflow has completed real OmDet-Turbo image inference through
 the normal launcher, produced normalized detections, written JSON and annotated
 output, and persisted run and count data in SQLite. The dashboard, API,
-tracking, review, storage, benchmark, and preparation paths are covered by 76
+tracking, review, storage, benchmark, and preparation paths are covered by 86
 automated tests at the reported revision.
 
 One TACO demonstration image produced six unique-session detections in a
@@ -722,13 +738,79 @@ plastic utensils, and unlabeled litter. The demonstration output over-counted
 and omitted several annotated small items. This concrete mismatch is why the
 demonstration is retained as software evidence only.
 
-### 7.3 Preliminary detector measurements
+### 7.3 Preliminary public-data zero-shot accuracy
 
-| Platform | Backend | Samples | Throughput | Mean detector latency | p95 latency | Accelerator memory |
-|---|---|---:|---:|---:|---:|---:|
-| AWS g4dn.xlarge, Tesla T4 | OmDet-Turbo Tiny, CUDA | 50 repeated images after 10 warm-up calls | 16.53 FPS | 58.98 ms | 61.03 ms | 0.55 GiB peak allocated |
-| Jetson Orin Nano 8 GB, coexistence | OmDet-Turbo Tiny, CUDA | 50 repeated images after 10 warm-up calls | 5.54 FPS | 174.30 ms | 175.65 ms | 0.70 GiB peak allocated |
-| Apple silicon, MPS | OmDet-Turbo Tiny | 10 repeated images after 3 warm-up calls | 5.97 FPS | 160.02 ms | 164.24 ms | not available |
+Version 0.11.0 adds a deterministic public evaluation path. TACO does not
+publish an official train/test partition, so the preparation tool assigns
+entire source batches or original source groups to one split using seed 42.
+The resulting frozen test partition contains 212 images and 680 mapped
+annotations. Downloaded resized images and their boxes, polygon coordinates,
+and areas are scaled to the actual image dimensions before evaluation.
+
+The evaluated configuration used the public
+`omlab/omdet-turbo-swin-tiny-hf` checkpoint at pinned revision
+`7fe93cecfb770c4d76cf71163956221249cab566`, without project fine-tuning.
+The confidence threshold was 0.25, non-maximum-suppression IoU was 0.45, and
+the maximum was 100 detections per image. Evaluation ran at Git revision
+`142eecf470a91d7d270b89ecdd6d3037b5a90809` on Apple MPS using
+PyTorch 2.14.1 and Transformers 5.20.2. The annotation and evaluated-image
+sets are checksum-recorded in the evidence file.
+
+The aggregate COCO bounding-box results were:
+
+| Measure | Result |
+|---|---:|
+| mAP50–95 | 0.0765 |
+| mAP50 | 0.1016 |
+| mAP75 | 0.0916 |
+| AR at 100 detections | 0.1520 |
+| Operating-point micro precision at IoU 0.50 | 0.0721 |
+| Operating-point micro recall at IoU 0.50 | 0.0779 |
+| Operating-point micro F1 at IoU 0.50 | 0.0749 |
+
+Per-class support and average precision show where the public checkpoint did
+and did not transfer:
+
+| Class | Test support | AP50–95 | AP50 |
+|---|---:|---:|---:|
+| plastic_bottle | 32 | 0.1469 | 0.1946 |
+| glass_bottle | 20 | 0.0916 | 0.1224 |
+| metal_can | 28 | 0.2259 | 0.2986 |
+| paper | 26 | 0.0403 | 0.0572 |
+| cardboard | 31 | 0.0000 | 0.0000 |
+| plastic_bag | 11 | 0.1550 | 0.1913 |
+| food_wrapper | 25 | 0.0144 | 0.0217 |
+| disposable_cup | 31 | 0.1671 | 0.2290 |
+| cigarette_butt | 129 | 0.0000 | 0.0000 |
+| food_waste | 0 | — | — |
+| textile | 0 | — | — |
+| tire | 0 | — | — |
+| battery | 0 | — | — |
+| electronic_waste | 0 | — | — |
+| broken_glass | 4 | 0.0000 | 0.0000 |
+| other_litter | 343 | 0.0003 | 0.0033 |
+
+The result is low and uneven. Metal cans, disposable cups, plastic bags, and
+plastic bottles show some zero-shot localization signal, while several common
+or safety-relevant classes show none under this mapping and threshold.
+`other_litter` contains half of the mapped annotations and remains especially
+difficult. Classes with no ground-truth instances are displayed rather than
+silently included in a macro claim.
+
+This evaluation closes the absence of any accuracy number, but its boundary is
+strict: it is a project-defined grouped TACO split, a mapped operational
+taxonomy, one public model, and no prompt or threshold comparison. It is not
+roadside, vehicle, sorting-floor, or counting validation. The result supports
+using the checkpoint for software bring-up and data collection; it does not
+support production classification or automated separation decisions.
+
+### 7.4 Preliminary systems measurements
+
+| Platform and measurement | Samples | Throughput | Mean detector latency | p95 latency | Additional evidence |
+|---|---:|---:|---:|---:|---|
+| AWS g4dn.xlarge, Tesla T4, detector benchmark | 50 repeated images after 10 warm-up calls | 16.53 FPS | 58.98 ms | 61.03 ms | 0.55 GiB peak GPU allocation |
+| Jetson Orin Nano 8 GB, detector benchmark | 50 repeated images after 10 warm-up calls | 5.54 FPS | 174.30 ms | 175.65 ms | 0.70 GiB peak GPU allocation |
+| Apple silicon, MPS, public-data evaluation | 212 varied images | 4.57 source-to-result FPS | 215.31 ms | 315.53 ms | 118.74 ms standard deviation; 871.01 ms p99 |
 
 The T4 and Jetson measurements used a repeated image and measured the detector
 benchmark path rather than sustained video capture, annotation rendering,
@@ -745,7 +827,7 @@ steady-state detector execution, but at 5.54 FPS it did not meet that target.
 Neither repeated-image result establishes full-application or accuracy
 performance.
 
-### 7.4 Jetson inventory and coexistence validation
+### 7.5 Jetson inventory, coexistence, and latency profile
 
 An inventory identified the intended target as a Jetson Orin Nano
 Engineering Reference Developer Kit Super with Ubuntu 22.04.5, JetPack 6.2.3,
@@ -753,23 +835,60 @@ L4T 36.5.2, TensorRT 10.3.0, Python 3.10.12, and 7.4 GiB physical memory. At
 capture time, 4.5 GiB was available, no `/dev/video*` camera was present, and
 active local LLM, application, and development services were observed.
 
-The authorized test used a dedicated data directory and a digest-pinned,
-4 GiB-limited community L4T PyTorch container. It did not change system
-packages, system Python, power mode, clocks, or existing services. The
-container supplied Python 3.10.12, PyTorch 2.4.0, torchvision
-0.19.0a0+48b1edf, Transformers 4.57.6, and TensorRT 10.4.0. The use of a
-community image is a recorded supply-chain limitation rather than an endorsed
-production base.
-
-After an initial 120-frame smoke test, the normal launcher processed all 3,622
+All authorized tests used a dedicated data directory and a digest-pinned,
+4 GiB-limited community L4T PyTorch container. They did not change system
+packages, system Python, power mode, clocks, or existing services. An initial
+PyTorch 2.4.0 and Transformers 4.57.6 condition established full-file
+functionality: after a 120-frame smoke test, the launcher processed all 3,622
 frames of the 120.85-second attributed recycling demonstration in 733.54
 seconds. Source-to-result throughput was 4.94 FPS and mean detector-call
-latency was 178.60 ms. The run completed tracking, annotated MP4 creation,
-JSONL and summary output, and SQLite persistence. `tegrastats` recorded
-4,851 MB peak total Jetson RAM use, 63.86 °C mean and 66.31 °C peak GPU
-temperature, 14.53 W mean board input power, and 15.81 W peak board input
-power during telemetry. Swap decreased from 158 MiB before the run to 147 MiB
-after it. Board power includes the full Jetson and co-resident services.
+latency was 178.60 ms. Tracking, annotated MP4 creation, JSONL, summary output,
+and SQLite persistence completed.
+
+The maintained dependency line was then moved to PyTorch 2.6+ and Transformers
+5.20+ after dependency auditing. The repeated profile used PyTorch 2.7.0,
+torchvision 0.22.0, Transformers 5.20.2, Python 3.12.3, and TensorRT 10.7.0
+inside container digest
+`sha256:4bb7f0a3852f86629ed271aaf6c4aa000305cc4e4673b8e9f334668ee1b22bc8`.
+At Git revision `618954e5921305addbd147ccc96ea1d78fe34c6e`, three
+300-frame full-pipeline repetitions were run after 10 detector warm-up calls
+each. The profiled path included decode, preprocessing, model forward,
+postprocessing, tracking and count policy, JSONL, SQLite, annotation
+rendering, and annotated MP4 output.
+
+| Repetition | Frames | Source-to-result FPS | Wall time | Mean detector call |
+|---:|---:|---:|---:|---:|
+| 1 | 300 | 5.1748 | 57.97 s | 168.60 ms |
+| 2 | 300 | 5.1881 | 57.83 s | 168.75 ms |
+| 3 | 300 | 5.2002 | 57.69 s | 168.51 ms |
+| Mean ± population SD | 300 | 5.1877 ± 0.0104 | 57.83 ± 0.12 s | 168.62 ± 0.10 ms |
+
+The same class counts were emitted in all three repetitions on the fixed video.
+This is a determinism check, not counting accuracy, because the source has no
+track-count ground truth. Mean exclusive wall-time shares were:
+
+| Component | Mean wall-time share |
+|---|---:|
+| model forward | 71.10% |
+| detector preprocessing | 13.69% |
+| annotation rendering and output | 10.59% |
+| detector postprocessing | 2.58% |
+| capture or decode | 0.80% |
+| tracking, policy, and counting | 0.44% |
+| SQLite persistence | 0.33% |
+| JSONL serialization and write | 0.13% |
+
+The breakdown shows that model forward, preprocessing, and annotation/output
+are the principal optimization targets. Tracking, JSONL, and SQLite together
+accounted for 0.91% of wall time, so removing durable count evidence would not
+close the approximately threefold gap to 15 FPS.
+
+Across the complete three-run telemetry session—including loading, warm-up,
+processing, and transitions—minimum available system memory was 2,280 MiB,
+swap remained fixed at 243 MiB, peak GPU temperature was 63.94 °C, and
+whole-board input power averaged 12.70 W with a 15.10 W peak. Board power
+includes the full Jetson and co-resident services. The community image remains
+a recorded supply-chain limitation rather than an endorsed production base.
 
 A separate loopback-only dashboard smoke test returned the browser interface
 with security headers, started and completed a 30-frame CUDA stream, served an
@@ -779,22 +898,25 @@ only as functional UI/API evidence.
 
 The public demonstration video does not provide labels for the project's
 operational taxonomy. Its detections and counts are therefore not accuracy or
-count-error results. The run establishes bounded full-file stability, not
-repeatability, multi-hour endurance, thermal-throttling acceptance, or
-production readiness.
+count-error results. The full-file run establishes bounded stability, while
+the three shorter warmed runs establish preliminary repeatability and a
+latency breakdown. Neither establishes multi-hour endurance,
+thermal-throttling acceptance, or production readiness.
 
-### 7.5 Evidence status
+### 7.6 Evidence status
 
 | Claim area | Status |
 |---|---|
 | Clean clone, launcher, public-model inference, SQLite, dashboard/API | implemented and functionally verified |
 | Automated software tests and release/security workflows | verified at reported revision |
+| Grouped TACO zero-shot detection/classification accuracy | preliminary measured evidence; low result; not target-domain acceptance |
 | Tesla T4 OmDet-Turbo model-only execution | preliminary measured evidence |
 | Apple MPS OmDet-Turbo model-only execution | preliminary measured evidence |
-| Jetson Orin 8 GB detector and 3,622-frame full workflow | preliminary measured coexistence and bounded stability evidence; 15 FPS target not met |
+| Jetson Orin 8 GB detector and 3,622-frame full workflow | preliminary measured coexistence and bounded stability evidence |
+| Jetson warmed three-run full-pipeline latency profile | preliminary measured repeatability and component evidence; 15 FPS target not met |
 | Target-domain detection/classification accuracy | pending representative labeled data |
 | Video counting accuracy | pending track-annotated video |
-| Jetson repeated runs, multi-hour endurance, and production acceptance | pending |
+| Jetson multi-hour endurance and production acceptance | pending |
 | AMD ROCm / Strix Halo inference and sustained performance | pending target-device test |
 | Cleanup or sorting operational benefit | pending field evaluation |
 
@@ -818,20 +940,31 @@ must show which quantity it is presenting and must preserve uncertainty.
 Otherwise, a system can report impressive totals while repeatedly observing
 the same item or assuming that a proposed pickup succeeded.
 
-The preliminary T4 measurement supports continued evaluation of OmDet-Turbo as
-the no-training path. Its 16.53 FPS detector-only throughput in the measured
-condition is encouraging, but the gap between that number and a full,
-sustained camera workload can be material. The planned protocol therefore
-records capture, visualization, storage, thermal, and co-resident workload
-effects instead of treating model latency as an end-to-end result.
+The public-data evaluation changes the interpretation of “works out of the
+box.” The software, source handling, persistence, dashboard, and model download
+work without user training. The public checkpoint nevertheless achieved only
+0.0765 mAP50–95 and 0.0749 micro F1 on the grouped TACO condition. Ordinary
+users should not need to train a model to install or explore the solution, but
+an operator must not treat this checkpoint as production-accepted merely
+because it produces detections. Representative validation, prompt and
+threshold freezing, and likely task-specific adaptation remain release gates.
+
+The preliminary T4 measurement still supports systems evaluation of
+OmDet-Turbo as the no-training bootstrap. Its 16.53 FPS detector-only
+throughput in the measured condition is encouraging, but the gap between that
+number and a complete camera workload is material. The evaluation protocol
+therefore records capture, visualization, storage, thermal, and co-resident
+workload effects instead of treating model latency as an end-to-end result.
 
 The Jetson run demonstrates another practical constraint: an edge device may
-already host valuable services. The existing workload remained active, at
-least 2.54 GiB system memory remained available during the detector benchmark,
-and the video run did not increase swap. This coexistence result is more
-representative than an exclusive laboratory run, but it also shows that the
-eager public-model path is below the declared 15 FPS goal and requires
-optimization before high-rate use.
+already host valuable services. The existing workload remained active and at
+least 2.23 GiB system memory remained available during the three-run profile.
+The 5.188 ± 0.010 FPS result is stable enough to locate the current bottleneck:
+model forward, preprocessing, and annotation/output account for approximately
+95% of measured wall time. Tracking and evidence persistence are not the
+dominant cost. FP16/runtime export, input-pipeline work, and optional rendering
+changes are therefore defensible optimization directions, but the evidence
+does not yet show that they will reach 15 FPS or preserve accuracy.
 
 For human-assisted sorting, confidence and review state may be as important as
 the top class. The system can route ambiguous predictions to an operator
@@ -841,31 +974,38 @@ safety-engineered automation.
 
 ## 9. Limitations and Threats to Validity
 
-First, the public open-vocabulary checkpoint has not been calibrated on a
-representative target-domain dataset. Demonstration detections may be useful
-for software testing while being inaccurate for operational decisions.
+First, the public open-vocabulary checkpoint performed poorly on the grouped
+TACO evaluation and has not been calibrated on a representative target-domain
+dataset. TACO category mapping introduces additional ontology uncertainty.
+The result is sufficient to reject an unsupported production-accuracy claim,
+not to estimate truck, roadside, or sorting-floor accuracy.
 
 Second, the model benchmarks use repeated images. They reduce source variation
 and do not include all full-pipeline costs. Sample counts are modest, and the
 remote T4 JSON artifact was not copied back into the repository before the
-instance output was summarized. The Jetson result adds a complete 3,622-frame
-pipeline run, but it remains a single unlabelled source and one device run.
+instance output was summarized. The Jetson evidence adds a complete
+3,622-frame run and three warmed 300-frame profiles, but all use one
+unlabelled video, one device, and one coexistence condition.
 
 Third, the built-in tracker is intentionally compact. It may duplicate,
 merge, or lose identities under fast camera motion, long occlusion, dense
 overlap, abrupt scene cuts, or repeated routes. Counting claims require
 track-level ground truth and may require a stronger tracker or spatial
-deduplication.
+deduplication. The simplified overlap analysis is an image-plane bound, not a
+validated vehicle-speed limit.
 
 Fourth, the taxonomy contains visually ambiguous material categories.
 Contamination, composite packaging, transparent objects, and damage may make a
 single correct visual class impossible. Human review and an `other_litter`
 outcome mitigate but do not eliminate this limitation.
 
-Fifth, the Jetson execution path has one preliminary coexistence validation,
-not the repeated/endurance evidence required for production acceptance. Its
-community container base requires a separate supply-chain decision. AMD
-execution remains untested.
+Fifth, the Jetson execution path has short repeated profiles but not the
+multi-hour, restart, camera-interruption, thermal-throttling, or optimized
+artifact evidence required for production acceptance. Its community container
+base requires a separate supply-chain decision. Transformers 5.20 also
+performed a remote metadata check for the configured backbone during startup,
+so a fully offline production image requires an additional packaging or
+configuration solution. AMD execution remains untested.
 
 Sixth, the author developed the system and performed the reported validation.
 No independent team has yet reproduced the clean-clone workflow or audited the
@@ -905,9 +1045,11 @@ consumes electricity and hardware. Final evaluation should report power and
 energy per processed frame where feasible and should select the least complex
 configuration that satisfies the use case. Environmental benefit should not
 be inferred from detection metrics alone. The preliminary Jetson test reports
-whole-board power, not detector-only energy. Energy per frame is intentionally
-withheld until run and power timestamps are synchronized tightly enough to
-separate startup, inference, co-resident workloads, and cooldown.
+whole-board power, not detector-only energy. The warmed three-run telemetry
+session averaged 12.70 W and included loading, warm-up, measured inference,
+co-resident workloads, and inter-run transitions. Energy per detected object
+or processed frame is intentionally withheld because the session boundary
+does not isolate detector energy from those other loads.
 
 ## 11. Data, Code, and Reproducibility Availability
 
@@ -916,9 +1058,9 @@ are available at:
 
 `https://github.com/biolababs/edge-litter-detection`
 
-This paper describes and reports measurements from version 0.10.1 at commit:
+This paper describes version 0.11.0 and its principal Jetson profile at commit:
 
-`756fa2ae0b8686bb4b97940911710dc73f8efd90`
+`618954e5921305addbd147ccc96ea1d78fe34c6e`
 
 The repository includes attributed TACO demonstration preparation and a
 license-aware sorting-floor demonstration downloader. Downloaded media,
@@ -926,8 +1068,11 @@ third-party datasets, and model checkpoints retain their original terms and
 are not redistributed under the code license.
 
 Preliminary evidence records accompany this manuscript under `paper/evidence/`,
-including the raw Jetson benchmark JSON, run summary, `tegrastats` captures,
-checksums, and interpretation boundary.
+including the grouped TACO zero-shot result and predictions, three raw warmed
+Jetson profile summaries, their aggregate, `tegrastats` captures, checksums,
+and interpretation boundaries. The TACO evaluation was executed at commit
+`142eecf470a91d7d270b89ecdd6d3037b5a90809`; its result JSON has SHA-256
+`1efe1108e27a397f11903ebd945ef019ace6caf9c9fa93b2d4b53353ebb08d13`.
 Runtime-generated records normally appear under `reports/generated/`, and the
 SQLite store appears under `state/litter-edge.db`. Transient media, private
 data, credentials, and raw device inventories are excluded from version
@@ -946,21 +1091,23 @@ The implementation distinguishes visible observations, unique tracked objects,
 and independently confirmed collections; stores durable offline evidence;
 supports human correction; and prevents direct perception-to-actuation
 coupling. Preliminary validation confirms a functioning codebase, bounded T4
-and Apple-silicon model measurements, and an end-to-end Jetson coexistence run
-covering video, storage, dashboard, and API behavior. The Jetson public-model
-path is functional but did not meet the provisional 15 FPS target. The paper
-does not yet support claims of target-domain accuracy, counting accuracy,
-endurance, AMD performance, or production readiness.
+and Apple-silicon measurements, a preliminary grouped TACO accuracy result, and
+end-to-end Jetson coexistence runs covering video, storage, dashboard, and API
+behavior. The public checkpoint's low TACO result means it should be treated as
+a bring-up and data-collection model, not a production litter classifier. The
+Jetson public-model path is functional but did not meet the provisional 15 FPS
+target. The paper does not yet support claims of target-domain accuracy,
+counting accuracy, endurance, AMD performance, or production readiness.
 
 The next empirical work is to collect and annotate representative field and
 sorting footage, freeze grouped development and test partitions, establish
 inter-annotator quality, select and freeze one operating configuration,
 evaluate per-class detection and count error, and complete authorized sustained
 tests on Jetson Orin 8 GB and AMD hardware. Jetson work should first optimize
-the runtime, repeat the measured conditions, and complete a multi-hour endurance
-test. A
-subsequent paper revision should replace pending evidence with traceable
-accuracy, reliability, and operational-outcome results.
+model forward, preprocessing, and rendering, then complete a multi-hour
+endurance test. A subsequent paper revision should replace pending evidence
+with traceable target-domain accuracy, reliability, and operational-outcome
+results.
 
 ## Declarations
 
@@ -992,6 +1139,17 @@ Repository code and project documentation are available under Apache License
 2.0. Third-party datasets and model artifacts retain their original licenses.
 Copyright in this manuscript remains with the author unless a separate
 publication license is selected.
+
+### Use of AI tools
+
+AI-assisted tools supported manuscript editing, code review, test generation,
+and document rendering. The author selected the design, executed and inspected
+the reported software and experiments, verified sources and evidence, and
+retains responsibility for the manuscript. This disclosure should be adapted
+to the policy of any destination venue.
+
+⚠️ AI & Data Notice: All output is AI-generated and must be independently
+verified before sharing with customers or taking action.
 
 ## References
 
@@ -1026,7 +1184,7 @@ Recognition*.
 https://doi.org/10.48550/arXiv.2106.02740
 
 [7] Babsalaam, A. A. (2026). *Edge Litter Detection, Multiclass
-Classification, Tracking, and Counting* (Version 0.10.1) [Computer software].
+Classification, Tracking, and Counting* (Version 0.11.0) [Computer software].
 GitHub. https://github.com/biolababs/edge-litter-detection
 
 [8] Wu, T., Xu, Q., He, X., Weekes, O., Brown, J., & Duan, W. (2026).
@@ -1050,17 +1208,19 @@ end-to-end object detection. arXiv:2203.03605.
 https://doi.org/10.48550/arXiv.2203.03605
 
 [12] Liu, S., Zeng, Z., Ren, T., Li, F., Zhang, H., Yang, J., Jiang, Q., Li,
-C., Yang, J., Su, H., Zhu, J., & Zhang, L. (2023). Grounding DINO: Marrying
-DINO with grounded pre-training for open-set object detection.
-arXiv:2303.05499. https://doi.org/10.48550/arXiv.2303.05499
+C., Yang, J., Su, H., Zhu, J., & Zhang, L. (2025). Grounding DINO: Marrying
+DINO with grounded pre-training for open-set object detection. In *Computer
+Vision – ECCV 2024* (pp. 38–55).
+https://doi.org/10.1007/978-3-031-72970-6_3
 
 [13] Zhao, T., Liu, P., He, X., Zhang, L., & Lee, K. (2024). Real-time
 transformer-based open-vocabulary detection with efficient fusion head.
 arXiv:2403.06892.
 https://doi.org/10.48550/arXiv.2403.06892
 
-[14] Robinson, I., Robicheaux, P., Popov, M., Ramanan, D., & Peri, N. (2025).
-RF-DETR: Neural architecture search for real-time detection transformers.
+[14] Robinson, I., Robicheaux, P., Popov, M., Ramanan, D., & Peri, N. (2026).
+RF-DETR: Neural architecture search for real-time detection transformers. In
+*International Conference on Learning Representations (ICLR 2026)*.
 arXiv:2511.09554. https://doi.org/10.48550/arXiv.2511.09554
 
 [15] Bewley, A., Ge, Z., Ott, L., Ramos, F., & Upcroft, B. (2016). Simple
@@ -1104,76 +1264,22 @@ https://www.epa.gov/sbir/epa-sbir-supports-technology-improve-recycling
 [24] AMP. (2026). *AMP Vision: Real-Time Material Characterization*.
 https://ampsortation.com/vision-system
 
-## Appendix A. Reproduction Commands
+[25] Watkins, L., Sullivan, P. J., Walter, M. T., & Albright, E. A. (2024).
+Methods for monitoring urban street litter: A comparison of municipal audits
+and an app-based citizen science approach. *Environmental Science: Advances,
+3*, 885–896. https://doi.org/10.1039/D4VA00008K
 
-### A.1 Functional demonstration
+[26] Kunwar, C. (2025). Greener AI for waste sorting using mobile and edge
+devices. arXiv:2510.18513.
+https://doi.org/10.48550/arXiv.2510.18513
 
-```bash
-git clone https://github.com/biolababs/edge-litter-detection.git
-cd edge-litter-detection
-git checkout 756fa2ae0b8686bb4b97940911710dc73f8efd90
-./startup.sh --backend omdet_turbo --demo-video --no-display
-```
+[27] Arora, R. (2026). Real time detection of trash and faces for smart city
+environmental monitoring. *Discover Cities, 3*, 93.
+https://doi.org/10.1007/s44327-026-00276-2
 
-### A.2 Dashboard
+## Supplementary Reproducibility Materials
 
-```bash
-./startup.sh --dashboard --demo-video --backend omdet_turbo --device auto
-```
-
-Open `http://127.0.0.1:8088`. For a remote edge computer, keep the service on
-loopback and use an SSH tunnel.
-
-### A.3 Counts
-
-```bash
-.venv/bin/python query_counts.py runs --limit 10
-.venv/bin/python query_counts.py summary
-.venv/bin/python query_counts.py reviews --status pending
-```
-
-### A.4 Benchmark
-
-```bash
-.venv/bin/python benchmark.py \
-  --backend omdet_turbo \
-  --source media/taco-demo/taco-000866.jpg \
-  --device cuda \
-  --warmup 10 \
-  --image-repeats 50 \
-  --max-samples 50 \
-  --output reports/generated/omdet-benchmark.json
-```
-
-### A.5 Validation
-
-```bash
-python -m pip install -e ".[dev]"
-make validate
-make security
-```
-
-## Appendix B. Required Evidence for the Empirical Revision
-
-- approved data-governance, privacy, and annotation protocol;
-- source-grouped and checksummed development and held-out test partitions;
-- support counts for every released class;
-- checkpoint or public-model revision, prompt/class schema, thresholds, and
-  configuration checksum;
-- detection, classification, and counting accuracy with per-class results;
-- target-device environment manifest;
-- full-pipeline latency, throughput, memory, power, temperature, and sustained
-  stability;
-- field or sorting-line operational outcomes; and
-- updated limitations tied to measured failure modes.
-
-## Editorial Transparency and Verification Notice
-
-⚠️ AI & Data Notice: All output is AI-generated and must be independently
-verified before sharing with customers or taking action.
-
-This banner discloses the use of an AI-assisted document-generation workflow.
-It does not replace author responsibility, peer review, source verification, or
-the scientific limitations stated in the manuscript. A venue-specific version
-should follow the destination venue's disclosure policy while retaining an
-accurate authorship and tool-use statement.
+Exact commands for the demonstration, dashboard, counts, public-data
+evaluation, Jetson profiling, validation, and security audit are maintained in
+`paper/SUPPLEMENTARY_REPRODUCIBILITY.md` and the repository README. Raw and
+aggregate machine-readable records are retained under `paper/evidence/`.

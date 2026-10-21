@@ -36,6 +36,12 @@ scores and backend-specific prompts. It uses the complete product runtime but
 does not become the release detector unless representative accuracy, counting,
 and edge-device gates pass.
 
+The frozen grouped TACO zero-shot screen measured 0.0765 mAP50–95,
+0.1016 mAP50, and 0.0749 micro F1. OmDet-Turbo therefore remains useful for
+software bring-up, demonstrations, review, and data collection, but it is not
+accepted as the production litter classifier. This is an evidence-based
+release decision, not a detector comparison.
+
 ## Operational catalog
 
 The stable product catalog contains 16 categories covering containers, paper,

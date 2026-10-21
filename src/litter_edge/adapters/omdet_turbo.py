@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from contextlib import nullcontext
+import json
 from numbers import Integral
+from pathlib import Path
 import time
 from typing import Any
 
@@ -40,6 +42,49 @@ def _validate_runtime_versions(torch_module: Any, transformers_module: Any) -> N
             "Use a vendor-supported framework build or the documented pinned "
             "Jetson container. Do not replace JetPack system packages."
         )
+
+
+def _explicit_timm_backbone_config(config: dict[str, Any]) -> dict[str, Any]:
+    rewritten = dict(config)
+    if rewritten.get("backbone_config") is not None:
+        return rewritten
+    if not rewritten.get("use_timm_backbone", True):
+        return rewritten
+    backbone = rewritten.pop("backbone", None) or "swin_tiny_patch4_window7_224"
+    rewritten.pop("use_timm_backbone", None)
+    rewritten.pop("use_pretrained_backbone", None)
+    rewritten.pop("backbone_kwargs", None)
+    rewritten["backbone_config"] = {
+        "model_type": "timm_backbone",
+        "backbone": backbone,
+        "out_indices": [1, 2, 3],
+        "img_size": rewritten.get("image_size", 640),
+        "always_partition": True,
+    }
+    return rewritten
+
+
+def _load_transformers_five_config(
+    model_id: str,
+    revision: str,
+) -> Any:
+    from transformers import OmDetTurboConfig
+    from transformers.utils.hub import cached_file
+
+    config_path = cached_file(
+        model_id,
+        "config.json",
+        revision=revision,
+    )
+    if config_path is None:
+        raise RuntimeError(f"Unable to resolve OmDet-Turbo config for {model_id}.")
+    with Path(config_path).open("r", encoding="utf-8") as handle:
+        raw_config = json.load(handle)
+    if not isinstance(raw_config, dict):
+        raise RuntimeError("OmDet-Turbo config must be a JSON object.")
+    return OmDetTurboConfig.from_dict(
+        _explicit_timm_backbone_config(raw_config)
+    )
 
 
 def _materialize_meta_buffers(model: Any) -> None:
@@ -149,11 +194,19 @@ class OmDetTurboDetector:
             revision=revision,
             trust_remote_code=False,
         )
+        model_options: dict[str, Any] = {
+            "use_safetensors": True,
+            "trust_remote_code": False,
+        }
+        if _numeric_version(getattr(transformers, "__version__", "")) >= (5,):
+            model_options["config"] = _load_transformers_five_config(
+                model_id,
+                revision,
+            )
         self.model = OmDetTurboForObjectDetection.from_pretrained(
             model_id,
             revision=revision,
-            use_safetensors=True,
-            trust_remote_code=False,
+            **model_options,
         )
         _materialize_meta_buffers(self.model)
         self.model.to(device)

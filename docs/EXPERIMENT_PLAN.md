@@ -82,9 +82,10 @@ achieved result.
 11. Publish weights only after all declared release gates pass.
 
 Every final target-device condition will be executed at least three times
-(`N >= 3`) after at least 10 detector warm-up calls. Reports will include mean, population standard
-deviation, median, p95, p99, minimum, and maximum latency. A longer endurance
-run is additional evidence and does not replace replication.
+(`N >= 3`) after at least 10 detector warm-up calls. Reports will include mean,
+population standard deviation, median, p95, p99, minimum, and maximum latency.
+A longer endurance run is additional evidence and does not replace
+replication.
 
 Before representative project data are available, the public OmDet-Turbo
 checkpoint may be evaluated once on the deterministic grouped TACO test split.
@@ -95,9 +96,14 @@ target-domain or release-checkpoint accuracy.
 
 ### Detection and classification
 
-| Precision | Recall | F1 | mAP50 | mAP50-95 |
-|---:|---:|---:|---:|---:|
-| pending | pending | pending | pending | pending |
+| Condition | Precision | Recall | F1 | mAP50 | mAP50-95 |
+|---|---:|---:|---:|---:|---:|
+| Grouped TACO zero-shot screen, OmDet-Turbo | 0.0721 | 0.0779 | 0.0749 | 0.1016 | 0.0765 |
+| Representative target domain | pending | pending | pending | pending | pending |
+
+The public-data row uses micro operating-point precision, recall, and F1 at
+IoU 0.50. It is bootstrap evidence, not release-checkpoint or target-camera
+accuracy.
 
 ### Counting
 
@@ -111,8 +117,10 @@ target-domain or release-checkpoint accuracy.
 |---|---:|---:|---:|---:|---|
 | Jetson OmDet repeated-image detector benchmark | 5.54 | 175.65 ms | 0.95 GiB observed system-available delta; 2.20 GiB max process RSS | 55.16 °C | 50 samples after 10 warm-ups |
 | Jetson complete video workflow | 4.94 | not separately captured | 4,851 MB peak total Jetson RAM used | 66.31 °C | 3,622 frames / 733.54 s |
+| Jetson warmed full-pipeline profile | 5.1877 ± 0.0104 | model-forward p95 138.19 ms mean across runs | 2,280 MiB minimum system-available memory | 63.94 °C | 3 × 300 frames after 10 warm-ups |
 
-Both rows are preliminary single-run coexistence evidence. The 15 FPS target
-was not met, and repeated plus multi-hour endurance runs remain pending.
-Detection/classification accuracy and count error remain pending labeled
-representative data.
+All rows are preliminary coexistence evidence. Short-run replication and a
+component breakdown are complete for the warmed profile; the 15 FPS target was
+not met and multi-hour endurance remains pending. Representative
+detection/classification accuracy and count error still require labeled
+target-domain data.

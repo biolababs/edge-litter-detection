@@ -6,6 +6,9 @@
 
 - Added public-checkpoint zero-shot COCO evaluation for the deterministic,
   grouped TACO operational test split.
+- Recorded the frozen 212-image result: 0.0765 mAP50–95, 0.1016 mAP50, and
+  0.0749 micro F1, establishing the public checkpoint as a bootstrap rather
+  than a production-accepted litter model.
 - Corrected TACO annotation coordinates when public 640-pixel image artifacts
   differ from the original annotation dimensions.
 - Added opt-in end-to-end timing profiles covering capture/decode, detector
@@ -18,10 +21,13 @@
   dependency auditing identified published advisories in 4.57.6.
 - Declared and validated the corresponding PyTorch 2.6+/torchvision 0.21+
   runtime floor, with an actionable error for incompatible vendor images.
+- Made cached Transformers 5 OmDet-Turbo startup offline-capable by
+  materializing its timm backbone configuration before model construction.
 - Fixed OmDet-Turbo loading on JetPack-compatible PyTorch when Swin
   non-persistent attention buffers remain on the meta device.
-- Constrained Transformers to the PyTorch-2.4-compatible 4.x series and fixed
-  CUDA memory measurement on JetPack versions that require an indexed device.
+- For the initial historical Jetson validation, constrained Transformers to
+  the PyTorch-2.4-compatible 4.x series and fixed CUDA memory measurement on
+  JetPack versions that require an indexed device.
 - Added measured Jetson Orin Nano 8 GB coexistence evidence for a 50-sample
   detector benchmark, 3,622-frame full-file stability workflow, SQLite persistence,
   annotated output, dashboard stream control, counts API, thermals, and
@@ -29,6 +35,9 @@
 - Documented that the current public-model Jetson path is functional at 5.54
   detector FPS and 4.94 full-pipeline FPS but does not meet the provisional
   15 FPS target.
+- Added a secured-runtime, three-repetition warmed Jetson profile averaging
+  5.1877 FPS with model forward, preprocessing, and annotation/output
+  accounting for approximately 95% of wall time.
 - Reworked the GitHub landing page around outcomes, five-minute setup, input
   sources, durable outputs, architecture, deployment, and minimum/recommended
   hardware tiers.

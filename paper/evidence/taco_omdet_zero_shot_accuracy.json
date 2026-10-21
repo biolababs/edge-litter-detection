@@ -1,0 +1,355 @@
+{
+  "annotation_count": 680,
+  "annotations": "/Users/babsalaa/Desktop/Model Scripts/jetson-litter-detection/data/taco-operational-v1/test/_annotations.coco.json",
+  "annotations_sha256": "0f5fb491437b680f47dfe525efa8dd9543b8e46798a5c196b1730099635bf2dc",
+  "backend": "omdet_turbo",
+  "coco_bbox": {
+    "aggregate": {
+      "ap_50": 0.10164885740154161,
+      "ap_50_95": 0.07650660741173244,
+      "ap_75": 0.09160111546038342,
+      "ap_large": 0.0483960396039604,
+      "ap_medium": 0.15370507433756708,
+      "ap_small": 0.058800880088008795,
+      "ar_1": 0.14631748951569107,
+      "ar_10": 0.1520317752299768,
+      "ar_100": 0.1520317752299768,
+      "ar_large": 0.14,
+      "ar_medium": 0.250531045751634,
+      "ar_small": 0.07331615785117691
+    },
+    "implementation": "pycocotools COCOeval bbox",
+    "max_detections": [
+      1,
+      10,
+      100
+    ],
+    "per_class": {
+      "battery": {
+        "ap_50": null,
+        "ap_50_95": null,
+        "ar_100": null,
+        "support": 0
+      },
+      "broken_glass": {
+        "ap_50": 0.0,
+        "ap_50_95": 0.0,
+        "ar_100": 0.0,
+        "support": 4
+      },
+      "cardboard": {
+        "ap_50": 0.0,
+        "ap_50_95": 0.0,
+        "ar_100": 0.0,
+        "support": 31
+      },
+      "cigarette_butt": {
+        "ap_50": 0.0,
+        "ap_50_95": 0.0,
+        "ar_100": 0.0,
+        "support": 129
+      },
+      "disposable_cup": {
+        "ap_50": 0.2290341006805395,
+        "ap_50_95": 0.1671284467156393,
+        "ar_100": 0.2290322580645161,
+        "support": 31
+      },
+      "electronic_waste": {
+        "ap_50": null,
+        "ap_50_95": null,
+        "ar_100": null,
+        "support": 0
+      },
+      "food_waste": {
+        "ap_50": null,
+        "ap_50_95": null,
+        "ar_100": null,
+        "support": 0
+      },
+      "food_wrapper": {
+        "ap_50": 0.021701990737098904,
+        "ap_50_95": 0.014427227936569842,
+        "ar_100": 0.16,
+        "support": 25
+      },
+      "glass_bottle": {
+        "ap_50": 0.1224122412241224,
+        "ap_50_95": 0.09162916291629163,
+        "ar_100": 0.11500000000000002,
+        "support": 20
+      },
+      "metal_can": {
+        "ap_50": 0.2985955154513474,
+        "ap_50_95": 0.22586744143855947,
+        "ar_100": 0.33214285714285713,
+        "support": 28
+      },
+      "other_litter": {
+        "ap_50": 0.0033003300330033,
+        "ap_50_95": 0.00033003300330033004,
+        "ar_100": 0.0002915451895043732,
+        "support": 343
+      },
+      "paper": {
+        "ap_50": 0.057205720572057195,
+        "ap_50_95": 0.040264026402640256,
+        "ar_100": 0.08076923076923077,
+        "support": 26
+      },
+      "plastic_bag": {
+        "ap_50": 0.19127119608512574,
+        "ap_50_95": 0.15504495277113917,
+        "ar_100": 0.43636363636363634,
+        "support": 11
+      },
+      "plastic_bottle": {
+        "ap_50": 0.19461633663366337,
+        "ap_50_95": 0.14688139034491685,
+        "ar_100": 0.31875,
+        "support": 32
+      },
+      "textile": {
+        "ap_50": null,
+        "ap_50_95": null,
+        "ar_100": null,
+        "support": 0
+      },
+      "tire": {
+        "ap_50": null,
+        "ap_50_95": null,
+        "ar_100": null,
+        "support": 0
+      }
+    }
+  },
+  "confidence_threshold": 0.25,
+  "created_at": "2026-10-21T04:14:12.919101+00:00",
+  "dataset": "/Users/babsalaa/Desktop/Model Scripts/jetson-litter-detection/data/taco-operational-v1",
+  "dataset_manifest": "/Users/babsalaa/Desktop/Model Scripts/jetson-litter-detection/data/taco-operational-v1/manifest.json",
+  "dataset_manifest_sha256": "64af15f1d9bcaff9b4fd527581d6866b35b0eae41e41f4ddf8054b9e75ce2d4e",
+  "dataset_name": "TACO operational mapping",
+  "detector_call_ms": {
+    "count": 212,
+    "max": 1056.9251659908332,
+    "mean": 215.30684692080064,
+    "median": 190.95066701993346,
+    "min": 153.39562500594184,
+    "p95": 315.5259999912232,
+    "p99": 871.0115409921855,
+    "standard_deviation": 118.73789085852732
+  },
+  "device": "mps",
+  "evaluated_image_records_in_manifest": 212,
+  "evaluated_image_set_sha256": "c515d366897a7ea9a5dad44626680c472964ff8a526b2c84b7523ecfdce8d2e5",
+  "git_revision": "142eecf470a91d7d270b89ecdd6d3037b5a90809",
+  "image_count": 212,
+  "interpretation": {
+    "claim_boundary": "preliminary public-data zero-shot accuracy only; not target-domain, vehicle, sorting-floor, or counting validation",
+    "model_status": "public pretrained open-vocabulary checkpoint; no project litter fine-tuning",
+    "split_status": "deterministic project-defined group split because TACO does not publish an official train/test partition",
+    "taxonomy_status": "TACO source categories mapped to the 16-class operational taxonomy; unsupported distinctions collapse to other_litter"
+  },
+  "maximum_detections": 100,
+  "model": "omlab/omdet-turbo-swin-tiny-hf",
+  "nms_iou_threshold": 0.45,
+  "official_dataset_split": false,
+  "operating_point_iou_50": {
+    "crowd_annotations": "excluded from operating-point metrics",
+    "iou_threshold": 0.5,
+    "macro_supported_classes": {
+      "class_count": 11,
+      "f1": 0.09996691024265748,
+      "precision": 0.08219678898975818,
+      "recall": 0.19808169290461766
+    },
+    "matching": "score-ordered greedy one-to-one matching within image and class",
+    "micro": {
+      "f1": 0.07491166077738515,
+      "false_negative": 627,
+      "false_positive": 682,
+      "precision": 0.07210884353741497,
+      "recall": 0.07794117647058824,
+      "true_positive": 53
+    },
+    "per_class": {
+      "battery": {
+        "evidence_status": "no_ground_truth_instances",
+        "f1": 0.0,
+        "false_negative": 0,
+        "false_positive": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 0,
+        "true_positive": 0
+      },
+      "broken_glass": {
+        "evidence_status": "measured",
+        "f1": 0.0,
+        "false_negative": 4,
+        "false_positive": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 4,
+        "true_positive": 0
+      },
+      "cardboard": {
+        "evidence_status": "measured",
+        "f1": 0.0,
+        "false_negative": 31,
+        "false_positive": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 31,
+        "true_positive": 0
+      },
+      "cigarette_butt": {
+        "evidence_status": "measured",
+        "f1": 0.0,
+        "false_negative": 129,
+        "false_positive": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 129,
+        "true_positive": 0
+      },
+      "disposable_cup": {
+        "evidence_status": "measured",
+        "f1": 0.24657534246575344,
+        "false_negative": 22,
+        "false_positive": 33,
+        "precision": 0.21428571428571427,
+        "recall": 0.2903225806451613,
+        "support": 31,
+        "true_positive": 9
+      },
+      "electronic_waste": {
+        "evidence_status": "no_ground_truth_instances",
+        "f1": 0.0,
+        "false_negative": 0,
+        "false_positive": 150,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 0,
+        "true_positive": 0
+      },
+      "food_waste": {
+        "evidence_status": "no_ground_truth_instances",
+        "f1": 0.0,
+        "false_negative": 0,
+        "false_positive": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 0,
+        "true_positive": 0
+      },
+      "food_wrapper": {
+        "evidence_status": "measured",
+        "f1": 0.06593406593406594,
+        "false_negative": 19,
+        "false_positive": 151,
+        "precision": 0.03821656050955414,
+        "recall": 0.24,
+        "support": 25,
+        "true_positive": 6
+      },
+      "glass_bottle": {
+        "evidence_status": "measured",
+        "f1": 0.16216216216216214,
+        "false_negative": 17,
+        "false_positive": 14,
+        "precision": 0.17647058823529413,
+        "recall": 0.15,
+        "support": 20,
+        "true_positive": 3
+      },
+      "metal_can": {
+        "evidence_status": "measured",
+        "f1": 0.14634146341463417,
+        "false_negative": 16,
+        "false_positive": 124,
+        "precision": 0.08823529411764706,
+        "recall": 0.42857142857142855,
+        "support": 28,
+        "true_positive": 12
+      },
+      "other_litter": {
+        "evidence_status": "measured",
+        "f1": 0.005571030640668524,
+        "false_negative": 342,
+        "false_positive": 15,
+        "precision": 0.0625,
+        "recall": 0.0029154518950437317,
+        "support": 343,
+        "true_positive": 1
+      },
+      "paper": {
+        "evidence_status": "measured",
+        "f1": 0.09090909090909093,
+        "false_negative": 23,
+        "false_positive": 37,
+        "precision": 0.075,
+        "recall": 0.11538461538461539,
+        "support": 26,
+        "true_positive": 3
+      },
+      "plastic_bag": {
+        "evidence_status": "measured",
+        "f1": 0.15000000000000002,
+        "false_negative": 5,
+        "false_positive": 63,
+        "precision": 0.08695652173913043,
+        "recall": 0.5454545454545454,
+        "support": 11,
+        "true_positive": 6
+      },
+      "plastic_bottle": {
+        "evidence_status": "measured",
+        "f1": 0.23214285714285718,
+        "false_negative": 19,
+        "false_positive": 67,
+        "precision": 0.1625,
+        "recall": 0.40625,
+        "support": 32,
+        "true_positive": 13
+      },
+      "textile": {
+        "evidence_status": "no_ground_truth_instances",
+        "f1": 0.0,
+        "false_negative": 0,
+        "false_positive": 7,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 0,
+        "true_positive": 0
+      },
+      "tire": {
+        "evidence_status": "no_ground_truth_instances",
+        "f1": 0.0,
+        "false_negative": 0,
+        "false_positive": 16,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 0,
+        "true_positive": 0
+      }
+    }
+  },
+  "operation": "public_zero_shot_detection_evaluation",
+  "platform": "macOS-26.7.1-arm64-arm-64bit",
+  "prediction_count": 735,
+  "predictions_output": "reports/generated/taco-omdet-zero-shot-2026-10-21-predictions.json",
+  "predictions_sha256": "b349dc3fbfa1afbd26dc4a6386ec92cc048fc3e17569a6c9e4878292413aaea6",
+  "python": "3.12.15 (main, Sep 30 2026, 22:04:19) [Clang 21.0.0 (clang-2100.3.34.2)]",
+  "rfdetr": null,
+  "scope": "single_model_use_case_evaluation_not_model_comparison",
+  "source_to_result_fps": 4.572004639872197,
+  "split": "test",
+  "split_policy": "grouped_by_taco_batch_or_original_source_group",
+  "split_seed": 42,
+  "tensorrt": null,
+  "torch": "2.14.1",
+  "torchvision": "0.29.1",
+  "transformers": "5.20.2",
+  "wall_seconds": 46.369156792003196
+}

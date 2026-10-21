@@ -27,9 +27,12 @@ The launcher currently uses the Grounding DINO bootstrap so a clean clone is
 functional while the project RF-DETR checkpoint is pending. Both the bootstrap
 and the selected release path fetch and cache their model automatically.
 
-The public profile requires internet access only for initial package/model
-download. Input media, counts, and output evidence remain local unless the
-deployer adds an external integration worker.
+The public profile requires internet access for initial package and model
+download. After the revision-pinned checkpoint and dependencies are cached,
+the maintained Transformers 5.20 OmDet-Turbo path materializes the timm
+backbone configuration locally and can start without the earlier Hugging Face
+metadata lookup. Input media, counts, and output evidence remain local unless
+the deployer adds an external integration worker.
 
 ## Accelerator environments
 
@@ -48,11 +51,18 @@ The launcher refuses to create a generic first-time environment on detected
 Jetson systems. This protects the JetPack-compatible software stack and avoids
 changing a shared device unexpectedly.
 
+The maintained public-model line requires PyTorch 2.6 or newer, torchvision
+0.21 or newer, and Transformers 5.20 or newer. Select a vendor build or
+container that satisfies those versions without replacing JetPack packages.
+
 The validated Jetson path used a digest-pinned, memory-limited container and a
 separate model cache, leaving system Python and existing services unchanged.
 See `JETSON_VALIDATION_2026-10-21.md`. That community validation image is not
 automatically a production-approved base image; select a reviewed
 vendor-supported image for production or explicitly approve the alternative.
+Three warmed 300-frame full-pipeline repetitions averaged 5.1877 FPS; model
+forward, preprocessing, and annotation/output were the dominant measured
+costs.
 
 ## Dashboard and API
 

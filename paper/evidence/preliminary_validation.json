@@ -2,14 +2,14 @@
   "schema_version": "1.0",
   "paper": {
     "title": "An Open and Reproducible Edge-AI Software Architecture for Litter Detection, Multiclass Classification, Tracking, and Counting",
-    "version": "preprint-1.1",
+    "version": "preprint-1.2",
     "date": "2026-10-21"
   },
   "software": {
     "name": "Edge Litter Detection, Multiclass Classification, Tracking, and Counting",
-    "version": "0.10.1",
+    "version": "0.11.0",
     "repository": "https://github.com/biolababs/edge-litter-detection",
-    "git_revision": "756fa2ae0b8686bb4b97940911710dc73f8efd90",
+    "git_revision": "618954e5921305addbd147ccc96ea1d78fe34c6e",
     "license": "Apache-2.0"
   },
   "verified_scope": [
@@ -18,17 +18,19 @@
     "camera, image, video, HTTP, and RTSP source paths in the application design",
     "normalized detections, tracking, count semantics, JSON evidence, and SQLite persistence",
     "browser dashboard and private API paths",
-    "76 automated software tests at the cited revision",
+    "86 automated software tests at the cited revision",
+    "preliminary grouped TACO zero-shot accuracy with COCO and operating-point metrics",
     "preliminary repeated-image model benchmark on NVIDIA Tesla T4",
     "preliminary repeated-image model benchmark on Apple MPS",
     "preliminary repeated-image detector benchmark on the target Jetson Orin Nano 8 GB device",
     "3,622-frame Jetson video, tracking, annotation, JSONL, and SQLite stability workflow",
-    "Jetson dashboard stream control, annotated frame delivery, counts API, temperature, and whole-board power capture"
+    "Jetson dashboard stream control, annotated frame delivery, counts API, temperature, and whole-board power capture",
+    "three warmed 300-frame Jetson full-pipeline profiles with component timing and telemetry"
   ],
   "not_yet_claimed": [
-    "target-domain detection or classification accuracy",
+    "target-domain detection or classification accuracy beyond the preliminary grouped public-data screen",
     "video counting accuracy",
-    "Jetson repeated-run and multi-hour endurance acceptance",
+    "Jetson multi-hour endurance acceptance",
     "Jetson production readiness or thermal-throttling behavior",
     "AMD ROCm or Strix Halo inference throughput, memory, power, thermals, or sustained stability",
     "field productivity, collection-rate, sorting-quality, cost, or environmental benefit"
@@ -51,6 +53,18 @@
       "platform": "NVIDIA Jetson Orin Nano 8 GB / CUDA",
       "backend": "omdet_turbo",
       "scope": "coexistence detector benchmark, full video smoke, and dashboard/API smoke"
+    },
+    {
+      "evidence": "paper/evidence/taco_omdet_zero_shot_accuracy.json",
+      "platform": "Apple silicon / MPS",
+      "backend": "omdet_turbo",
+      "scope": "212-image grouped TACO zero-shot accuracy evaluation"
+    },
+    {
+      "evidence": "paper/evidence/jetson_profile_warm_aggregate.json",
+      "platform": "NVIDIA Jetson Orin Nano 8 GB / CUDA",
+      "backend": "omdet_turbo",
+      "scope": "three warmed full-pipeline component profiles"
     }
   ],
   "notice": "All manuscript claims and references require independent author verification before publication."

@@ -13,8 +13,68 @@ and 4.94 FPS across the complete 3,622-frame video workflow. This is suitable
 for low-rate inspection and workflow integration testing; higher-rate vehicle
 or sorting-line operation requires optimization and another acceptance run.
 
-No accuracy or count-error claim is made. The demonstration media has no
-ground truth for the project's 16-class operational taxonomy.
+An updated secured-runtime follow-up repeated the full 300-frame pipeline three
+times after 10 warm-up calls. It measured 5.1877 ± 0.0104 FPS and identified
+model forward, preprocessing, and annotation/output as approximately 95% of
+wall time. No count-error claim is made because the demonstration media has no
+track ground truth. A separate grouped TACO zero-shot evaluation is reported
+as public-data accuracy evidence, not Jetson or target-domain accuracy.
+
+## Secured runtime and warmed three-run follow-up
+
+The follow-up used software revision
+`618954e5921305addbd147ccc96ea1d78fe34c6e` and the digest-pinned image:
+
+```text
+dustynv/pytorch@sha256:4bb7f0a3852f86629ed271aaf6c4aa000305cc4e4673b8e9f334668ee1b22bc8
+```
+
+The container supplied Python 3.12.3, PyTorch 2.7.0, torchvision 0.22.0,
+Transformers 5.20.2, and TensorRT 10.7.0. Project runtime packages were
+installed in an isolated target directory. The host's JetPack, system Python,
+packages, services, power mode, and clocks were unchanged. The container
+retained the 4 GiB memory limit.
+
+Each repetition performed 10 zero-frame detector warm-up calls before source
+capture and then processed 300 frames with CUDA synchronization around the
+profiled detector phases. Video decode, inference, tracking/count policy,
+JSONL, SQLite, annotation rendering, and annotated MP4 output were included.
+
+| Repetition | FPS | Wall time | Mean detector call |
+|---:|---:|---:|---:|
+| 1 | 5.1748 | 57.97 s | 168.60 ms |
+| 2 | 5.1881 | 57.83 s | 168.75 ms |
+| 3 | 5.2002 | 57.69 s | 168.51 ms |
+| Mean ± population SD | 5.1877 ± 0.0104 | 57.83 ± 0.12 s | 168.62 ± 0.10 ms |
+
+Mean exclusive wall-time shares were:
+
+| Component | Share |
+|---|---:|
+| Model forward | 71.10% |
+| Detector preprocessing | 13.69% |
+| Annotation rendering and output | 10.59% |
+| Detector postprocessing | 2.58% |
+| Capture or decode | 0.80% |
+| Tracking, policy, and counting | 0.44% |
+| SQLite persistence | 0.33% |
+| JSONL serialization and write | 0.13% |
+
+Tracking, JSONL, and SQLite together were 0.91% of wall time. The evidence
+therefore prioritizes model/runtime optimization, preprocessing, and optional
+rendering work rather than removing count semantics or persistence.
+
+Across the complete profile session, minimum system-available memory was
+2,280 MiB, swap remained at 243 MiB, peak GPU temperature was 63.94 °C, and
+whole-board input power averaged 12.70 W with a 15.10 W peak. Telemetry
+includes model loading, warm-up, processing, transitions, and co-resident
+services; it is not detector-only energy.
+
+Transformers 5.20 performed a Hugging Face metadata request for the configured
+Swin backbone during model setup even with cached weights. The measured
+container therefore allowed outbound HTTPS. The checkpoint remained pinned to
+revision `7fe93cecfb770c4d76cf71163956221249cab566`. A fully offline
+production package requires another configuration or packaging step.
 
 ## Device and isolation
 
@@ -171,7 +231,8 @@ the steady-state performance result.
 | Target-domain accuracy | Not evaluated |
 | Video count error | Not evaluated |
 | Bounded 3,622-frame full-file stability | Pass |
-| Repeated and multi-hour endurance/throttling acceptance | Not evaluated |
+| Three warmed 300-frame full-pipeline repetitions | Pass as preliminary repeatability evidence |
+| Multi-hour endurance/throttling acceptance | Not evaluated |
 | Production readiness | Not established |
 
 Next engineering work should focus on a reviewed Jetson production base image,
@@ -184,4 +245,5 @@ video.
 
 Machine-readable results and raw `tegrastats` captures are stored under
 `paper/evidence/`. Their checksums and limitations are recorded in
-`paper/evidence/jetson_orin_nano_validation.json`.
+`paper/evidence/jetson_orin_nano_validation.json` and
+`paper/evidence/jetson_profile_warm_aggregate.json`.

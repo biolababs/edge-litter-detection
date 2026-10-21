@@ -46,6 +46,11 @@ The control set was organized against:
 - tracked-file and credential-pattern review; and
 - repository-wide wildcard-bind review.
 
+The maintained public-model dependency audit passes with PyTorch 2.6+,
+torchvision 0.21+, and Transformers 5.20+. The OmDet-Turbo adapter rejects
+Transformers 5 combined with an older PyTorch runtime and directs Jetson users
+to a compatible vendor build or the documented pinned container.
+
 ## Residual risks and required deployment controls
 
 1. The API does not implement identities or authorization. Keep it private or
@@ -61,9 +66,13 @@ The control set was organized against:
 5. The software is not a safety-rated motion controller and cannot authorize
    machinery movement.
 6. Jetson Orin 8 GB completed a constrained coexistence validation and a
-   3,622-frame stability run, but the community container base still requires
-   production supply-chain approval and multi-hour endurance remains pending.
-   AMD Strix Halo remains untested.
+   3,622-frame stability run plus three warmed 300-frame profiles, but the
+   community container base still requires production supply-chain approval
+   and multi-hour endurance remains pending. The initial Transformers 5.20
+   profile required a backbone metadata lookup; the maintained adapter now
+   builds that configuration locally, with an offline Jetson smoke test
+   required before the release record is final. AMD Strix Halo remains
+   untested.
 7. GitHub branch rules and mandatory reviewer policies require repository-owner
    workflow decisions and are not enabled automatically.
 

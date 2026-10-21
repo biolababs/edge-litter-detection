@@ -56,6 +56,15 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _portable_path(path: Path, root: Path | None = None) -> str:
+    resolved = path.resolve()
+    repository = (root or Path.cwd()).resolve()
+    try:
+        return str(resolved.relative_to(repository))
+    except ValueError:
+        return str(resolved)
+
+
 def _xywh_to_xyxy(box: list[float]) -> tuple[float, float, float, float]:
     x, y, width, height = box
     return x, y, x + width, y + height
@@ -463,11 +472,11 @@ def main() -> None:
             "confidence_threshold": confidence,
             "nms_iou_threshold": settings.iou,
             "maximum_detections": settings.max_detections,
-            "dataset": str(dataset),
+            "dataset": _portable_path(dataset),
             "dataset_name": dataset_manifest_payload.get("dataset"),
-            "dataset_manifest": str(dataset_manifest),
+            "dataset_manifest": _portable_path(dataset_manifest),
             "dataset_manifest_sha256": _sha256(dataset_manifest),
-            "annotations": str(annotation_path),
+            "annotations": _portable_path(annotation_path),
             "annotations_sha256": _sha256(annotation_path),
             "split": args.split,
             "split_policy": dataset_manifest_payload.get("split_policy"),
@@ -495,7 +504,7 @@ def main() -> None:
                 class_names,
                 iou_threshold=0.5,
             ),
-            "predictions_output": str(predictions_path),
+            "predictions_output": _portable_path(predictions_path),
             "predictions_sha256": _sha256(predictions_path),
             "interpretation": {
                 "model_status": (

@@ -29,36 +29,38 @@ Litter monitoring is often treated as an object-detection exercise, although a
 deployable solution must also ingest operational video, maintain stable class
 contracts, avoid repeated counting, persist evidence, support human review, and
 integrate safely with collection or sorting workflows. This paper presents an
-open and reproducible edge-AI system that addresses those requirements as one
-portable application. The software accepts attached cameras, images, recorded
-video, HTTP media, and RTSP streams. It normalizes public or custom detector
-output into a common schema, applies duplicate suppression and
-class-stabilized tracking, reports visible and unique-session counts, and
-stores run evidence in SQLite and JSON. A browser interface exposes annotated
-video, counts, review tasks, and source controls. The default operational
-taxonomy contains 16 litter categories and can map uncertain or hazardous
-items to human review and site-specific separation guidance. The detector is
-an interchangeable component rather than the product boundary: the current
-clean-clone workflow uses the public OmDet-Turbo Tiny open-vocabulary model,
-while a litter-specific RF-DETR checkpoint may be trained and published later
-if representative evaluation shows that adaptation is required. Preliminary
-engineering validation confirms installation, real inference, persistence,
-application tests, and execution on NVIDIA CUDA, Apple silicon, and the
-intended Jetson Orin Nano 8 GB. On an AWS g4dn.xlarge with a Tesla T4, a
-repeated-image OmDet-Turbo benchmark measured 16.53 frames per second,
-58.98 ms mean detector latency, 61.03 ms p95 latency, and 0.55 GiB peak
-allocated GPU memory. In a coexistence test on the 8 GB Jetson, the same
-public-model path measured 5.54 detector frames per second and 4.94 frames per
-second through all 3,622 frames of a video, tracking, annotation, JSONL, and
-SQLite workflow; the 733.54-second processing run reached 66.31 °C and 15.81 W
-peak whole-board input power. The Jetson workflow, dashboard, and counts API
-completed, but the
-provisional 15 FPS target was not met. These measurements do not establish
-target-domain accuracy, count error, endurance, AMD deployment performance, or
-production readiness. The paper therefore contributes a reusable system,
-explicit count semantics, a safety and security boundary, and a predeclared
-evaluation protocol while clearly separating verified software evidence from
-pending empirical claims.
+open and reproducible edge-AI software architecture that addresses those
+requirements as one portable application. The software accepts cameras,
+images, recorded video, HTTP media, and RTSP streams; normalizes public or
+custom detector output; applies duplicate suppression and class-stabilized
+tracking; reports visible and unique-session counts; and stores auditable
+SQLite and JSON evidence. A browser interface exposes annotated video, counts,
+review tasks, and source controls. The default 16-class operational taxonomy
+supports human review and configurable separation guidance.
+
+The detector is interchangeable rather than the product boundary. A clean
+clone runs with the public OmDet-Turbo Tiny open-vocabulary checkpoint, while a
+validated litter-specific checkpoint can be introduced later without changing
+downstream contracts. A preliminary zero-shot evaluation on a deterministic,
+source-grouped TACO test partition of 212 images and 680 mapped annotations
+measured 7.65% COCO mAP50–95, 10.16% mAP50, and 7.49% micro F1 at the frozen
+operating point. This result establishes an accuracy signal and also shows that
+the unadapted public checkpoint is a functional bootstrap, not a
+production-accepted litter model.
+
+Engineering validation confirms installation, inference, persistence,
+automated checks, and execution on NVIDIA CUDA, Apple silicon, and an NVIDIA
+Jetson Orin Nano 8 GB. A prior complete 3,622-frame Jetson run measured
+4.94 source-to-result FPS. Three subsequent 300-frame full-pipeline
+repetitions, each after 10 warm-up calls, measured 5.188 ± 0.010 FPS. Model
+forward time accounted for 71.10% of wall time, detector preprocessing 13.69%,
+and annotation/output 10.59%; tracking, JSONL, and SQLite together accounted
+for less than 1%. The provisional 15 FPS target was not met. These measurements
+do not establish target-domain accuracy, counting error, endurance, AMD
+performance, or production readiness. The contribution is therefore the
+reusable architecture, explicit count semantics, safety and security boundary,
+traceable preliminary evidence, and a protocol for the remaining empirical
+work.
 
 ## Keywords
 
@@ -70,8 +72,8 @@ recycling; reproducible software
 
 - Code: `https://github.com/biolababs/edge-litter-detection`
 - Software revision:
-  `756fa2ae0b8686bb4b97940911710dc73f8efd90`
-- Software version: `0.10.1`
+  `618954e5921305addbd147ccc96ea1d78fe34c6e`
+- Software version: `0.11.0`
 
 The manuscript has no DOI at this stage. Do not invent one. A DOI can be added
 later if the software release or manuscript is archived in a DOI-issuing
@@ -82,11 +84,12 @@ repository.
 This systems and reproducibility preprint presents an open-source edge-AI
 application for litter detection, multiclass classification, tracking,
 counting, SQLite evidence, human review, and integration with cleanup vehicles
-or sorting workflows. It reports preliminary engineering validation, including
-a constrained Jetson Orin Nano full-workflow run, and provides a frozen
-protocol for pending accuracy, count-error, endurance, and AMD evaluation.
-Source code and reproduction instructions are available in the linked GitHub
-repository.
+or sorting workflows. It reports a grouped public-data zero-shot accuracy
+screen and replicated Jetson full-pipeline profiling. The low public-model
+accuracy and sub-target Jetson throughput are reported as findings, while
+target-domain accuracy, count error, endurance, AMD validation, and operational
+outcomes remain open. Source code and reproduction instructions are available
+in the linked GitHub repository.
 
 ## Files to upload
 
@@ -119,9 +122,9 @@ repository.
 3. Optionally archive that release with a DOI provider.
 4. Upload the PDF to ResearchGate as a preprint.
 5. Add the GitHub URL and, when available, the software DOI.
-6. After labeled-data, endurance, optimization, and field testing, publish a
-   revised manuscript with accuracy, counting, reliability, and operational
-   results.
+6. After target-domain labeling, count evaluation, endurance, optimization,
+   and field testing, publish a revised manuscript with operational accuracy,
+   reliability, and outcome results.
 
 ## Notice
 

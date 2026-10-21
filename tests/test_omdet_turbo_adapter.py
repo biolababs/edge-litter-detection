@@ -8,6 +8,7 @@ import unittest
 
 from litter_edge.adapters.omdet_turbo import (
     OmDetTurboDetector,
+    _explicit_timm_backbone_config,
     _materialize_meta_buffers,
     _numeric_version,
     _validate_runtime_versions,
@@ -147,6 +148,30 @@ class FakeBufferModel:
 
 
 class OmDetTurboAdapterTests(unittest.TestCase):
+    def test_rewrites_timm_backbone_without_remote_repo_lookup(self) -> None:
+        rewritten = _explicit_timm_backbone_config(
+            {
+                "model_type": "omdet-turbo",
+                "backbone": "swin_tiny_patch4_window7_224",
+                "use_timm_backbone": True,
+                "use_pretrained_backbone": False,
+                "image_size": 640,
+            }
+        )
+
+        self.assertNotIn("backbone", rewritten)
+        self.assertNotIn("use_timm_backbone", rewritten)
+        self.assertEqual(
+            rewritten["backbone_config"],
+            {
+                "model_type": "timm_backbone",
+                "backbone": "swin_tiny_patch4_window7_224",
+                "out_indices": [1, 2, 3],
+                "img_size": 640,
+                "always_partition": True,
+            },
+        )
+
     def test_parses_framework_versions(self) -> None:
         self.assertEqual(_numeric_version("2.7.0a0+79aa17489c.nv25.04"), (2, 7, 0))
 
@@ -183,7 +208,7 @@ class OmDetTurboAdapterTests(unittest.TestCase):
         torch_module.inference_mode = nullcontext
         torch_module.float16 = object()
         transformers_module = ModuleType("transformers")
-        transformers_module.__version__ = "5.20.2"
+        transformers_module.__version__ = "4.57.6"
         transformers_module.AutoProcessor = FakeProcessor
         transformers_module.OmDetTurboForObjectDetection = FakeModel
 

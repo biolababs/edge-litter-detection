@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-10-21T04:40:00Z",
+  "operation": "warmed_full_pipeline_latency_profile",
+  "claim_boundary": "Three repeated 300-frame engineering profiles on one shared Jetson and one unlabelled video; not accuracy, count-error, endurance, or production-readiness evidence.",
+  "device": {
+    "name": "NVIDIA Jetson Orin Nano 8 GB Super",
+    "coexistence_condition": "Existing device services remained active.",
+    "system_changes": "No JetPack, system Python, system package, service, power-mode, or clock changes were made."
+  },
+  "software": {
+    "git_revision": "618954e5921305addbd147ccc96ea1d78fe34c6e",
+    "container": "dustynv/pytorch@sha256:4bb7f0a3852f86629ed271aaf6c4aa000305cc4e4673b8e9f334668ee1b22bc8",
+    "container_memory_limit_gib": 4,
+    "python": "3.12.3",
+    "pytorch": "2.7.0",
+    "torchvision": "0.22.0",
+    "transformers": "5.20.2",
+    "tensorrt": "10.7.0",
+    "model": "omlab/omdet-turbo-swin-tiny-hf",
+    "model_revision": "7fe93cecfb770c4d76cf71163956221249cab566"
+  },
+  "protocol": {
+    "repetitions": 3,
+    "warmup_calls_per_repetition": 10,
+    "measured_frames_per_repetition": 300,
+    "source": "media/demo-video/recycling-facility.webm",
+    "included_pipeline_components": [
+      "video decode",
+      "detector preprocessing",
+      "model forward",
+      "detector postprocessing",
+      "tracking and count policy",
+      "JSONL event output",
+      "SQLite persistence",
+      "annotation rendering",
+      "annotated MP4 output"
+    ],
+    "accelerator_synchronization": "Enabled around supported detector phases.",
+    "network_note": "Outbound HTTPS was available because Transformers 5.20 performs a Hugging Face backbone metadata check during configuration loading. Model weights remained revision-pinned and cache-backed."
+  },
+  "results": {
+    "source_to_result_fps": {
+      "values": [
+        5.174841104696583,
+        5.188064030578725,
+        5.200188448166362
+      ],
+      "mean": 5.187697861147223,
+      "population_standard_deviation": 0.010351248404038357,
+      "minimum": 5.174841104696583,
+      "maximum": 5.200188448166362
+    },
+    "wall_seconds": {
+      "values": [
+        57.972794512999826,
+        57.82503805500164,
+        57.69021699699806
+      ],
+      "mean": 57.82934985499984,
+      "population_standard_deviation": 0.11540207061068529
+    },
+    "mean_detector_call_ms": {
+      "values": [
+        168.59959762655004,
+        168.74962519063652,
+        168.514656144204
+      ],
+      "mean": 168.62129298713018,
+      "population_standard_deviation": 0.09714466771566181
+    },
+    "mean_exclusive_wall_share_percent": {
+      "model_forward": 71.0954074677467,
+      "detector_preprocess": 13.689811295881281,
+      "annotation_render_and_output": 10.5855827412711,
+      "detector_postprocess": 2.584929639309583,
+      "capture_or_decode": 0.8022132650334681,
+      "tracking_policy_and_counting": 0.4418547025528219,
+      "sqlite_persistence": 0.332022982908838,
+      "source_open_and_first_decode": 0.19132198271871875,
+      "event_serialization_and_write": 0.13331413984730198,
+      "unattributed_loop_and_finalization": 0.1435417827301914
+    },
+    "combined_tracking_jsonl_sqlite_percent": 0.9071918253089619,
+    "determinism_check": {
+      "status": "identical_across_three_repetitions",
+      "unique_session_counts": {
+        "battery": 1,
+        "disposable_cup": 7,
+        "electronic_waste": 4,
+        "food_wrapper": 15,
+        "glass_bottle": 2,
+        "metal_can": 23,
+        "paper": 10,
+        "plastic_bag": 10,
+        "plastic_bottle": 14,
+        "tire": 9
+      },
+      "interpretation": "Deterministic output on this fixed media and software condition; not counting-accuracy evidence because the video has no count ground truth."
+    }
+  },
+  "telemetry": {
+    "samples": 226,
+    "interval_ms": 1000,
+    "scope": "Model loading, warm-up, measured processing, and inter-run transitions for all three repetitions.",
+    "system_ram_used_mib": {
+      "minimum": 3159,
+      "maximum": 5327,
+      "mean": 5047.637168141593
+    },
+    "minimum_system_available_memory_mib": 2280,
+    "swap_used_mib": {
+      "first": 243,
+      "last": 243,
+      "minimum": 243,
+      "maximum": 243
+    },
+    "gpu_temperature_c": {
+      "maximum": 63.937,
+      "mean": 59.649393805309735
+    },
+    "whole_board_input_power_w": {
+      "minimum": 4.617,
+      "maximum": 15.097,
+      "mean": 12.702535398230088
+    },
+    "gpu_frequency_utilization_percent": {
+      "maximum": 99,
+      "mean": 54.110619469026545
+    }
+  },
+  "evidence_files": {
+    "jetson_profile_warm_run_1.json": "e974d2a61a08728509513b93909778e6aca116294a5fce613ab2fb8e2e129959",
+    "jetson_profile_warm_run_2.json": "595f5bcd538c52525293043331e2d43cb536747b8713962b1859da82abf4a216",
+    "jetson_profile_warm_run_3.json": "96668c8475dd375977a2b492e8112bec138e94d512832bd3aae36f50456246d0",
+    "jetson_profile_warm_tegrastats.log": "16c4ff74e6d192a09db9021930f29b7966eaf8d832455812366cb0daaa0b2947"
+  }
+}
