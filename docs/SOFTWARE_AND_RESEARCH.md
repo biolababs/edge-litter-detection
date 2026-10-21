@@ -1,66 +1,75 @@
 # Software and research separation
 
-The repository is both a reusable software project and the reference
-implementation for an MSc study. Those deliverables have different readiness
-and release rules.
+The public application and the MSc evaluation are related but independent
+deliverables.
 
 | Area | Reusable software | Research work |
 |---|---|---|
-| Purpose | Run detection, classification, tracking, counting, human review, separation guidance, persistence, APIs, and evidence output | Evaluate accuracy and edge-device operation |
+| Purpose | Detect, classify, track, count, review, persist, and integrate litter observations | Evaluate whether a versioned system meets defined accuracy and edge-device requirements |
 | Location | `src/`, `config/`, `deploy/`, `schemas/`, and operational docs | `thesis/` and experiment documents |
-| License | Apache-2.0, subject to `LICENSE-NOTICE.md` | Separate academic and artifact rights |
-| Data | User-supplied input media | Frozen, licensed study dataset |
-| Model | Compatible trained checkpoint supplied by the user or project release | Checkpoint trained and frozen for the study |
-| Claims | Interfaces and implemented behavior | Measured accuracy, latency, memory, power, and limitations |
+| License | Apache-2.0 for original project code and software documentation | Academic text, datasets, weights, and results can have separate terms |
+| Default model | Public Grounding DINO Tiny, downloaded automatically | The same frozen public-model configuration can be evaluated |
+| Custom training | Optional advanced profile | Optional research extension, not a prerequisite |
+| Claims | Implemented interfaces and behavior | Measured accuracy, latency, memory, power, and limitations |
 
-## What users can reuse
+## What a user can do immediately
 
-Users can clone the repository, run `startup.sh`, inspect cameras or other
-inputs, install a verified checkpoint, run the CLI or API, and consume the
-documented JSON schema. SQLite persistence, vehicle/route context, the human
-review queue, and integration outbox are part of the reusable software. None of
-those operations require the thesis manuscript.
+A user can clone the repository and run:
 
-The default application classes are:
+```bash
+./startup.sh --source 0
+```
 
-1. glass;
-2. metal;
-3. paper/cardboard;
-4. plastic;
-5. other litter.
+The launcher installs the public-model runtime, downloads and caches the model,
+processes the selected source, writes evidence, and stores counts in SQLite.
+No thesis manuscript, dataset, API key, or custom checkpoint is required.
 
-A checkpoint must use the same class IDs and names as `config/classes.yaml`.
+The default class catalog contains 16 configurable prompts. Because the default
+detector is open-vocabulary, users can change `config/classes.yaml` without
+retraining. Output names should be treated as versioned API/database
+identifiers.
 
-## What remains pending
+## What remains deployment-specific
 
-The project does not yet distribute its own trained litter checkpoint, dataset,
-or measured target-device results. Until those artifacts exist, the public
-repository should be described as:
+The software is usable before project-specific training, but each deployment
+must still validate:
 
-> The reusable application code for real-time litter detection,
-> classification, tracking, and counting. A trained project checkpoint and
-> measured research results are pending.
+- relevant litter categories and prompt wording;
+- representative weather, lighting, camera angle, speed, and object size;
+- confidence thresholds and human-review policy;
+- tracking and count error;
+- sustained throughput, memory, temperature, and power;
+- privacy, retention, and third-party model terms.
 
-It should not yet be described as a validated litter model or as achieving a
-specific accuracy, frame rate, memory footprint, or power target.
+Until those measurements exist, the repository must not claim a universal
+accuracy, frame rate, memory footprint, or safety rating.
 
-After validation and redistribution approval, the release URL and SHA-256 are
-recorded in `config/model-release.json`. That turns the standard workflow into
-`git clone` followed by `./startup.sh`; the launcher installs and verifies the
-model automatically.
+## Optional specialization
 
-## Reproducible thesis use
+A team with licensed target-domain data may choose to train a closed-set
+RF-DETR checkpoint. This can be useful when the public zero-shot profile does
+not meet local accuracy or performance targets. That is an optimization path,
+not the normal installation requirement.
 
-Each thesis experiment should record:
+If a custom artifact is produced, record:
 
-- Git commit;
-- class schema version;
+- source and license for the dataset;
 - dataset version and checksum;
-- trained checkpoint checksum;
-- export/runtime artifact checksum;
-- configuration and confidence threshold;
-- device and software manifest;
-- raw evidence and analysis output.
+- class schema and annotation rules;
+- training configuration and Git commit;
+- checkpoint and exported-artifact checksums;
+- threshold and runtime configuration;
+- target-device manifest;
+- accuracy and count evaluation evidence.
 
-This allows the thesis to state that a specific version of the public software
-was used without making the software repository depend on the manuscript.
+## MSc use
+
+The thesis should evaluate a frozen version of the practical application. The
+research question is whether the solution meets the defined litter use case on
+representative data and target hardware—not which detector wins a model
+competition.
+
+The thesis can report the public Grounding DINO Tiny configuration as the
+implementation baseline. Optional custom training can be documented later as
+future optimization or an additional implementation phase without making the
+public software depend on it.

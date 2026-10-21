@@ -62,6 +62,7 @@ print("machine=" + platform.machine())
 for name in (
     "torch",
     "torchvision",
+    "transformers",
     "tensorrt",
     "rfdetr",
     "opencv-python",

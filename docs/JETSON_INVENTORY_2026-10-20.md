@@ -77,7 +77,8 @@ active listeners rather than relying on a published port list.
 
 ## Design consequences
 
-1. Train RF-DETR Nano off-device.
+1. Validate the public Grounding DINO Tiny profile first; perform optional
+   custom training off-device only if later measurements justify it.
 2. Do not add a continuous VLM or second LLM to the initial real-time path.
 3. Prefer a detector process using no more than 1.5 GiB of incremental memory.
 4. Reject a deployment above 2.0 GiB incremental memory or one that
@@ -92,10 +93,13 @@ active listeners rather than relying on a published port list.
 
 ## Implementation
 
-RF-DETR Nano is the implementation model. The target validation checks litter
-detection/classification accuracy, counting accuracy, full-pipeline latency,
-sustained FPS, incremental memory, power, thermal stability, operational
-reliability, and licensing. It does not compare model families.
+At the time of this inventory, RF-DETR Nano was the planned implementation.
+Version 0.7.0 superseded that plan with public Grounding DINO Tiny as the
+no-training default and retained RF-DETR only as an optional custom profile.
+The hardware observations remain valid historical evidence. Target validation
+checks detection/classification accuracy, counting accuracy, full-pipeline
+latency, sustained FPS, incremental memory, power, thermal stability,
+operational reliability, and licensing. It does not compare model families.
 
 ## Evidence handling
 

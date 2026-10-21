@@ -1,8 +1,11 @@
-# Dataset staging area
+# Evaluation and optional custom-model data
 
-Dataset files are intentionally excluded from Git.
+Data files are intentionally excluded from Git. The public Grounding DINO
+profile does not need a training dataset, but representative labeled media is
+required to measure detection and counting accuracy.
 
-Expected YOLO layout:
+If a team chooses the optional RF-DETR training profile, an expected YOLO
+layout is:
 
 ```text
 data/litter/
@@ -18,8 +21,8 @@ data/litter/
 ```
 
 RF-DETR accepts YOLO-format data when `data.yaml` is present at the dataset
-root. A COCO-format dataset is also supported by RF-DETR. The frozen dataset
-manifest must state which format and schema version were used.
+root. A COCO-format dataset is also supported. The frozen data manifest must
+state which format and schema version were used.
 
 For held-out test evaluation, a YOLO `data.yaml` must declare `test`, or a COCO
 dataset must contain `test/_annotations.coco.json`. The evaluator fails instead

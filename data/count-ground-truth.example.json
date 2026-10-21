@@ -5,19 +5,41 @@
     {
       "frame_index": 1,
       "visible_counts": {
-        "glass": 0,
-        "metal": 0,
-        "paper_cardboard": 0,
-        "plastic": 1,
+        "plastic_bottle": 1,
+        "glass_bottle": 0,
+        "metal_can": 0,
+        "paper": 0,
+        "cardboard": 0,
+        "plastic_bag": 0,
+        "food_wrapper": 0,
+        "disposable_cup": 0,
+        "cigarette_butt": 0,
+        "food_waste": 0,
+        "textile": 0,
+        "tire": 0,
+        "battery": 0,
+        "electronic_waste": 0,
+        "broken_glass": 0,
         "other_litter": 0
       }
     }
   ],
   "unique_session_counts": {
-    "glass": 0,
-    "metal": 0,
-    "paper_cardboard": 0,
-    "plastic": 1,
+    "plastic_bottle": 1,
+    "glass_bottle": 0,
+    "metal_can": 0,
+    "paper": 0,
+    "cardboard": 0,
+    "plastic_bag": 0,
+    "food_wrapper": 0,
+    "disposable_cup": 0,
+    "cigarette_butt": 0,
+    "food_waste": 0,
+    "textile": 0,
+    "tire": 0,
+    "battery": 0,
+    "electronic_waste": 0,
+    "broken_glass": 0,
     "other_litter": 0
   }
 }

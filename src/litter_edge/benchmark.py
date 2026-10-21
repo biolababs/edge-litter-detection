@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .adapters import create_detector
-from .classes import load_class_names
+from .classes import load_class_names, load_class_prompts
 from .common import environment_manifest, memory_snapshot, write_json
 from .device import resolve_torch_device
 from .runtime import _frames, _safe_source_label, _source_value
@@ -17,7 +17,7 @@ from .settings import load_settings
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Benchmark a model on frozen test media.")
     parser.add_argument("--config", default="config/project.yaml")
-    parser.add_argument("--backend", choices=("rfdetr",))
+    parser.add_argument("--backend", choices=("grounding_dino", "rfdetr"))
     parser.add_argument("--model")
     parser.add_argument("--class-names")
     parser.add_argument("--source", required=True)
@@ -125,13 +125,17 @@ def main() -> None:
     model_reference = args.model or settings.model
     class_names = args.class_names or str(settings.class_names_file)
     device = resolve_torch_device(args.device or str(settings.device))
+    loaded_class_names = load_class_names(class_names)
     detector = create_detector(
         backend=backend,
         model=model_reference,
-        class_names=load_class_names(class_names),
+        class_names=loaded_class_names,
         confidence=settings.confidence,
         device=device,
         optimize=True,
+        class_prompts=load_class_prompts(class_names, loaded_class_names),
+        iou=settings.iou,
+        max_detections=settings.max_detections,
     )
     memory_samples.append({"phase": "after_model_load", **memory_snapshot()})
     warmup_frame = np.zeros(

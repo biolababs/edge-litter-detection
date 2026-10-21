@@ -33,8 +33,9 @@ variants also exist in that private archive.
 ## Revision strategy
 
 The new manuscript does not silently rewrite the historical results. It frames
-an RF-DETR litter-detection, classification, and counting use case
+a public Grounding DINO litter-detection, classification, and counting use case
 prospectively, retains the research motivation, replaces unsupported
-architecture claims, defines reproducible methods, and leaves results pending
-until the new data and hardware tests exist.
+architecture claims, defines reproducible methods, and leaves measured results
+pending until representative data and hardware tests exist. Custom training is
+optional and is no longer presented as a prerequisite for using the software.
 

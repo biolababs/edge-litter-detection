@@ -1,7 +1,7 @@
 .PHONY: install test validate cameras docx
 
 install:
-	python3 -m pip install -e ".[runtime,rfdetr,api]"
+	python3 -m pip install -e ".[runtime,public-model,api]"
 
 test:
 	PYTHONPATH=src python3 -m unittest discover -s tests -v

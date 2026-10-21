@@ -43,6 +43,7 @@ def main() -> None:
         "packages": {
             "torch": package("torch"),
             "torchvision": package("torchvision"),
+            "transformers": package("transformers"),
             "rfdetr": package("rfdetr"),
         },
         "commands": [

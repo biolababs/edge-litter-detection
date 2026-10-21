@@ -1,59 +1,68 @@
 # Portable deployment
 
-## Supported architecture
+## Reference architecture
 
-The application core is hardware-neutral. Model adapters produce the same
-`Detection` schema, and tracking/counting runs in ordinary Python. A deployment
-profile selects the accelerator-specific PyTorch build and model runtime.
+The detector adapter returns a hardware-neutral `Detection` record. Tracking,
+counting, SQLite persistence, review, and integration logic are shared across
+all devices.
 
-| Target | Initial runtime | Device value | Status |
+| Target | Reference runtime | Device value | Status |
 |---|---|---|---|
-| CPU development host | RF-DETR/PyTorch CPU | `cpu` | runnable after dependencies and weights exist |
-| NVIDIA CUDA workstation | RF-DETR/PyTorch CUDA | `cuda` | supported by the primary adapter |
-| AMD ROCm / Strix Halo | RF-DETR/PyTorch ROCm | `cuda` | code path ready; hardware benchmark pending |
-| Jetson Orin Nano 8 GB Super | JetPack-compatible runtime | `cuda` | inventory complete; deployment not authorized |
-| ONNX Runtime / OpenVINO | exported RF-DETR ONNX | provider-specific | adapter pending validated output contract |
-| TensorRT | optimized target engine | target-specific | adapter pending target validation |
+| CPU host | PyTorch + Transformers | `cpu` | Functional reference path |
+| NVIDIA CUDA | Vendor PyTorch + Transformers | `cuda` | Code path implemented; benchmark required |
+| AMD ROCm / Strix Halo | Vendor PyTorch + Transformers | `cuda` | Code path implemented; benchmark required |
+| Jetson Orin 8 GB | JetPack-compatible PyTorch or optimized platform service | `cuda` or service-specific | Deployment pending authorized maintenance window |
+| Target export | ONNX/OpenVINO/TensorRT adapter | provider-specific | Optional optimization |
 
-PyTorch uses the `cuda` device name for ROCm accelerators. This does not mean an
-AMD system uses NVIDIA CUDA; it is PyTorch's compatibility-facing device API.
+PyTorch exposes ROCm accelerators through its `cuda` device API. This does not
+mean an AMD computer uses NVIDIA CUDA.
 
-## Local CLI
-
-The normal entry point automates environment setup, input selection, and
-runtime output:
+## Normal installation
 
 ```bash
-./startup.sh \
-  --source sample.mp4 \
-  --edge-device-id edge-truck-01 \
-  --vehicle-id truck-12 \
-  --route-id route-a
+./startup.sh --source sample.mp4
 ```
 
-Use `./startup.sh --help` for camera, stream, model-download, headless, API, and
-environment options. Install the hardware-appropriate PyTorch build first on
-accelerator targets, or set `LITTER_PYTHON` to an existing vendor-compatible
-environment. The launcher deliberately refuses a generic first-time PyTorch
-installation on Jetson. The trained project checkpoint is intentionally not
-present yet. SQLite state is stored at `state/litter-edge.db` unless
-`LITTER_DATABASE` or `--database` selects another path.
+The launcher uses `grounding_dino` and
+`IDEA-Research/grounding-dino-tiny` by default. The model is fetched and cached
+automatically by Transformers on first use.
+
+The public profile requires internet access only for initial package/model
+download. Input media, counts, and output evidence remain local unless the
+deployer adds an external integration worker.
+
+## Accelerator environments
+
+For NVIDIA, AMD, or Jetson:
+
+1. create or select a vendor-supported Python environment;
+2. install the correct PyTorch build for the driver/platform;
+3. run the launcher with that interpreter:
+
+```bash
+LITTER_PYTHON=/path/to/vendor/environment/bin/python \
+  ./startup.sh --source 0 --device auto
+```
+
+The launcher refuses to create a generic first-time environment on detected
+Jetson systems. This protects the JetPack-compatible software stack and avoids
+changing a shared device unexpectedly.
 
 ## Image API
 
 ```bash
-python -m pip install -e ".[runtime-headless,rfdetr,api]"
-LITTER_MODEL=models/rfdetr-nano-litter.pth python serve.py
+python -m pip install -e ".[runtime-headless,public-model,api]"
+python serve.py
 ```
 
-Health:
+Health and readiness:
 
 ```bash
 curl http://127.0.0.1:8088/healthz
 curl http://127.0.0.1:8088/readyz
 ```
 
-Detect one image:
+Single-image detection:
 
 ```bash
 curl \
@@ -62,37 +71,49 @@ curl \
   http://127.0.0.1:8088/v1/detect
 ```
 
-Independent HTTP images return per-image counts. Use the CLI for stateful video
-tracking and unique-session counts.
+Independent HTTP images return per-image visible counts. Use the streaming CLI
+for tracking and unique run counts.
 
-The same API exposes persisted counts, review items, collection confirmations,
-and durable integration events. `./startup.sh --counts-api` starts these
-interfaces without requiring the detector checkpoint.
+## Counts and integration API
+
+```bash
+./startup.sh --counts-api
+```
+
+This mode does not load or require a detector. It exposes the stored runs,
+aggregate counts, review queue, collection confirmations, and integration
+outbox.
 
 ## Container
-
-The root Dockerfile is a portable CPU/reference image:
 
 ```bash
 docker compose build
 docker compose up
 ```
 
-Mount the trained checkpoint under `models/`. Do not treat this CPU image as an
-optimized Jetson or ROCm image. The Compose configuration mounts `/app/state`
-from the `litter-state` named volume so the SQLite database survives container
-replacement.
+The Compose file persists:
 
-For NVIDIA or AMD, start from a vendor-supported container or environment that
-already contains the correct PyTorch accelerator build, then install this
-package's `runtime-headless`, `api`, and `rfdetr` extras. Use `runtime` instead
-when a local display window is required. Preserve a manifest containing the
-base image digest, driver/runtime versions, model checksum, configuration, and
-Git revision.
+- operational SQLite state in `litter-state`; and
+- the downloaded public-model cache in `litter-model-cache`.
 
-## Portability contract
+The included image is a CPU reference. For accelerated deployments, start from
+a vendor-supported image containing the correct PyTorch runtime, then install
+this project's `runtime-headless`, `public-model`, and `api` extras.
 
-An RF-DETR runtime adapter needs only:
+## Optional RF-DETR profile
+
+```bash
+./startup.sh \
+  --backend rfdetr \
+  --model /path/to/compatible-checkpoint.pth \
+  --source sample.mp4
+```
+
+The RF-DETR profile requires a compatible local checkpoint. It is intended for
+teams that intentionally choose a specialized closed-set model; it is not
+required by the public default.
+
+## Adapter contract
 
 ```python
 class Detector:
@@ -102,13 +123,27 @@ class Detector:
         ...
 ```
 
-It must return pixel-coordinate `xyxy` boxes, confidence, class ID, and class
-name. No tracking or counting code should be copied into an adapter.
+Adapters return pixel-coordinate `xyxy` boxes, confidence, class ID, and class
+name. They do not duplicate tracking, counting, persistence, or integration
+logic.
 
-## Official platform references
+## Deployment evidence
 
-- RF-DETR installation and inference: https://rfdetr.roboflow.com/latest/
-- RF-DETR export formats: https://rfdetr.roboflow.com/latest/learn/export/
-- AMD Ryzen/ROCm PyTorch guidance:
+Preserve a manifest containing:
+
+- Git revision;
+- model ID or artifact checksum;
+- class/prompt and separation configuration;
+- base image or environment versions;
+- driver and accelerator runtime versions;
+- threshold configuration;
+- target-device accuracy, count error, latency, memory, power, and thermal
+  evidence.
+
+## Platform references
+
+- Transformers Grounding DINO:
+  https://huggingface.co/docs/transformers/model_doc/grounding-dino
+- AMD PyTorch guidance:
   https://rocm.docs.amd.com/projects/radeon-ryzen/en/latest/docs/install/installrad/native_linux/install-pytorch.html
 - NVIDIA JetPack: https://developer.nvidia.com/embedded/jetpack

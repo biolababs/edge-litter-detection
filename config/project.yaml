@@ -1,24 +1,15 @@
 project_name: litter
-# RF-DETR is the primary implementation. The trained artifact is intentionally
-# absent until the dataset and training run exist.
-backend: rfdetr
-model: models/rfdetr-nano-litter.pth
-base_model: rfdetr-nano
+# Public open-vocabulary defaults: no private checkpoint or training is needed.
+# Transformers downloads and caches this model on first use.
+backend: grounding_dino
+model: IDEA-Research/grounding-dino-tiny
 class_names: config/classes.yaml
 task: detect
 image_size: 640
-epochs: 100
-batch: 4
 device: auto
-workers: 8
-seed: 42
-deterministic: true
-patience: 30
 confidence: 0.25
 iou: 0.45
 max_detections: 100
-output_dir: runs/litter
-run_name: rfdetr-nano-baseline
 tracking:
   enabled: true
   method: class_stabilized_iou
@@ -60,6 +51,8 @@ target:
     tensorrt_python: true
     docker: true
     torch: false
+    transformers: false
+    grounding_dino: false
     rfdetr: false
     nvcc: false
     trtexec: false
@@ -70,10 +63,26 @@ target:
     - development_tools
 
 implementation:
-  model_family: rf_detr
-  variant: nano
+  model_family: grounding_dino
+  variant: tiny
   purpose: litter_detection_classification_and_counting
   model_comparison_in_scope: false
+
+# Not used by startup.sh or the public model. This section exists only for
+# teams that intentionally choose to build an optional closed-set RF-DETR
+# checkpoint from licensed representative data.
+custom_training:
+  backend: rfdetr
+  base_model: rfdetr-nano
+  image_size: 640
+  epochs: 100
+  batch: 4
+  workers: 8
+  seed: 42
+  deterministic: true
+  patience: 30
+  output_dir: runs/litter
+  run_name: rfdetr-nano-custom
 
 validation:
   accuracy_metrics:
@@ -86,7 +95,7 @@ validation:
     - visible_count_mae
     - unique_session_count_error
   operational_gates:
-    minimum_test_recall: pending_pilot
+    minimum_test_recall: pending_validation
     minimum_sustained_fps: 15
     maximum_p95_latency_ms: pending_camera_pipeline
     preferred_incremental_memory_gb: 1.5

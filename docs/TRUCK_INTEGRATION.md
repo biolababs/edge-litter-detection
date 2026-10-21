@@ -23,7 +23,7 @@ was collected.
 camera or stream
       |
       v
-RF-DETR detection and classification
+public/custom litter detection and classification
       |
       v
 tracking, counting, and separation policy
@@ -75,8 +75,9 @@ automatic restart after power or camera interruption.
 `config/separation.yaml` maps each litter class to an operator-defined workflow
 destination. The display includes that destination in the box label.
 
-Low-confidence detections and `other_litter` are marked `REVIEW` and written to
-the review queue. A local interface can retrieve the queue:
+Low-confidence detections, hazardous categories, and `other_litter` are marked
+`REVIEW` and written to the review queue. A local interface can retrieve the
+queue:
 
 ```http
 GET /v1/review-queue?status=pending
@@ -90,7 +91,7 @@ Content-Type: application/json
 
 {
   "status": "corrected",
-  "corrected_class_name": "metal",
+  "corrected_class_name": "metal_can",
   "corrected_destination": "metal_stream",
   "reviewed_by": "operator-1"
 }
@@ -141,7 +142,7 @@ Content-Type: application/json
 {
   "run_id": "RUN_ID",
   "track_id": 7,
-  "class_name": "plastic",
+  "class_name": "plastic_bottle",
   "quantity": 1,
   "method": "arm_controller",
   "external_reference": "controller-pickup-0001"
@@ -217,6 +218,7 @@ The useful system-level outcomes are:
 - database/outbox backlog during network loss;
 - inference availability during a shift.
 
-Accuracy is still evaluated for the single RF-DETR implementation. The product
-evaluation focuses on whether the complete workflow helps collection teams
-find, separate, and account for litter safely.
+Accuracy is evaluated for the frozen public-model configuration used by the
+solution. The product evaluation focuses on whether the complete workflow helps
+collection teams find, separate, and account for litter safely; it does not
+rank detector families.

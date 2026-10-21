@@ -7,10 +7,8 @@ archive
 data
 media
 models/*
-!models/.gitkeep
 reports/generated
 state/*
-!state/.gitkeep
 !state/README.md
 runs
 thesis

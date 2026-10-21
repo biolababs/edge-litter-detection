@@ -6,7 +6,12 @@ cd "$project_root"
 venv_dir="${LITTER_VENV:-$project_root/.venv}"
 python_command="${LITTER_PYTHON:-}"
 source_value="${LITTER_SOURCE:-auto}"
-model_path="${LITTER_MODEL:-$project_root/models/rfdetr-nano-litter.pth}"
+backend_value="${LITTER_BACKEND:-grounding_dino}"
+model_path="${LITTER_MODEL:-}"
+model_was_set=false
+if [[ -n "$model_path" ]]; then
+  model_was_set=true
+fi
 model_url="${LITTER_MODEL_URL:-}"
 model_sha256="${LITTER_MODEL_SHA256:-}"
 device_value="${LITTER_DEVICE:-auto}"
@@ -31,15 +36,16 @@ Usage: ./startup.sh [options]
 
 Default behavior:
   1. Create .venv and install the application.
-  2. Use models/rfdetr-nano-litter.pth.
+  2. Download/cache the public Grounding DINO Tiny model on first use.
   3. Select the first working camera, or the first file under media/.
   4. Run detection, classification, tracking, counting, and separation guidance.
   5. Persist operational counts to state/litter-edge.db.
 
 Options:
   --source VALUE         Image, video, camera index, stream URL, or "auto".
-  --model PATH           Trained RF-DETR litter checkpoint.
-  --model-url URL        HTTPS URL used when the checkpoint is absent.
+  --backend NAME         grounding_dino (default) or rfdetr.
+  --model VALUE          Public model ID or local RF-DETR checkpoint path.
+  --model-url URL        Optional HTTPS URL for an RF-DETR checkpoint.
   --model-sha256 DIGEST  Required SHA-256 for --model-url.
   --device VALUE         auto, cpu, cuda, cuda:0, etc.
   --database PATH        SQLite count/observation store.
@@ -61,9 +67,10 @@ Options:
   -h, --help              Show this help.
 
 Environment equivalents:
-  LITTER_SOURCE, LITTER_MODEL, LITTER_MODEL_URL, LITTER_MODEL_SHA256,
-  LITTER_DEVICE, LITTER_DATABASE, LITTER_EDGE_DEVICE_ID, LITTER_VEHICLE_ID,
-  LITTER_ROUTE_ID, LITTER_SEPARATION_CONFIG, LITTER_VENV, and LITTER_PYTHON.
+  LITTER_SOURCE, LITTER_BACKEND, LITTER_MODEL, LITTER_MODEL_URL,
+  LITTER_MODEL_SHA256, LITTER_DEVICE, LITTER_DATABASE, LITTER_EDGE_DEVICE_ID,
+  LITTER_VEHICLE_ID, LITTER_ROUTE_ID, LITTER_SEPARATION_CONFIG, LITTER_VENV,
+  and LITTER_PYTHON.
 EOF
 }
 
@@ -102,9 +109,15 @@ while [[ $# -gt 0 ]]; do
       source_value="$2"
       shift 2
       ;;
+    --backend)
+      [[ $# -ge 2 ]] || fail "--backend requires a value."
+      backend_value="$2"
+      shift 2
+      ;;
     --model)
-      [[ $# -ge 2 ]] || fail "--model requires a path."
+      [[ $# -ge 2 ]] || fail "--model requires a value."
       model_path="$2"
+      model_was_set=true
       shift 2
       ;;
     --model-url)
@@ -203,6 +216,24 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ "$max_frames" =~ ^[0-9]+$ ]] || fail "--max-frames must be a non-negative integer."
+case "$(printf '%s' "$backend_value" | tr '[:upper:]-' '[:lower:]_')" in
+  grounding_dino)
+    backend_value="grounding_dino"
+    ;;
+  rfdetr)
+    backend_value="rfdetr"
+    ;;
+  *)
+    fail "--backend must be grounding_dino or rfdetr."
+    ;;
+esac
+if [[ "$model_was_set" != true ]]; then
+  if [[ "$backend_value" == "rfdetr" ]]; then
+    model_path="$project_root/models/rfdetr-nano-litter.pth"
+  else
+    model_path="IDEA-Research/grounding-dino-tiny"
+  fi
+fi
 if [[ "$mode" != "infer" && "$database_enabled" != true ]]; then
   fail "--no-database is supported only for media inference."
 fi
@@ -233,7 +264,7 @@ fi
   'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' ||
   fail "The selected Python must be version 3.10 or newer."
 
-if [[ "$model_path" != /* ]]; then
+if [[ "$backend_value" == "rfdetr" && "$model_path" != /* ]]; then
   model_path="$project_root/$model_path"
 fi
 if [[ "$database_path" != /* ]]; then
@@ -245,20 +276,33 @@ fi
 [[ -n "$edge_device_id" ]] || fail "--edge-device-id cannot be empty."
 [[ -f "$separation_config" ]] || fail \
   "Separation configuration not found: $separation_config"
+mkdir -p \
+  "$project_root/models" \
+  "$project_root/runs" \
+  "$project_root/reports/generated" \
+  "$(dirname "$database_path")"
 
 install_profile="runtime"
-install_extras="runtime,rfdetr"
+if [[ "$backend_value" == "rfdetr" ]]; then
+  model_extra="rfdetr"
+else
+  model_extra="public-model"
+fi
+install_extras="runtime,$model_extra"
 if [[ "$list_cameras" == true ]]; then
   install_profile="discovery"
   install_extras="runtime"
 elif [[ "$mode" == "api" ]]; then
-  install_profile="api"
-  install_extras="runtime,rfdetr,api"
+  install_profile="api-$backend_value"
+  install_extras="runtime,$model_extra,api"
 elif [[ "$mode" == "counts_api" ]]; then
   install_profile="counts-api"
   install_extras="api"
 fi
-install_marker="$venv_dir/.edge-litter-$install_profile-0.6.0"
+if [[ "$install_profile" == "runtime" ]]; then
+  install_profile="runtime-$backend_value"
+fi
+install_marker="$venv_dir/.edge-litter-$install_profile-0.7.0"
 
 if [[ "$skip_install" != true && ( "$reinstall" == true || ! -f "$install_marker" ) ]]; then
   "$python_command" -m pip install --upgrade pip
@@ -272,8 +316,14 @@ if [[ "$list_cameras" == true ]]; then
   exec "$python_command" "$project_root/discover_sources.py" --list-cameras
 fi
 
+if [[ "$backend_value" != "rfdetr" && \
+  ( -n "$model_url" || -n "$model_sha256" || "$force_model_download" == true ) ]]
+then
+  fail "--model-url, --model-sha256, and --force-model-download apply only to rfdetr."
+fi
+
 model_release_file="$project_root/config/model-release.json"
-if [[ "$mode" != "counts_api" && \
+if [[ "$backend_value" == "rfdetr" && "$mode" != "counts_api" && \
   ( ! -f "$model_path" || "$force_model_download" == true ) && \
   -z "$model_url" && -f "$model_release_file" ]]
 then
@@ -296,7 +346,9 @@ print(url + "\t" + sha256)
   fi
 fi
 
-if [[ "$mode" != "counts_api" && ! -f "$model_path" && -z "$model_url" ]]; then
+if [[ "$backend_value" == "rfdetr" && "$mode" != "counts_api" && \
+  ! -f "$model_path" && -z "$model_url" ]]
+then
   discovered_model="$(
     find "$project_root/models" -maxdepth 1 -type f -name '*.pth' -print |
       sort | head -n 1
@@ -314,7 +366,7 @@ if [[ "$mode" != "counts_api" && ! -f "$model_path" && -z "$model_url" ]]; then
   fi
 fi
 
-if [[ "$mode" != "counts_api" && \
+if [[ "$backend_value" == "rfdetr" && "$mode" != "counts_api" && \
   ( ! -f "$model_path" || "$force_model_download" == true ) ]]
 then
   if [[ -n "$model_url" ]]; then
@@ -332,17 +384,18 @@ then
     fi
     "${download_arguments[@]}"
   else
-    fail "Trained litter checkpoint not found at $model_path.
+    fail "RF-DETR checkpoint not found at $model_path.
 
 Provide one of:
-  ./startup.sh --model /path/to/rfdetr-nano-litter.pth
-  ./startup.sh --model-url HTTPS_URL --model-sha256 SHA256
+  ./startup.sh --backend rfdetr --model /path/to/model.pth
+  ./startup.sh --backend rfdetr --model-url HTTPS_URL --model-sha256 SHA256
 
-The official project checkpoint is pending data collection and training."
+For the public no-training model, run ./startup.sh without --backend."
   fi
 fi
 
 if [[ "$mode" == "api" || "$mode" == "counts_api" ]]; then
+  export LITTER_BACKEND="$backend_value"
   export LITTER_MODEL="$model_path"
   export LITTER_DEVICE="$device_value"
   export LITTER_DATABASE="$database_path"
@@ -411,6 +464,7 @@ inference_arguments=(
   "$python_command"
   "$project_root/infer.py"
   --source "$source_value"
+  --backend "$backend_value"
   --model "$model_path"
   --device "$device_value"
   --separation-config "$separation_config"
@@ -463,6 +517,7 @@ fi
 
 printf 'Starting litter detection\n'
 printf '  source: %s\n' "$(source_for_log "$source_value")"
+printf '  backend: %s\n' "$backend_value"
 printf '  model:  %s\n' "$model_path"
 printf '  events: %s\n' "$events_output"
 printf '  summary: %s\n' "$summary_output"

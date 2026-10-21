@@ -3,8 +3,8 @@ services:
     build:
       context: .
     environment:
-      LITTER_BACKEND: rfdetr
-      LITTER_MODEL: /app/models/rfdetr-nano-litter.pth
+      LITTER_BACKEND: grounding_dino
+      LITTER_MODEL: IDEA-Research/grounding-dino-tiny
       LITTER_CLASSES: /app/config/classes.yaml
       LITTER_DEVICE: cpu
       LITTER_DATABASE: /app/state/litter-edge.db
@@ -14,9 +14,10 @@ services:
     ports:
       - "8088:8088"
     volumes:
-      - ./models:/app/models:ro
       - litter-state:/app/state
+      - litter-model-cache:/home/litter/.cache
     restart: unless-stopped
 
 volumes:
   litter-state:
+  litter-model-cache:

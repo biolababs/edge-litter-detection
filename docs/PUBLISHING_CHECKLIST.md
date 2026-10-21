@@ -11,8 +11,9 @@
 - [x] Secret scan, unit tests, syntax checks, and release validation pass.
 - [ ] Independently verify public documentation and technical claims.
 
-The source release may state that data, model training, and results are pending.
-It must not imply that the litter model has already been validated.
+The source release can state that representative accuracy and device results
+are pending. It must not imply that the public model has already been validated
+for every deployment.
 
 ## Blocking before the validated research/model release
 
@@ -22,7 +23,7 @@ It must not imply that the litter model has already been validated.
 - [ ] Complete ethics/privacy review for new camera data.
 - [ ] Freeze the class schema, dataset version, and held-out split.
 - [ ] Annotate track-level ground truth for counting evaluation.
-- [ ] Train and freeze the RF-DETR Nano litter checkpoint.
+- [x] Freeze the public model ID and configurable default prompt catalog.
 - [x] Prepare detection/classification and aggregate counting evaluators.
 - [ ] Run detection/classification and counting accuracy evaluation.
 - [ ] Recapture the Jetson inventory before the authorized validation run.
@@ -44,7 +45,8 @@ It must not imply that the litter model has already been validated.
 
 ## Artifact release
 
-- [ ] Record data, model, export, and environment checksums.
+- [ ] Record evaluation data, selected model revision, optional export, and
+      environment checksums.
 - [ ] Publish large weights as release assets or through an appropriate model
       registry, not normal Git blobs.
 - [ ] Attach the model card, dataset statement, target accuracy, counting

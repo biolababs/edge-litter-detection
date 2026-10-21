@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.0 - 2026-10-21
+
+- Made public Grounding DINO Tiny the automatically downloaded default model.
+- Removed custom training and a private checkpoint as prerequisites for normal
+  use.
+- Expanded the default operational catalog from five fixed classes to 16
+  configurable open-vocabulary litter prompts.
+- Retained RF-DETR training and checkpoints as an optional advanced profile.
+- Updated the launcher, API, container, deployment profiles, tests, and
+  documentation for the public-model workflow.
+- Removed unnecessary `.gitkeep` placeholder files; runtime directories are
+  created when needed.
+
 ## 0.6.0 - 2026-10-21
 
 - Added default offline SQLite persistence for runs, frame counts, class

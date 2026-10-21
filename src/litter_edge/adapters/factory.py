@@ -11,9 +11,25 @@ def create_detector(
     confidence: float,
     device: str,
     optimize: bool = True,
+    class_prompts: dict[int, str] | None = None,
+    iou: float = 0.6,
+    max_detections: int = 100,
 ) -> Detector:
     normalized = backend.strip().lower()
     resolved_device = resolve_torch_device(device)
+    if normalized in {"grounding_dino", "grounding-dino"}:
+        from .grounding_dino import GroundingDINODetector
+
+        return GroundingDINODetector(
+            model_reference=model,
+            class_names=class_names,
+            class_prompts=class_prompts,
+            confidence=confidence,
+            device=resolved_device,
+            optimize=optimize,
+            nms_iou=iou,
+            max_detections=max_detections,
+        )
     if normalized == "rfdetr":
         from .rfdetr import RFDETRDetector
 
@@ -24,4 +40,6 @@ def create_detector(
             device=resolved_device,
             optimize=optimize,
         )
-    raise ValueError(f"Unsupported backend '{backend}'. Expected 'rfdetr'.")
+    raise ValueError(
+        f"Unsupported backend '{backend}'. Expected 'grounding_dino' or 'rfdetr'."
+    )

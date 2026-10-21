@@ -1,5 +1,6 @@
 # Future authorized Jetson test window only: install NVIDIA-compatible
 # torch/torchvision for JetPack 6.2.3 first. See docs/JETSON_SETUP.md.
-rfdetr>=1.10,<1.11
+transformers>=4.56,<6
+Pillow>=10,<13
 PyYAML>=6.0,<7
 

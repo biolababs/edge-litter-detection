@@ -14,8 +14,8 @@ Public location:
 - Results remain explicitly pending until target data and hardware tests exist.
 - The repository was created under `biolababs`, and `main` was pushed.
 
-RF-DETR checkpoint, dataset, image, thesis, and model-weight redistribution
-terms remain separate release decisions.
+Public and custom model weights, datasets, images, thesis material, and derived
+artifact redistribution terms remain separate release decisions.
 
 ## Suggested repository settings
 
@@ -29,7 +29,8 @@ terms remain separate release decisions.
 
 ## Release boundary
 
-The first source release may include code, documentation, tests, and the
-prospective thesis. It must not include unlicensed data or unvalidated model
-weights. A later model release should carry its own model card, dataset version,
-checksums, hardware results, and third-party notices.
+The source release includes code, documentation, tests, and the prospective
+thesis. The public default model is downloaded from its upstream source rather
+than committed to Git. Any later custom model release should carry its own
+model card, dataset version, checksums, hardware results, and third-party
+notices.

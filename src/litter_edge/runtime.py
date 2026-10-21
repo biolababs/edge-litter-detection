@@ -11,7 +11,7 @@ from typing import Any, Iterator
 from urllib.parse import urlsplit
 
 from .adapters import create_detector
-from .classes import load_class_names
+from .classes import load_class_names, load_class_prompts
 from .common import environment_manifest, utc_now, write_json
 from .pipeline import LitterPipeline
 from .schema import FrameOutcome
@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("--config", default="config/project.yaml")
-    parser.add_argument("--backend", choices=("rfdetr",))
+    parser.add_argument("--backend", choices=("grounding_dino", "rfdetr"))
     parser.add_argument("--model")
     parser.add_argument("--class-names")
     parser.add_argument("--separation-config")
@@ -229,6 +229,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model_reference = args.model or settings.model
     class_names_path = args.class_names or str(settings.class_names_file)
     class_names = load_class_names(class_names_path)
+    class_prompts = load_class_prompts(class_names_path, class_names)
     separation_config = (
         args.separation_config or str(settings.separation_policy_file)
     )
@@ -255,6 +256,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         confidence=confidence,
         device=device,
         optimize=args.optimize,
+        class_prompts=class_prompts,
+        iou=settings.iou,
+        max_detections=settings.max_detections,
     )
     pipeline = LitterPipeline(
         detector=detector,

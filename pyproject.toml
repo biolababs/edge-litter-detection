@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "litter-edge"
-version = "0.6.0"
+version = "0.7.0"
 description = "Portable edge litter detection, classification, tracking, and counting"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,6 +16,7 @@ keywords = [
   "edge-ai",
   "litter-detection",
   "object-detection",
+  "grounding-dino",
   "rfdetr",
   "computer-vision",
 ]
@@ -33,6 +34,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+public-model = [
+  "torch>=2.2",
+  "transformers>=4.56,<6",
+  "Pillow>=10,<13",
+]
 rfdetr = [
   "rfdetr>=1.10,<1.11",
 ]

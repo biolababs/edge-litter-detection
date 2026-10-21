@@ -76,8 +76,9 @@ def main() -> None:
         "processor": platform.processor(),
         "python": sys.version,
         "packages": {
-            "rfdetr": package("rfdetr"),
             "torch": package("torch"),
+            "transformers": package("transformers"),
+            "rfdetr": package("rfdetr"),
             "onnxruntime": package("onnxruntime"),
             "openvino": package("openvino"),
             "tensorrt": package("tensorrt"),

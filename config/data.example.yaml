@@ -4,11 +4,22 @@ train: images/train
 val: images/val
 test: images/test
 
-# Replace this provisional taxonomy only through a versioned schema decision.
+# Optional custom RF-DETR training example. Keep aligned with classes.yaml.
 names:
-  0: glass
-  1: metal
-  2: paper_cardboard
-  3: plastic
-  4: other_litter
+  0: plastic_bottle
+  1: glass_bottle
+  2: metal_can
+  3: paper
+  4: cardboard
+  5: plastic_bag
+  6: food_wrapper
+  7: disposable_cup
+  8: cigarette_butt
+  9: food_waste
+  10: textile
+  11: tire
+  12: battery
+  13: electronic_waste
+  14: broken_glass
+  15: other_litter
 

@@ -2,86 +2,78 @@
 
 ## Question
 
-Does the RF-DETR Nano implementation detect, classify, track, and count litter
-accurately enough for the defined edge-monitoring use case?
+Does the public Grounding DINO Tiny implementation detect, classify, track, and
+count litter accurately and efficiently enough for the defined operational use
+case?
 
-This study does not compare model families or build a model leaderboard.
+The study evaluates the solution. It does not compare detector families or
+build a leaderboard.
 
 ## Validation conditions
 
 | Condition | Purpose |
 |---|---|
-| RF-DETR Nano source checkpoint | Establish test-set detection/classification accuracy |
-| Target runtime artifact | Verify exported-model accuracy is retained |
-| Full video application | Validate tracking, counting, and operational behavior |
+| Frozen public model ID, prompt catalog, and thresholds | Establish reproducible detection/classification behavior |
+| Full video application | Validate tracking, counting, persistence, and review behavior |
+| Intended edge runtime | Validate latency, memory, power, temperature, and stability |
 
-All conditions use the same dataset schema and frozen held-out test material.
-An exported artifact is checked against its source checkpoint to detect
-conversion regressions, not to declare one model better than another.
+If an optimized runtime artifact is introduced, it is checked against the same
+frozen public-model configuration for unacceptable regression. That is runtime
+validation, not model comparison.
 
-## Detection and classification accuracy
+## Detection and classification
 
-- mAP50-95 and mAP50;
-- per-class AP;
-- precision, recall, and F1 at the declared operating threshold;
-- confusion matrix;
-- performance by object size;
-- errors by lighting, weather, site type, occlusion, clutter, and camera
-  distance.
+- precision, recall, F1, mAP50, and mAP50-95;
+- per-class results and confusion analysis;
+- results by object size, lighting, weather, site type, occlusion, clutter, and
+  camera distance;
+- review volume and human correction rate.
 
-## Counting accuracy
+## Counting
 
 - per-frame absolute count error by class;
-- mean absolute error across frames;
-- unique-session count error by class;
-- duplicate-track rate;
-- missed-track rate;
-- class reassignment rate within a track;
-- count error by camera motion, occlusion, density, and scene cut.
+- visible-count mean absolute error;
+- unique-run count error;
+- duplicate-track and missed-track rates;
+- class reassignment within a track;
+- errors by motion, occlusion, density, and scene cut.
 
-Counting ground truth will be annotated at the track/session level on a
-representative video subset. Detection mAP cannot substitute for count
-validation.
+Track-level ground truth is required for identity-based count metrics. Detection
+mAP cannot substitute for count validation.
 
 ## Operational acceptance
 
 The application must:
 
-- process the declared input source reliably;
+- process the declared source reliably;
 - produce boxes, classes, confidence, track IDs, counts, and timestamps;
-- retain streaming JSONL evidence if the process is interrupted;
+- preserve SQLite and JSONL evidence across normal interruption;
 - avoid sustained memory growth and swap-dependent operation;
-- preserve sufficient memory for other services on a shared device;
+- preserve declared memory for co-resident services;
 - avoid sustained thermal throttling;
-- clearly record the hardware and runtime environment.
+- record the model, prompts, hardware, and runtime environment.
 
 The provisional Jetson target is at least 15 source-to-result frames per second
-under the declared coexistence condition. This is an application acceptance
-target, not a comparison metric and not an achieved result.
+under the declared coexistence condition. It is an acceptance target, not an
+achieved result.
 
 ## Procedure
 
-1. Freeze the class schema, data version, and site/session-level split.
-2. Annotate a representative video subset with persistent ground-truth object
-   identities for count evaluation.
-3. Train RF-DETR Nano using training and validation data only.
-4. Choose confidence and tracking thresholds using validation data.
-5. Freeze the checkpoint, thresholds, and test protocol.
-6. Evaluate detection and classification accuracy once on the held-out test
-   set.
-7. Evaluate visible and unique-session count accuracy on the track-annotated
-   video subset.
-8. Export the frozen checkpoint for the intended edge runtime.
-9. Confirm that export does not create an unacceptable accuracy regression.
-10. Run a sustained full-application test and capture the environment,
-    throughput, memory, temperature, and failure evidence.
-11. Analyze false detections, missed detections, class errors, duplicate counts,
-    missed counts, and track merges.
-
-The repository supplies `evaluate.py` for the frozen RF-DETR checkpoint and
-`evaluate_counts.py` for aggregate visible/session count annotations. Detailed
-duplicate-track, missed-track, and identity-switch rates additionally require
-persistent object identities in the video ground truth.
+1. Freeze the model revision, class schema, prompts, source inventory, and
+   grouped development/test split.
+2. Annotate representative images and videos, including persistent object
+   identities for the count subset.
+3. Refine prompts and confidence/tracking thresholds using development data
+   only.
+4. Freeze configuration before opening the held-out test set.
+5. Measure detection, classification, review, and count accuracy.
+6. Run sustained full-application tests on the intended device.
+7. Capture throughput, latency, memory, temperature, power, and failure
+   evidence.
+8. Analyze false detections, misses, class errors, duplicate counts, missed
+   counts, and track merges.
+9. Consider an optimized runtime or custom model only when the measured
+   baseline fails a documented acceptance requirement.
 
 ## Pending results
 

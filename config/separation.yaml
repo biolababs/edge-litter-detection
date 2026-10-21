@@ -1,13 +1,27 @@
 # Operator-configurable separation guidance. These labels are workflow
 # destinations, not universal recycling rules.
-schema_version: "1.0"
+schema_version: "2.0"
 destinations:
-  glass: glass_stream
-  metal: metal_stream
-  paper_cardboard: fiber_stream
-  plastic: plastic_stream
+  plastic_bottle: plastic_stream
+  glass_bottle: glass_stream
+  metal_can: metal_stream
+  paper: fiber_stream
+  cardboard: fiber_stream
+  plastic_bag: film_plastic_stream
+  food_wrapper: manual_sort
+  disposable_cup: manual_sort
+  cigarette_butt: residual_waste
+  food_waste: organics_stream
+  textile: textile_stream
+  tire: tire_recovery
+  battery: hazardous_waste
+  electronic_waste: electronic_waste
+  broken_glass: hazardous_glass
   other_litter: manual_sort
 review:
   confidence_below: 0.55
   always_review:
+    - battery
+    - electronic_waste
+    - broken_glass
     - other_litter

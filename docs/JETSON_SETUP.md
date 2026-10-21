@@ -9,7 +9,7 @@ A read-only inventory on 20 October 2026 confirmed:
 - MAXN_SUPER power mode;
 - 7.4 GiB physical memory, with 4.5 GiB available in the captured snapshot;
 - TensorRT 10.3.0 for Python;
-- no PyTorch or RF-DETR package in the system Python;
+- no PyTorch or project detector runtime in the system Python;
 - active local LLM, application, and development services;
 - no camera device present.
 
@@ -52,7 +52,7 @@ Preferred options:
 1. A version-pinned NVIDIA-compatible container with explicit memory and port
    limits.
 2. A dedicated environment using NVIDIA-compatible framework builds, only if a
-   container cannot support RF-DETR.
+   container cannot support the public Grounding DINO runtime.
 
 The commands below are a future procedure, not authorization to execute them:
 
@@ -115,43 +115,34 @@ Do not stop or reconfigure existing services for a benchmark. If the device
 owner later authorizes an exclusive benchmark, report it separately from the
 normal coexistence condition.
 
-## RF-DETR export and runtime validation
+## Public-model runtime validation
 
-Start with a recorded-video FP16 smoke test because no camera was connected at
-inventory time. RF-DETR export must occur only in the approved test window.
-
-```bash
-python export_model.py \
-  --backend rfdetr \
-  --weights runs/litter/rfdetr-nano-baseline/checkpoint_best_ema.pth \
-  --format onnx \
-  --precision fp32 \
-  --output-dir models
-```
-
-ONNX provides a portable interchange artifact, but it is not a Jetson
-deployment result. Validate its output contract and accuracy before integrating
-an ONNX Runtime or TensorRT adapter. A later TensorRT export can be attempted
-only in the controlled target environment:
+Start with a recorded-video smoke test because no camera was connected at
+inventory time:
 
 ```bash
-python export_model.py \
-  --backend rfdetr \
-  --weights runs/litter/rfdetr-nano-baseline/checkpoint_best_ema.pth \
-  --format tensorrt \
-  --precision fp16 \
-  --output-dir models
+LITTER_PYTHON="$PWD/.venv/bin/python" \
+  ./startup.sh --skip-install \
+  --backend grounding_dino \
+  --source sample.mp4 \
+  --device cuda \
+  --no-display
 ```
 
-INT8 is deferred until representative training-domain calibration images and a
-validated export/runtime path exist. Rebuild target-specific artifacts after
-any material JetPack/TensorRT change.
+The first authorized run downloads and caches
+`IDEA-Research/grounding-dino-tiny` unless the model cache is populated in the
+isolated environment beforehand. Measure the reference runtime before deciding
+whether an optimized NVIDIA platform service or exported artifact is required.
+
+Any optimized path must preserve the configured prompt/output contract and be
+re-evaluated on the same held-out data. INT8 is deferred until representative
+calibration data and a validated runtime path exist.
 
 ## Official references
 
 - NVIDIA JetPack: https://developer.nvidia.com/embedded/jetpack
 - NVIDIA Jetson Orin Nano series:
   https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/nano-super-developer-kit/
-- RF-DETR export documentation:
-  https://rfdetr.roboflow.com/latest/learn/export/
+- Transformers Grounding DINO:
+  https://huggingface.co/docs/transformers/model_doc/grounding-dino
 

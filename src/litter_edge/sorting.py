@@ -36,8 +36,8 @@ def load_separation_policy(
     with Path(path).open("r", encoding="utf-8") as handle:
         payload: dict[str, Any] = yaml.safe_load(handle) or {}
 
-    if payload.get("schema_version") != "1.0":
-        raise ValueError("Separation policy schema_version must be '1.0'.")
+    if payload.get("schema_version") not in {"1.0", "2.0"}:
+        raise ValueError("Separation policy schema_version must be '1.0' or '2.0'.")
     destinations = payload.get("destinations")
     if not isinstance(destinations, dict) or not destinations:
         raise ValueError("Separation policy requires a destinations mapping.")

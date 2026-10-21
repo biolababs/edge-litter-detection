@@ -7,9 +7,9 @@ from litter_edge.settings import load_settings
 
 VALID_CONFIG = """
 project_name: litter
-backend: rfdetr
-model: models/rfdetr-nano-litter.pth
-base_model: rfdetr-nano
+backend: grounding_dino
+model: IDEA-Research/grounding-dino-tiny
+base_model: IDEA-Research/grounding-dino-tiny
 class_names: config/classes.yaml
 task: detect
 image_size: 640
@@ -39,10 +39,10 @@ class SettingsTests(unittest.TestCase):
             path = Path(temporary) / "project.yaml"
             path.write_text(VALID_CONFIG, encoding="utf-8")
             settings = load_settings(path)
-        self.assertEqual(settings.backend, "rfdetr")
-        self.assertEqual(settings.model, "models/rfdetr-nano-litter.pth")
+        self.assertEqual(settings.backend, "grounding_dino")
+        self.assertEqual(settings.model, "IDEA-Research/grounding-dino-tiny")
         self.assertEqual(settings.image_size, 640)
-        self.assertEqual(settings.run_name, "rfdetr-nano-baseline")
+        self.assertEqual(settings.run_name, "rfdetr-nano-custom")
         self.assertEqual(settings.engine_workspace_gb, 1)
         self.assertEqual(settings.maximum_incremental_memory_gb, 2.0)
         self.assertTrue(settings.tracking_enabled)
@@ -59,6 +59,32 @@ class SettingsTests(unittest.TestCase):
             path.write_text(VALID_CONFIG.replace("640", "650"), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "multiple of 32"):
                 load_settings(path)
+
+    def test_accepts_optional_rfdetr_backend(self) -> None:
+        config = VALID_CONFIG.replace(
+            "backend: grounding_dino",
+            "backend: rfdetr",
+        )
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "project.yaml"
+            path.write_text(config, encoding="utf-8")
+            settings = load_settings(path)
+        self.assertEqual(settings.backend, "rfdetr")
+
+    def test_loads_nested_optional_training_settings(self) -> None:
+        config = VALID_CONFIG + """
+custom_training:
+  base_model: rfdetr-nano
+  epochs: 12
+  run_name: site-custom
+"""
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "project.yaml"
+            path.write_text(config, encoding="utf-8")
+            settings = load_settings(path)
+        self.assertEqual(settings.base_model, "rfdetr-nano")
+        self.assertEqual(settings.epochs, 12)
+        self.assertEqual(settings.run_name, "site-custom")
 
     def test_rejects_preferred_memory_above_hard_limit(self) -> None:
         invalid = VALID_CONFIG.replace(

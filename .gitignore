@@ -17,13 +17,9 @@ data/*
 media/*
 !media/README.md
 models/*
-!models/.gitkeep
 runs/*
-!runs/.gitkeep
 reports/generated/*
-!reports/generated/.gitkeep
 state/*
-!state/.gitkeep
 !state/README.md
 *.engine
 *.onnx

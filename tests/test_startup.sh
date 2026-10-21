@@ -42,22 +42,34 @@ FAKE_PYTHON_LOG="$fake_log" \
 LITTER_PYTHON="$fake_python" \
   "$repository_root/startup.sh" \
   --skip-install \
-  --model "$fake_model" \
   --source 0 \
   --no-display \
   --max-frames 1 >/dev/null
 
 grep -F "$repository_root/infer.py" "$fake_log" >/dev/null
-grep -F -- "--model $fake_model" "$fake_log" >/dev/null
+grep -F -- "--backend grounding_dino" "$fake_log" >/dev/null
+grep -F -- "--model IDEA-Research/grounding-dino-tiny" "$fake_log" >/dev/null
 grep -F -- "--source 0" "$fake_log" >/dev/null
 grep -F -- "--max-frames 1" "$fake_log" >/dev/null
+
+FAKE_PYTHON_LOG="$fake_log" \
+LITTER_PYTHON="$fake_python" \
+  "$repository_root/startup.sh" \
+  --skip-install \
+  --backend rfdetr \
+  --model "$fake_model" \
+  --source 0 \
+  --no-display \
+  --max-frames 1 >/dev/null
+
+grep -F -- "--backend rfdetr" "$fake_log" >/dev/null
+grep -F -- "--model $fake_model" "$fake_log" >/dev/null
 
 stream_output="$(
   FAKE_PYTHON_LOG="$fake_log" \
   LITTER_PYTHON="$fake_python" \
     "$repository_root/startup.sh" \
     --skip-install \
-    --model "$fake_model" \
     --source "rtsp://user:secret@example.test/live?token=abc" \
     --no-display \
     --max-frames 1

@@ -17,13 +17,13 @@ Example:
   "timestamp_seconds": 1.4,
   "inference_ms": 31.2,
   "visible_counts": {
-    "plastic": 2
+    "plastic_bottle": 2
   },
   "confirmed_visible_counts": {
-    "plastic": 2
+    "plastic_bottle": 2
   },
   "unique_session_counts": {
-    "plastic": 3
+    "plastic_bottle": 3
   },
   "newly_confirmed_track_ids": [
     7
@@ -37,8 +37,8 @@ Example:
         210.0
       ],
       "confidence": 0.91,
-      "class_id": 3,
-      "class_name": "plastic",
+      "class_id": 0,
+      "class_name": "plastic_bottle",
       "track_id": 7,
       "confirmed": true,
       "separation_destination": "plastic_stream",

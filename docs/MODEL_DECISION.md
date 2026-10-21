@@ -1,59 +1,94 @@
-# RF-DETR implementation decision
+# Detector strategy
 
 ## Decision
 
-Use RF-DETR Nano to implement the litter use case. This project does not rank
-or compare detector families.
+Use public Grounding DINO Tiny as the default detector for the reusable
+application.
 
-RF-DETR Nano was chosen as a compact, fine-tunable detector with a documented
-Python API and export paths including ONNX, TensorRT, and TFLite. A validated
-ONNX artifact can also be integrated with a compatible runtime such as
-OpenVINO. The implementation remains behind a small adapter so the
-tracking/counting core is not coupled to PyTorch or one accelerator.
+This decision makes a fresh clone useful without requiring every user to build
+a dataset, train a model, obtain a private checkpoint, or configure an API key.
+The model is loaded through Hugging Face Transformers and cached locally after
+the first download.
+
+The application remains a single litter use case, not a model-comparison
+project. RF-DETR is retained only as an optional closed-set profile for teams
+that later choose to create or license a specialized checkpoint.
+
+## Why an open-vocabulary default
+
+An open-vocabulary detector accepts text labels at inference time. Therefore:
+
+- the operational catalog is not limited to the five thesis-planning classes;
+- class prompts can be revised without changing code;
+- a municipality or operator can add locally relevant litter categories;
+- the standard tracking, counting, persistence, review, and integration layers
+  work before custom training data exists.
+
+The versioned output names and detector prompts are separate in
+`config/classes.yaml`. Stable output names support databases and APIs while
+prompts can be tuned for the target environment.
+
+## Default catalog
+
+The repository supplies 16 practical prompts covering containers, paper,
+packaging, cigarette waste, organics, textiles, tires, batteries, electronic
+waste, broken glass, and other litter.
+
+This catalog is a starting operational policy, not a claim that visual
+appearance always reveals material composition. Batteries, electronic waste,
+broken glass, generic litter, and low-confidence results enter the human
+review workflow.
 
 ## Use-case acceptance
 
-The implementation is evaluated against the requirements of the litter
-application:
+The implementation is assessed on whether it:
 
-1. Detect visible litter with a bounding box.
-2. Classify it as glass, metal, paper/cardboard, plastic, or other litter.
-3. Maintain a stable track when an object remains visible across frames.
-4. Report current visible counts by class.
-5. Count each confirmed track once per inspection session.
-6. Produce structured evidence and optional annotated media.
-7. Operate within the declared resource limits of the deployment device.
+1. detects visible litter with a bounding box;
+2. assigns a configured operational category;
+3. maintains a stable track while an item remains visible;
+4. reports current visible counts;
+5. counts confirmed track IDs once per run;
+6. persists evidence and review records offline;
+7. exposes integration events to a truck or fleet system; and
+8. operates within the measured limits of the target device.
 
-## Accuracy evaluation
+Accuracy, latency, memory, sustained throughput, and failure conditions must be
+measured using representative scenes. Open-vocabulary capability does not make
+those measurements unnecessary.
 
-The held-out target-domain test set will report:
+## Operational profiles
 
-- precision, recall, F1, mAP50, and mAP50-95;
-- per-class AP and confusion matrix;
-- errors by object size and scene condition;
-- per-frame count mean absolute error;
-- unique-session count error;
-- duplicate-track and missed-track rates.
+### Public profile
 
-There is no model leaderboard. Results answer whether this RF-DETR
-implementation is accurate enough for the defined use case.
+- Backend: `grounding_dino`
+- Model: `IDEA-Research/grounding-dino-tiny`
+- Training required: no
+- API key required: no
+- Classes: configured as text prompts
+- Intended role: immediate reusable baseline and reference deployment
 
-## Deployment formats
+### Optional specialized profile
 
-The same trained checkpoint may be exported to different runtimes to make the
-application usable across edge hardware. Testing two export formats verifies
-portability; it is not a comparison of detector models. Each target retains its
-own environment and accuracy manifest because conversion or quantization can
-change model output.
+- Backend: `rfdetr`
+- Model: user-supplied compatible checkpoint
+- Training required: only if the organization chooses to create a custom model
+- Classes: fixed by the checkpoint
+- Intended role: later accuracy, size, latency, or export optimization
+
+These profiles are implementation choices for the same product workflow. The
+project does not rank model families or publish a leaderboard.
 
 ## LLM/VLM role
 
-An LLM or VLM is not part of the real-time detection, classification, tracking,
-or counting path. The target Jetson already hosts LLM services, and adding
-another continuous model would create unnecessary resource contention.
+An LLM is not needed in the continuous detection, tracking, or counting loop.
+Language prompts configure the Grounding DINO detector, but a separate
+generative LLM service is not required.
 
-## Sources
+## Primary references
 
-- RF-DETR documentation: https://rfdetr.roboflow.com/
-- RF-DETR export documentation: https://rfdetr.roboflow.com/latest/learn/export/
+- Grounding DINO repository: https://github.com/IDEA-Research/GroundingDINO
+- Grounding DINO Tiny model card:
+  https://huggingface.co/IDEA-Research/grounding-dino-tiny
+- Transformers Grounding DINO documentation:
+  https://huggingface.co/docs/transformers/model_doc/grounding-dino
 - RF-DETR repository: https://github.com/roboflow/rf-detr

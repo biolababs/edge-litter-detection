@@ -2,9 +2,10 @@
 
 ## Scope
 
-This repository implements one use case with RF-DETR Nano: litter detection,
-multiclass classification, tracking, counting, human-assisted separation, and
-operational integration. Contributions should improve that implementation, its
+This repository implements one litter detection, multiclass classification,
+tracking, counting, human-assisted separation, and operational integration use
+case. Grounding DINO Tiny is the public no-training default; RF-DETR is an
+optional custom profile. Contributions should improve the solution,
 portability, accuracy evaluation, persistence, documentation, or operational
 safety. Model-family leaderboards are out of scope.
 
@@ -14,9 +15,9 @@ safety. Model-family leaderboards are out of scope.
 ./startup.sh --list-cameras
 ```
 
-Install the platform-appropriate PyTorch build before RF-DETR when using NVIDIA
-CUDA, AMD ROCm, or Jetson. Advanced contributors may install the editable
-extras directly when they need a customized environment.
+Install the platform-appropriate PyTorch build before model dependencies when
+using NVIDIA CUDA, AMD ROCm, or Jetson. Advanced contributors may install the
+editable extras directly when they need a customized environment.
 
 ## Required checks
 

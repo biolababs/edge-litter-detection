@@ -2,61 +2,59 @@
 
 [![CI](https://github.com/biolababs/edge-litter-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/biolababs/edge-litter-detection/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-Apache--2.0-4c1.svg)](LICENSE)
-[![Model](https://img.shields.io/badge/Detector-RF--DETR%20Nano-7B61FF.svg)](https://github.com/roboflow/rf-detr)
+[![License](https://img.shields.io/badge/Code-Apache--2.0-4c1.svg)](LICENSE)
+[![Default model](https://img.shields.io/badge/Default-Grounding%20DINO%20Tiny-6C63FF.svg)](https://huggingface.co/IDEA-Research/grounding-dino-tiny)
 
-Portable software for real-time litter detection, multiclass classification,
-tracking, counting, and human-assisted material separation on edge-AI devices.
+A reusable edge-AI application that detects, classifies, tracks, and counts
+visible litter from images, videos, attached cameras, and live streams.
 
-The application accepts an image, downloaded video, local camera, or live
-stream and produces annotated media, structured JSON evidence, and a durable
-offline SQLite record. It can operate as a perception component on a cleanup
-or refuse-collection truck while exposing reviewed observations to a larger
-fleet platform. The software is independent of the MSc thesis; the thesis uses
-this repository as its reference implementation.
+The default installation uses the public
+[`IDEA-Research/grounding-dino-tiny`](https://huggingface.co/IDEA-Research/grounding-dino-tiny)
+open-vocabulary model. It downloads automatically on first use, requires no API
+key, and does not require users to collect data or train a model before running
+the application.
 
-## Project status
+The software is designed as a practical perception component for cleanup
+vehicles, refuse-collection trucks, fixed monitoring points, and
+human-assisted sorting workflows. It stores durable operational counts in
+SQLite and exposes review and integration interfaces for a larger system.
 
-| Component | Status |
+## Why this is not limited to five classes
+
+The earlier five-class taxonomy belonged to the MSc research plan. It was too
+narrow for a reusable product and depended on a custom trained checkpoint.
+
+The default operational catalog now contains 16 litter categories:
+
+| Category | Suggested workflow |
 |---|---|
-| Image, video, camera, and stream runtime | Implemented |
-| Five-class RF-DETR adapter | Implemented |
-| Tracking, class stabilization, and counting | Implemented |
-| Offline SQLite observation and count store | Implemented |
-| Human review and configurable separation guidance | Implemented |
-| Vehicle/route metadata and integration outbox | Implemented |
-| Source discovery and input probing | Implemented |
-| CLI, HTTP API, container, tests, and schemas | Implemented |
-| Trained litter checkpoint | Pending data and training |
-| Accuracy and edge-device results | Pending testing |
+| `plastic_bottle` | Plastic stream |
+| `glass_bottle` | Glass stream |
+| `metal_can` | Metal stream |
+| `paper` | Fibre stream |
+| `cardboard` | Fibre stream |
+| `plastic_bag` | Film-plastic stream |
+| `food_wrapper` | Manual sort |
+| `disposable_cup` | Manual sort |
+| `cigarette_butt` | Residual waste |
+| `food_waste` | Organics stream |
+| `textile` | Textile stream |
+| `tire` | Tire recovery |
+| `battery` | Hazardous-waste review |
+| `electronic_waste` | E-waste review |
+| `broken_glass` | Hazardous-glass review |
+| `other_litter` | Manual review |
 
-> [!IMPORTANT]
-> A trained five-class litter checkpoint is not distributed yet. The
-> application code can be installed and its input pipeline can be tested now,
-> but valid litter inference requires a compatible trained checkpoint. The
-> repository does not relabel a generic COCO model as a litter detector.
+These are configuration defaults, not a fixed model output layer. Edit
+[`config/classes.yaml`](config/classes.yaml) to add, remove, rename, or improve
+text prompts without retraining the public model. Edit
+[`config/separation.yaml`](config/separation.yaml) to match the operator's
+local sorting policy.
 
-## What the application returns
-
-- bounding boxes, confidence scores, and litter classes;
-- five classes: `glass`, `metal`, `paper_cardboard`, `plastic`, and
-  `other_litter`;
-- visible counts for each frame;
-- stable track IDs across video frames;
-- unique confirmed-track counts for the active run;
-- configurable separation-stream guidance for each material class;
-- review flags for low-confidence and `other_litter` observations;
-- streaming JSON Lines events;
-- an end-of-run JSON summary;
-- persistent SQLite run, frame-count, review, and integration records;
-- optional annotated images and videos.
-
-One object visible in 100 frames is normally counted once, not 100 times. See
-[Counting semantics](docs/COUNTING.md) for limitations and exact definitions.
+Visual appearance does not always reveal material composition. Low-confidence,
+hazardous, and ambiguous detections are therefore flagged for human review.
 
 ## Quick start
-
-Clone the repository and run the automated launcher:
 
 ```bash
 git clone https://github.com/biolababs/edge-litter-detection.git
@@ -64,98 +62,68 @@ cd edge-litter-detection
 ./startup.sh
 ```
 
-The launcher requires Python 3.10 or newer and automatically selects an
-available Python 3.10–3.12 interpreter.
+That single command:
 
-The launcher creates the Python environment, installs the application,
-discovers a camera or media file, validates the source, runs inference, and
-writes timestamped output under `reports/generated/`. It also creates the
-offline database at `state/litter-edge.db`; no database server is required.
+1. creates an isolated Python environment;
+2. installs the runtime and public model dependencies;
+3. finds an attached camera or a media file under `media/`;
+4. downloads and caches the public model on first use;
+5. runs detection, classification, tracking, and counting;
+6. writes JSON evidence and annotated output; and
+7. persists counts to `state/litter-edge.db`.
 
-After the project checkpoint is released, its URL and checksum will be recorded
-in `config/model-release.json`. A fresh clone will then need no model flags.
+Python 3.10–3.12 is required. The first run needs internet access to install
+packages and download the public model. Later runs use the local environment
+and model cache.
 
-If the default checkpoint is absent, the interactive launcher asks for its
-path. A published checkpoint can be installed and verified in the same command:
-
-```bash
-./startup.sh \
-  --model-url "$LITTER_MODEL_URL" \
-  --model-sha256 "$LITTER_MODEL_SHA256"
-```
-
-Until the project checkpoint is published, supply a compatible trained
-checkpoint:
+Choose an input explicitly when needed:
 
 ```bash
-./startup.sh --model /path/to/rfdetr-nano-litter.pth
-```
-
-Select an input with the same launcher:
-
-```bash
-# Auto-detect the first working camera or file under media/
-./startup.sh
-
-# Specific attached camera
+# Attached camera
 ./startup.sh --source 0
 
-# Downloaded image
+# Image
 ./startup.sh --source ./media/litter.jpg
 
 # Downloaded video
-./startup.sh --source ./media/litter.mp4
+./startup.sh --source ./media/route.mp4
 
-# Live stream
+# Live stream; keep credentials outside the repository
 export LITTER_STREAM_URL="rtsp://camera-host/live"
-./startup.sh --source "$LITTER_STREAM_URL"
-
-# Headless edge device
 ./startup.sh --source "$LITTER_STREAM_URL" --no-display
 
-# Truck/route operational context
+# Vehicle and route context
 ./startup.sh \
   --source 0 \
   --edge-device-id edge-truck-01 \
   --vehicle-id truck-12 \
   --route-id route-a
-
-# HTTP API
-./startup.sh --api
-
-# Counts, review, and integration API; a model is not required
-./startup.sh --counts-api
 ```
 
-Press `q` in the display window or `Ctrl+C` in the terminal to finish a live
-run. Use `./startup.sh --help` for all automation options. Advanced users can
-still call the individual Python commands directly. See
-[Input sources](docs/INPUT_SOURCES.md).
+Press `q` in the display window or `Ctrl+C` in the terminal to stop a live run.
+Run `./startup.sh --help` for all options.
 
-## Output contract
+## Outputs
 
-| Output | Purpose |
-|---|---|
-| Annotated image/video | Visual boxes, labels, confidence, and track IDs |
-| JSONL event stream | One durable event for every processed frame |
-| JSON summary | Run metadata, throughput, peak visible counts, and unique counts |
-| SQLite database | Runs, frame counts, optional detections, review queue, confirmed collections, and integration events |
+| Output | Default location | Purpose |
+|---|---|---|
+| SQLite database | `state/litter-edge.db` | Durable runs, counts, review queue, confirmed collections, and integration outbox |
+| Frame events | `reports/generated/run-*.jsonl` | One structured evidence record per processed frame |
+| Run summary | `reports/generated/run-*-summary.json` | Throughput, source, model, device, and aggregate counts |
+| Annotated media | `reports/generated/run-*-annotated.*` | Boxes, classes, confidence, track IDs, and review status |
 
-Every frame event follows
-[`schemas/detection-event.schema.json`](schemas/detection-event.schema.json).
-Stream credentials and URL query strings are removed from recorded evidence.
-Fleet/outbox payloads follow
-[`schemas/integration-event.schema.json`](schemas/integration-event.schema.json).
+The system reports two different count types:
 
-## Persistent operational counts
+- `visible_counts`: objects visible in the current frame;
+- `unique_session_counts`: confirmed track IDs counted once during the run.
 
-SQLite persistence is enabled by default:
+An object visible in 100 consecutive frames is normally counted once, not 100
+times. Re-entry, long occlusion, scene cuts, and severe camera motion can still
+create duplicate tracks. See [counting semantics](docs/COUNTING.md).
 
-```text
-state/litter-edge.db
-```
+## Persistent counts and human review
 
-Inspect aggregate counts:
+SQLite is enabled by default and needs no database server:
 
 ```bash
 python query_counts.py summary
@@ -165,77 +133,135 @@ python query_counts.py reviews --status pending
 python query_counts.py outbox
 ```
 
-The store uses write-ahead logging so inference and local API readers can use
-the database concurrently. Count records survive application and vehicle
-restarts. Full per-detection rows are disabled by default to control disk use;
-enable them with `./startup.sh --persist-detections`.
-
 The database deliberately separates:
 
-- **observed litter:** model detections and unique tracks;
-- **human-reviewed classification:** confirmed, corrected, or rejected review
-  items;
-- **confirmed collected material:** a separate record submitted by a human,
-  arm controller, or sensor-fusion component.
+- observed litter from model detections and tracks;
+- human-reviewed or corrected classifications; and
+- material independently confirmed as physically collected.
 
-A model detection never becomes a collection claim automatically.
+A detection never becomes a collection claim automatically.
+
+Full per-detection rows are disabled by default to control disk use. Enable
+them with:
+
+```bash
+./startup.sh --persist-detections
+```
 
 ## HTTP API
 
-Start the single-image API through the same launcher:
+Start image detection and operational APIs:
 
 ```bash
 ./startup.sh --api
 ```
 
-Use `--model`, `--model-url`, and `--model-sha256` in the same way as media
-inference.
+Or start only the count, review, collection, and integration APIs:
 
-Check service state:
+```bash
+./startup.sh --counts-api
+```
+
+Examples:
 
 ```bash
 curl http://127.0.0.1:8088/healthz
 curl http://127.0.0.1:8088/readyz
-```
 
-Detect one image:
-
-```bash
 curl \
   -H "Content-Type: image/jpeg" \
   --data-binary @media/litter.jpg \
   http://127.0.0.1:8088/v1/detect
-```
 
-HTTP requests are independent images. Stateful tracking and unique-session
-counting use the CLI.
-
-Read truck and route counts:
-
-```bash
-curl "http://127.0.0.1:8088/v1/counts/summary?vehicle_id=truck-12&route_id=route-a"
+curl "http://127.0.0.1:8088/v1/counts/summary?vehicle_id=truck-12"
 curl "http://127.0.0.1:8088/v1/review-queue?status=pending"
 curl "http://127.0.0.1:8088/v1/integration/events"
 ```
 
-Confirm that a detected item was physically collected:
+The API binds to localhost and has no built-in authentication. Put it behind an
+authenticated gateway before exposing it to a network.
 
-```bash
-curl \
-  -H "Content-Type: application/json" \
-  -d '{
-    "run_id": "RUN_ID",
-    "track_id": 7,
-    "class_name": "plastic",
-    "method": "human",
-    "confirmed_by": "operator-1",
-    "external_reference": "pickup-0001"
-  }' \
-  http://127.0.0.1:8088/v1/collections
+## Cleanup-truck and sorting integration
+
+```text
+camera / stream
+       |
+       v
+public or custom detector
+       |
+       v
+standard detections -> tracking -> visible + unique counts
+       |                              |
+       |                              +-> SQLite / API / fleet outbox
+       v
+operator review and separation guidance
+       |
+       +-> candidate event -> planner -> safety PLC -> collection arm
+                                      |
+                         pickup confirmation -> SQLite / API
 ```
 
-Use `method: "arm_controller"` only when a separate controller has positively
-confirmed the pickup. Detection alone is not confirmation.
+This repository is a perception and evidence component, not a safety-rated
+motion controller. It must not directly energize or move a hydraulic,
+pneumatic, or electric arm. Emergency stops, exclusion zones, proximity
+sensing, interlocks, motion limits, and final actuation authority belong to the
+truck's safety controller. See [truck integration](docs/TRUCK_INTEGRATION.md).
+
+## Model profiles
+
+The repository supports operational profiles, not a model leaderboard.
+
+### Default: public, no training
+
+```bash
+./startup.sh --backend grounding_dino
+```
+
+- model: `IDEA-Research/grounding-dino-tiny`;
+- automatic public download through Hugging Face Transformers;
+- configurable text-prompt categories;
+- no API key;
+- no custom training prerequisite;
+- portable PyTorch reference path for CPU, NVIDIA CUDA, and AMD ROCm.
+
+Open-vocabulary support makes the catalog configurable; it does not guarantee
+equal accuracy for every prompt, scene, object size, city, camera, or weather
+condition. Deployment accuracy and sustained frame rate must be measured on
+representative data and the intended device.
+
+### Optional: custom RF-DETR checkpoint
+
+Organizations may later use a licensed, litter-specific RF-DETR checkpoint
+when they need a smaller closed-set detector, locally optimized accuracy, or a
+target-specific export:
+
+```bash
+./startup.sh \
+  --backend rfdetr \
+  --model /path/to/rfdetr-litter.pth \
+  --source 0
+```
+
+This profile is optional. Training utilities remain in the repository for
+research and advanced customization, but ordinary users do not need them.
+
+## Edge-device portability
+
+| Target | Reference path | Current status |
+|---|---|---|
+| CPU | PyTorch + Transformers | Implemented; performance depends on host |
+| NVIDIA CUDA | PyTorch CUDA | Implemented; device validation required |
+| AMD ROCm / Strix Halo | PyTorch ROCm (`cuda` device API) | Code path implemented; device validation required |
+| Jetson Orin 8 GB | JetPack-compatible PyTorch or optimized platform service | Integration documented; no changes made to the shared device |
+| ONNX/OpenVINO/TensorRT | Target-specific exported adapter | Optional future optimization |
+
+On an accelerator target, install the vendor-supported PyTorch build first and
+set `LITTER_PYTHON` to that environment. The launcher refuses to create a
+generic first-time PyTorch environment on Jetson because it could replace or
+conflict with the JetPack-compatible stack.
+
+No software was installed and no configuration was changed on the currently
+shared Jetson during development of this repository.
 
 ## Container
 
@@ -246,156 +272,73 @@ docker compose build
 docker compose up
 ```
 
-Mount the checkpoint under `models/`. Accelerator deployments should use a
-vendor-compatible PyTorch base environment rather than treating the CPU image
-as an optimized NVIDIA, AMD, or Jetson image.
+The public model is downloaded into the container user's model cache on first
+detection unless a cache volume is added by the deployer. Use a
+vendor-supported base image for NVIDIA, AMD, or Jetson acceleration.
 
-## Train the litter model
+## Evaluation
 
-Prepare YOLO- or COCO-format annotations as documented in
-[`data/README.md`](data/README.md):
+Evaluation checks whether this solution meets the use case; it does not compare
+model families.
 
-```bash
-python -m pip install -e ".[runtime,train]"
-
-python train.py \
-  --model rfdetr-nano \
-  --data data/litter
-```
-
-Training is intended for a workstation or cloud GPU. The trained artifact,
-class schema, dataset version, and threshold configuration must remain
-traceable. “YOLO format” here describes only an annotation layout; the detector
-implemented by this repository remains RF-DETR Nano.
-
-## Evaluate accuracy
-
-Evaluate the single trained checkpoint on a frozen held-out split:
-
-```bash
-python evaluate.py \
-  --weights runs/litter/rfdetr-nano-baseline/checkpoint_best_ema.pth \
-  --data data/litter \
-  --split test \
-  --output reports/generated/detection-accuracy.json
-```
-
-Evaluate frame and unique-session count accuracy:
+Detection/classification metrics can include precision, recall, F1, mAP, and
+per-class results. Counting evaluation reports visible-count and
+unique-session-count error:
 
 ```bash
 python evaluate_counts.py \
-  --events reports/generated/litter-video.jsonl \
+  --events reports/generated/route.jsonl \
   --ground-truth data/count-ground-truth.json \
   --output reports/generated/count-accuracy.json
 ```
 
-These commands evaluate whether the RF-DETR implementation satisfies the
-litter use case. They do not compare model families.
+The public repository does not claim a particular accuracy, frame rate, memory
+use, or power result until measurements are produced from representative data
+on the target deployment.
 
-## Export
+## Optional custom training
 
-Example ONNX export:
+Custom training is not part of the quick start. It is available only for teams
+that have licensed, representative data and need a specialized closed-set
+checkpoint:
 
 ```bash
-python -m pip install "rfdetr[onnx]>=1.10,<1.11"
-
-python export_model.py \
-  --weights runs/litter/rfdetr-nano-baseline/checkpoint_best_ema.pth \
-  --format onnx \
-  --precision fp32
+python -m pip install -e ".[runtime,train]"
+python train.py --model rfdetr-nano --data data/litter
 ```
 
-The export command also exposes TensorRT and TFLite. Every exported artifact
-must be checked for accuracy retention and target-runtime compatibility before
-deployment.
+Dataset licensing, privacy, annotation rules, versioning, checkpoints, and
+evaluation evidence remain the responsibility of the team creating the custom
+model.
 
-## Architecture
+## Software and MSc thesis
 
-```text
-image / video / camera / stream
-                |
-                v
-          RF-DETR adapter
-                |
-                v
-      standard Detection records
-                |
-                v
-       class-stabilized tracking
-                |
-                v
-     visible + unique run counts
-        /          |          |           \
-     JSONL    JSON summary   SQLite    annotated media
-                                |
-                    review queue + outbox/API
-```
+The reusable application and the academic evaluation are separate:
 
-The tracking, counting, event, and API layers are independent of accelerator
-hardware. Runtime-specific adapters can be added without rewriting the
-application core.
+- the repository provides deployable source code, configuration, schemas,
+  tests, persistence, APIs, and integration guidance;
+- the MSc thesis evaluates a versioned configuration on representative data
+  and edge hardware.
 
-## Cleanup-truck integration
+The thesis may evaluate the public default and document optional customization,
+but it is not a prerequisite for cloning or using the application. See
+[software and research separation](docs/SOFTWARE_AND_RESEARCH.md).
 
-The repository is designed as a perception and evidence component rather than
-a standalone robot controller. A typical deployment connects:
+## Repository layout
 
 ```text
-truck camera -> edge inference -> SQLite/WAL -> worker display
-                         |              |
-                         |              +-> fleet API/cloud sync
-                         +-> candidate event -> planner -> safety PLC -> arm
-                                                      |
-                                      pickup confirmation -> SQLite/API
-```
-
-The worker display shows the detected class, confidence, track ID, suggested
-separation stream, and a red `REVIEW` marker when human judgment is required.
-Mappings are operator-configurable in
-[`config/separation.yaml`](config/separation.yaml).
-
-The perception process must not directly energize or move a collection arm.
-Emergency stops, exclusion zones, proximity sensing, motion limits, interlocks,
-and final actuation authority belong to a safety-rated truck controller. See
-[Truck integration](docs/TRUCK_INTEGRATION.md).
-
-## Supported deployment profiles
-
-| Target | Primary path | Status |
-|---|---|---|
-| CPU | RF-DETR/PyTorch | Development and functional testing |
-| NVIDIA CUDA | RF-DETR/PyTorch CUDA | Adapter implemented |
-| AMD ROCm / Strix Halo | RF-DETR/PyTorch ROCm | Code path ready; validation pending |
-| Jetson Orin 8 GB | JetPack-compatible runtime | Read-only inventory complete; deployment pending |
-| ONNX/OpenVINO/TensorRT | Exported artifact plus adapter | Target integration pending |
-
-Hardware results are device-specific and are never generalized across targets.
-
-## Software and thesis separation
-
-This repository has two related but distinct deliverables:
-
-- **Reusable software:** source code, tests, schemas, deployment examples, and
-  software documentation under Apache-2.0.
-- **Research work:** the MSc manuscript, dataset, trained weights, experiments,
-  and measured results, each with separate review and release requirements.
-
-The software can be cloned and deployed without the thesis. The thesis records
-how a versioned commit, dataset, checkpoint, and device configuration are
-evaluated. See [Software and research](docs/SOFTWARE_AND_RESEARCH.md).
-
-## Repository structure
-
-```text
-src/litter_edge/     application package
-config/              class and runtime configuration
-schemas/             stable JSON integration contracts
-state/               ignored local SQLite operational state
-deploy/              CPU, NVIDIA, AMD, and service examples
-docs/                operational and research documentation
-tests/               dependency-light unit tests
+src/litter_edge/     runtime, adapters, tracking, counting, storage, and API
+config/              prompts, class catalog, separation policy, and settings
+schemas/             stable event contracts
+deploy/              CPU, NVIDIA, AMD, Jetson, and service examples
+docs/                operations, architecture, integration, and research docs
+tests/               dependency-light automated tests
 thesis/              prospective MSc manuscript
 ```
+
+Runtime directories such as `models/`, `runs/`, and `reports/generated/` are
+created when needed. Empty placeholder `.gitkeep` files are intentionally not
+published.
 
 ## Validation
 
@@ -403,25 +346,17 @@ thesis/              prospective MSc manuscript
 make validate
 ```
 
-This runs unit tests, release checks, and command-line smoke checks. Target
-accuracy and real-time performance remain pending until the dataset, trained
-checkpoint, and authorized hardware test window exist.
-
-## Security and privacy
+## Security, privacy, and licensing
 
 The project detects litter, not people. Face identification, person
 re-identification, license-plate recognition, behavior scoring, and automated
 enforcement are out of scope.
 
 Do not commit stream credentials, private imagery, datasets, model weights, or
-raw device inventories. The API binds to localhost by default and has no
-built-in authentication; place it behind an authenticated gateway before
-network exposure. See [Security](SECURITY.md).
+raw device inventories.
 
-## License and citation
+Original project code and software documentation are Apache-2.0. Public model
+weights, datasets, exported artifacts, and academic material can have separate
+terms. Review [LICENSE-NOTICE.md](LICENSE-NOTICE.md) before redistribution.
 
-The software and software documentation are licensed under Apache-2.0. Dataset,
-model-weight, generated-result, and academic-manuscript rights remain separate;
-see [License notice](LICENSE-NOTICE.md).
-
-Citation metadata is provided in [`CITATION.cff`](CITATION.cff).
+Citation metadata is in [CITATION.cff](CITATION.cff).

@@ -56,7 +56,6 @@ REQUIRED = [
     "docs/INTEGRATION_EVENTS.md",
     "deploy/systemd/litter-edge-truck.service.example",
     "query_counts.py",
-    "state/.gitkeep",
     "state/README.md",
     "thesis/manuscript.md",
 ]
@@ -175,6 +174,9 @@ def main() -> None:
     class_config = yaml.safe_load(
         (ROOT / "config/classes.yaml").read_text(encoding="utf-8")
     )
+    project_config = yaml.safe_load(
+        (ROOT / "config/project.yaml").read_text(encoding="utf-8")
+    )
     separation_config = yaml.safe_load(
         (ROOT / "config/separation.yaml").read_text(encoding="utf-8")
     )
@@ -184,6 +186,22 @@ def main() -> None:
     }
     if class_names != separation_names:
         errors.append("separation destinations must match configured class names")
+    if project_config.get("backend") != "grounding_dino":
+        errors.append("the default backend must remain the public grounding_dino profile")
+    if project_config.get("model") != "IDEA-Research/grounding-dino-tiny":
+        errors.append("the default public model ID changed without release review")
+    prompts = class_config.get("prompts")
+    names = class_config.get("names")
+    if not isinstance(prompts, dict) or set(prompts) != set(names):
+        errors.append("open-vocabulary prompt IDs must match class IDs")
+    if len(class_names) < 10:
+        errors.append("the reusable default catalog must not regress to a narrow pilot")
+    gitkeep_files = list(ROOT.rglob(".gitkeep"))
+    if gitkeep_files:
+        errors.append(
+            "unnecessary .gitkeep placeholders found: "
+            + ", ".join(str(path.relative_to(ROOT)) for path in gitkeep_files)
+        )
 
     if errors:
         print("\n".join(f"ERROR: {error}" for error in errors), file=sys.stderr)

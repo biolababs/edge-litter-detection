@@ -5,13 +5,14 @@ type: software
 authors:
   - family-names: Babsalaam
     given-names: Abiola A.
-version: 0.6.0
+version: 0.7.0
 date-released: 2026-10-21
 license: Apache-2.0
 repository-code: "https://github.com/biolababs/edge-litter-detection"
 url: "https://github.com/biolababs/edge-litter-detection"
 keywords:
   - litter detection
+  - Grounding DINO
   - RF-DETR
   - NVIDIA Jetson
   - AMD ROCm

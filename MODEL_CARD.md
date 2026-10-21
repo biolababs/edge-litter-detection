@@ -1,110 +1,111 @@
-# Model card: edge litter detector
+# Model card: public edge litter profile
 
-## Model status
+## Status
 
-No trained release model exists yet. This card defines the information that
-must be completed after data collection, training, and target-device evaluation.
+The repository's default runnable profile uses the public
+`IDEA-Research/grounding-dino-tiny` checkpoint through Hugging Face
+Transformers. It is an open-vocabulary reference implementation and does not
+require project-specific training.
 
-## Implementation
-
-- Primary implementation: RF-DETR Nano.
-- Deployment formats under evaluation: PyTorch, ONNX, OpenVINO, TensorRT, and
-  supported vendor artifacts.
-- INT8 is considered only after representative calibration data is available.
-- Confirmed target device: NVIDIA Jetson Orin Nano 8 GB Super, JetPack 6.2.3,
-  L4T 36.5.2, in MAXN_SUPER mode.
-- Deployment condition: coexistence with the device's existing LLM and
-  application services.
-- Additional portability target: compatible AMD ROCm/Strix Halo environment,
-  with results reported separately.
+The model is public, but this repository does not redistribute its weights.
+Transformers downloads the selected revision from its source and stores it in
+the local user cache. Review the upstream model card and terms before
+production or redistribution.
 
 ## Intended use
 
-Detect and classify visible litter items in camera images or video to support
-research into urban cleanliness, environmental monitoring, and assisted waste
-collection.
+Detect and classify visible litter in images or video to support:
 
-The application also reports the number of visible detections and the number of
-confirmed track IDs encountered during the active run. Counting performance
-must be validated separately from detection accuracy.
+- cleanup route observation and counting;
+- worker-assisted litter identification;
+- configurable separation guidance;
+- fixed-camera environmental monitoring;
+- perception input to a larger truck or fleet system.
 
-In a cleanup-truck workflow, the application may show a worker the predicted
-class, confidence, and operator-configured separation stream. Uncertain items
-must remain reviewable. A detection is not evidence that an item was physically
-collected.
+The application reports visible detections and unique confirmed track IDs.
+Counting accuracy must be validated independently of detection accuracy.
 
-The system is decision support. It must not be used to identify, profile,
-penalize, or track people.
+## Default operational catalog
+
+The default configuration contains 16 prompts:
+
+1. plastic bottle;
+2. glass bottle;
+3. metal can;
+4. paper;
+5. cardboard;
+6. plastic bag;
+7. food wrapper;
+8. disposable cup;
+9. cigarette butt;
+10. food waste;
+11. textile;
+12. tire;
+13. battery;
+14. electronic waste;
+15. broken glass; and
+16. other litter.
+
+This is not a fixed output layer. Operators can revise the prompts without
+training. Stable output names should be versioned when databases or external
+consumers depend on them.
+
+## Human review
+
+Low-confidence detections and configured hazardous or ambiguous categories
+enter a review queue. Separation destinations are operator guidance, not a
+universal determination of material composition or recyclability.
 
 ## Out-of-scope use
 
-- Facial recognition or person re-identification.
-- Law-enforcement surveillance.
-- Automated fines or enforcement actions.
-- Hazardous-waste identification without a dedicated, validated dataset.
-- Claims of material composition based solely on appearance.
-- Safety-critical operation without human oversight and independent validation.
-- Direct control of a hydraulic, pneumatic, or electric collection arm.
+- facial recognition, person re-identification, or behavior scoring;
+- license-plate recognition or automated enforcement;
+- hazardous-material certification based only on an image;
+- autonomous collection-arm actuation without an independent safety system;
+- claims that all configured prompts have equal or validated accuracy;
+- deployment without representative accuracy and operational testing.
 
-## Provisional classes
+## Known limitations
 
-1. glass
-2. metal
-3. paper/cardboard
-4. plastic
-5. other litter
+- small, occluded, crushed, transparent, reflective, or dirty litter;
+- visual ambiguity between materials and object types;
+- overlapping prompts that can describe the same object;
+- domain shift across cameras, cities, seasons, weather, and time of day;
+- false positives on non-litter objects;
+- duplicate counts after long occlusion, scene cuts, or re-entry;
+- latency and memory differences across CPU, NVIDIA, AMD, and Jetson targets.
 
-The final ontology must include written inclusion/exclusion rules and an
-`unknown/ambiguous` annotation policy before labeling begins.
-
-## Training data
-
-Pending. Complete:
-
-- source and license;
-- capture dates and sites;
-- camera and resolution;
-- number of images and instances;
-- class distribution;
-- annotation quality process;
-- de-identification method;
-- site/session-level split method.
+The adapter applies class-agnostic non-maximum suppression to reduce duplicate
+boxes produced by overlapping text prompts. This does not eliminate every
+semantic conflict.
 
 ## Evaluation
 
 Report at minimum:
 
-- mAP50-95, mAP50, per-class AP;
-- precision, recall, F1, and confusion matrix;
-- performance by object size and environmental condition;
-- Jetson end-to-end throughput and p50/p95 latency;
-- GPU/CPU/RAM utilization, power mode, power draw, and temperature;
-- sustained-run stability;
-- visible-count error and unique-session count error on annotated video;
-- duplicate-count and missed-count rates;
-- accuracy retention and operational behavior for any quantized artifact.
+- precision, recall, F1, mAP50, mAP50-95, and per-class results;
+- errors by object size and scene condition;
+- per-frame visible-count error;
+- unique-session count error and duplicate-track rate;
+- sustained throughput and p50/p95 latency;
+- process and system memory;
+- temperature, power, and throttling on the target edge device;
+- review volume and operator correction patterns.
 
-## Known risks
+No accuracy, frame-rate, memory, or power result is claimed until the relevant
+measurement is completed.
 
-- small, occluded, dirty, crushed, transparent, or reflective objects;
-- class ambiguity from visual appearance;
-- domain shift across cities, seasons, cameras, weather, and time of day;
-- background and geographic bias;
-- false positives from non-litter objects;
-- privacy risk from bystanders and location metadata;
-- thermal throttling or memory pressure on the edge device.
-- interference with the existing shared-device workload.
-- repeated counts after long occlusion, scene cuts, or fast camera motion;
-- track merges when litter objects overlap.
-- incorrect separation guidance when material cannot be determined visually;
-- unsafe reliance on a detection when an independent controller, proximity
-  sensor, or human safety check disagrees.
+## Optional specialized model
 
-## Use-case release gate
+The repository also contains an RF-DETR adapter and training/evaluation
+utilities for teams that choose to create a licensed, target-specific
+closed-set model. That profile is optional and has its own data, checkpoint,
+license, and validation requirements.
 
-Do not release the implementation until export compatibility, memory
-headroom, accuracy, minority-class recall, sustained performance, data licenses,
-privacy review, checksums, build environment, and limitations are documented.
-The preferred incremental detector memory is at most 1.5 GiB; the hard initial
-limit is 2.0 GiB while preserving at least 2.0 GiB available system memory.
+## Upstream references
 
+- Grounding DINO repository: https://github.com/IDEA-Research/GroundingDINO
+- Public checkpoint:
+  https://huggingface.co/IDEA-Research/grounding-dino-tiny
+- Transformers documentation:
+  https://huggingface.co/docs/transformers/model_doc/grounding-dino

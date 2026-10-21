@@ -43,6 +43,7 @@ def environment_manifest(root: Path) -> dict[str, Any]:
         "platform": platform.platform(),
         "torch": package_version("torch"),
         "torchvision": package_version("torchvision"),
+        "transformers": package_version("transformers"),
         "rfdetr": package_version("rfdetr"),
         "tensorrt": package_version("tensorrt"),
         "git_revision": git_revision(root),

@@ -13,10 +13,10 @@ COPY src ./src
 COPY config ./config
 
 RUN python -m pip install --upgrade pip \
-    && python -m pip install ".[runtime-headless,api,rfdetr]"
+    && python -m pip install ".[runtime-headless,api,public-model]"
 
-RUN mkdir -p /app/models /app/reports/generated /app/state \
-    && chown -R litter:litter /app
+RUN mkdir -p /app/models /app/reports/generated /app/state /home/litter/.cache \
+    && chown -R litter:litter /app /home/litter/.cache
 
 USER litter
 

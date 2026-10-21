@@ -2,99 +2,94 @@
 
 ## Decision
 
-Use a portable application core with RF-DETR Nano as the detector. Train it on
-a separate GPU host and deploy the validated artifact through a
-hardware-specific runtime adapter. Model-family comparison is out of scope.
+Use a portable application core with a public Grounding DINO Tiny adapter as
+the default detector. The model is downloaded automatically and configured with
+text prompts, so users do not need a project-specific training run.
 
-A detector is a better fit than an LLM for the real-time path because the task
-requires localized bounding boxes, repeatable confidence scores, and measurable
-latency. A compact vision-language model may later summarize selected events,
-but it must not replace detector evaluation.
+RF-DETR remains an optional adapter for a later specialized checkpoint. This is
+one litter solution with multiple deployment profiles, not a model leaderboard.
 
 ## Components
 
 1. **Capture**
-   - CSI or USB camera, image directory, video, or RTSP source.
-   - Timestamp and capture-session identifier.
+   - Attached camera, image, downloaded video, or live stream.
+   - Source identifiers are sanitized before evidence is written.
 
-2. **Preprocessing**
-   - Resize/letterbox to the configured image size.
-   - Apply RF-DETR's versioned normalization and tensor layout.
+2. **Detection and classification**
+   - Grounding DINO Tiny is the public open-vocabulary default.
+   - Stable class names and configurable prompts come from
+     `config/classes.yaml`.
+   - Adapters normalize output into the common `Detection` schema.
 
-3. **Detection**
-   - RF-DETR PyTorch is the primary executable adapter.
-   - PyTorch, ONNX, OpenVINO, TensorRT, or a supported vendor runtime.
-   - Confidence and IoU thresholds are versioned in `config/project.yaml`.
+3. **Duplicate suppression**
+   - Class-agnostic non-maximum suppression reduces overlapping boxes caused by
+     semantically overlapping prompts.
 
 4. **Tracking and counting**
-   - Associate detections across frames using class-stabilized IoU tracking.
-   - Report current visible counts and confirmed visible counts.
-   - Count a confirmed track once per process session.
-   - Keep the counting implementation independent of the model runtime.
+   - Class-stabilized IoU tracking associates detections across frames.
+   - Visible objects and confirmed unique run tracks are counted separately.
 
-5. **Event handling**
-   - Detection class, confidence, box, frame identifier, and timing.
-   - Streaming JSON Lines, an end-of-run summary, and optional annotated media.
-   - SQLite runs, frame counts, reviews, collection confirmations, and durable
-     integration outbox events.
-   - No face or identity analytics.
+5. **Human-assisted separation**
+   - `config/separation.yaml` maps classes to operator-defined destinations.
+   - Low-confidence, hazardous, and ambiguous items enter the review queue.
 
-6. **Human-assisted separation**
-   - Map material classes to operator-configured separation streams.
-   - Mark low-confidence and `other_litter` items for review.
-   - Preserve human confirmations and corrections separately from model output.
+6. **Evidence and persistence**
+   - Streaming JSON Lines and end-of-run JSON summaries.
+   - Optional annotated media.
+   - SQLite runs, frame observations, aggregate counts, review records,
+     collection confirmations, and durable integration events.
 
-7. **Evidence**
-   - JSON run manifest.
-   - Environment and software versions.
-   - Benchmark timing.
-   - Separate `tegrastats` capture for power, memory, and thermals.
+7. **External integration**
+   - A fleet connector can read the outbox during or after a route.
+   - A human, controller, or sensor-fusion service separately confirms a pickup.
+   - Detection never proves collection.
 
-8. **Optional VLM**
-   - Triggered only for selected frames or offline review.
-   - Receives a de-identified image plus detector output.
-   - Produces natural-language summaries that are never treated as ground truth.
-   - Disabled for the initial deployment because the shared Jetson already
-     hosts LLM services.
+## Runtime flow
 
-## Confirmed deployment constraints
+```text
+image / video / camera / stream
+                |
+                v
+       public/custom adapter
+                |
+                v
+      standard Detection records
+                |
+                v
+     duplicate suppression + tracking
+                |
+                v
+     visible + unique run counts
+        /          |          |           \
+     JSONL    JSON summary   SQLite    annotated media
+                                |
+                    review queue + outbox/API
+```
 
-- Jetson Orin Nano 8 GB Super, JetPack 6.2.3, L4T 36.5.2.
-- Existing local LLM and application services remain untouched.
-- Detector incremental memory target: at most 1.5 GiB preferred, 2.0 GiB hard
-  initial limit.
-- Preserve at least 2.0 GiB available memory during coexistence testing.
-- Mechanical actuation remains outside this process and under a safety-rated
+## Deployment constraints
+
+- The reference core is portable across CPU, NVIDIA CUDA, AMD ROCm, and Jetson.
+- Each target receives its own benchmark and environment manifest.
+- The shared Jetson must not be modified outside an authorized maintenance
+  window.
+- Existing LLM and application services remain untouched.
+- Mechanical actuation stays outside this process and under a safety-rated
   controller.
-- No camera was present during inventory, so use recorded video for the first
-  smoke test.
-- Training remains off-device.
 
-These constraints describe the thesis Jetson. CPU, NVIDIA CUDA workstation, AMD
-ROCm/Strix Halo, and other edge-device runs receive separate environment and
-benchmark manifests.
-
-## Deployment boundary
-
-The application depends on the standard `Detection` schema, not a framework
-object. Hardware-specific adapters convert model output into that schema.
-TensorRT engines remain platform-specific and must be produced for a compatible
-target stack. Keep original checkpoints and export manifests so all deployment
-artifacts are traceable.
-
-SQLite is the offline operational boundary. Detection events can be consumed by
-an operator interface, fleet connector, or task planner, but only an external
-human/controller workflow can create a collection confirmation.
+The thesis Jetson currently has a preferred incremental detector memory target
+of 1.5 GiB, a hard initial limit of 2.0 GiB, and a requirement to preserve at
+least 2.0 GiB available memory during coexistence testing. These are acceptance
+targets, not measured results.
 
 ## Failure behavior
 
-- Missing model/config/source: fail with a clear error.
-- Camera disconnect: record the failure and restart under a service manager.
-- Thermal throttling: flag the benchmark as invalid unless temperature and
-  clock behavior are recorded.
-- Low-confidence or ambiguous object: retain as an uncertain detection; do not
-  force a material classification.
-- Tracking failure or scene cut: retain frame detections and flag the session
-  count as potentially duplicated.
-- VLM unavailable: continue detection without it.
-
+- Missing model runtime, configuration, or source: fail clearly.
+- First public-model download unavailable: retain no false success state and
+  report the connection/cache error.
+- Camera disconnect: record failure and allow a process supervisor to restart.
+- Low-confidence or ambiguous object: preserve it for review.
+- Scene cut or tracking loss: retain frame detections and disclose possible
+  duplicate run counts.
+- SQLite/fleet connection unavailable: keep local outbox records for retry.
+- Safety input unavailable or contradictory: external arm control remains
+  inhibited.

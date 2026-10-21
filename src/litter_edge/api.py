@@ -7,7 +7,7 @@ from threading import Lock
 from typing import Any
 
 from .adapters import create_detector
-from .classes import load_class_names
+from .classes import load_class_names, load_class_prompts
 from .device import resolve_torch_device
 from .settings import load_settings
 from .sorting import load_separation_policy
@@ -43,6 +43,10 @@ class DetectorHolder:
             "LITTER_CLASSES", str(self.settings.class_names_file)
         )
         self.class_names = load_class_names(self.class_names_path)
+        self.class_prompts = load_class_prompts(
+            self.class_names_path,
+            self.class_names,
+        )
         self.separation_config = os.environ.get(
             "LITTER_SEPARATION_CONFIG",
             str(self.settings.separation_policy_file),
@@ -68,6 +72,8 @@ class DetectorHolder:
 
     @property
     def model_configured(self) -> bool:
+        if self.backend in {"grounding_dino", "grounding-dino"}:
+            return bool(self.model_reference.strip())
         return Path(self.model_reference).is_file()
 
     def _get_detector(self) -> Any:
@@ -82,6 +88,9 @@ class DetectorHolder:
                     confidence=self.settings.confidence,
                     device=self.device,
                     optimize=True,
+                    class_prompts=self.class_prompts,
+                    iou=self.settings.iou,
+                    max_detections=self.settings.max_detections,
                 )
         return self._detector
 
@@ -141,7 +150,7 @@ def create_app() -> Any:
     holder = DetectorHolder()
     app = FastAPI(
         title="Edge Litter Detection API",
-        version="0.6.0",
+        version="0.7.0",
         description="Detect, classify, and count litter in an image.",
     )
 
@@ -169,7 +178,7 @@ def create_app() -> Any:
         if not holder.model_configured:
             raise HTTPException(
                 status_code=503,
-                detail="The trained litter checkpoint is not mounted.",
+                detail="The configured detector model is not available.",
             )
         return {
             "status": "ready",

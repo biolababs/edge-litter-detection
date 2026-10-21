@@ -58,28 +58,31 @@ def load_settings(path: str | Path) -> ProjectSettings:
     tracking = raw.get("tracking") or {}
     separation = raw.get("separation") or {}
     storage = raw.get("storage") or {}
+    custom_training = raw.get("custom_training") or raw
     validation = raw.get("validation") or {}
     required_gates = validation.get("operational_gates") or {}
     settings = ProjectSettings(
         project_name=str(_required(raw, "project_name")),
-        backend=str(raw.get("backend", "rfdetr")),
+        backend=str(raw.get("backend", "grounding_dino")),
         model=str(_required(raw, "model")),
-        base_model=str(raw.get("base_model", "rfdetr-nano")),
+        base_model=str(
+            custom_training.get("base_model", "rfdetr-nano")
+        ),
         class_names_file=Path(raw.get("class_names", "config/classes.yaml")),
         task=str(raw.get("task", "detect")),
         image_size=int(raw.get("image_size", 640)),
-        epochs=int(raw.get("epochs", 100)),
-        batch=raw.get("batch", -1),
+        epochs=int(custom_training.get("epochs", 100)),
+        batch=custom_training.get("batch", -1),
         device=raw.get("device", 0),
-        workers=int(raw.get("workers", 8)),
-        seed=int(raw.get("seed", 42)),
-        deterministic=bool(raw.get("deterministic", True)),
-        patience=int(raw.get("patience", 30)),
+        workers=int(custom_training.get("workers", 8)),
+        seed=int(custom_training.get("seed", 42)),
+        deterministic=bool(custom_training.get("deterministic", True)),
+        patience=int(custom_training.get("patience", 30)),
         confidence=float(raw.get("confidence", 0.25)),
         iou=float(raw.get("iou", 0.45)),
         max_detections=int(raw.get("max_detections", 100)),
-        output_dir=Path(raw.get("output_dir", "runs/litter")),
-        run_name=str(raw.get("run_name", "rfdetr-nano-baseline")),
+        output_dir=Path(custom_training.get("output_dir", "runs/litter")),
+        run_name=str(custom_training.get("run_name", "rfdetr-nano-custom")),
         engine_workspace_gb=int(target.get("engine_workspace_gb", 1)),
         preferred_incremental_memory_gb=float(
             required_gates.get("preferred_incremental_memory_gb", 1.5)
@@ -111,8 +114,8 @@ def load_settings(path: str | Path) -> ProjectSettings:
 def validate_settings(settings: ProjectSettings) -> None:
     if settings.task != "detect":
         raise ValueError("This study currently supports task='detect' only.")
-    if settings.backend != "rfdetr":
-        raise ValueError("backend must be 'rfdetr'.")
+    if settings.backend not in {"grounding_dino", "rfdetr"}:
+        raise ValueError("backend must be 'grounding_dino' or 'rfdetr'.")
     if settings.image_size <= 0 or settings.image_size % 32:
         raise ValueError("image_size must be a positive multiple of 32.")
     if settings.epochs <= 0:
