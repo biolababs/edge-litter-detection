@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from io import BytesIO
 import json
 import os
 import random
@@ -270,6 +271,11 @@ def _download_one(
             content = reader(source_url, timeout, MAX_IMAGE_BYTES)
             if not _looks_like_image(content):
                 raise ValueError("content is not JPEG, PNG, or WebP")
+            actual_width, actual_height = _image_dimensions(
+                content,
+                fallback_width=image.get("width"),
+                fallback_height=image.get("height"),
+            )
             extension = _image_extension(image, content)
             filename = f"taco-{image_id:06d}{extension}"
             target = destination / split / filename
@@ -293,6 +299,8 @@ def _download_one(
                     "source_url": source_url,
                     "sha256": hashlib.sha256(content).hexdigest(),
                     "bytes": len(content),
+                    "width": actual_width,
+                    "height": actual_height,
                 },
                 None,
             )
@@ -309,6 +317,50 @@ def _download_one(
             "errors": errors or ["no HTTPS image source was available"],
         },
     )
+
+
+def _image_dimensions(
+    content: bytes,
+    *,
+    fallback_width: object,
+    fallback_height: object,
+) -> tuple[int, int]:
+    try:
+        from PIL import Image
+
+        with Image.open(BytesIO(content)) as image:
+            width, height = image.size
+        if width > 0 and height > 0:
+            return int(width), int(height)
+    except (ImportError, OSError, ValueError):
+        pass
+    try:
+        width = int(fallback_width)
+        height = int(fallback_height)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Downloaded image dimensions could not be determined.") from exc
+    if width <= 0 or height <= 0:
+        raise ValueError("Downloaded image dimensions must be positive.")
+    return width, height
+
+
+def _scaled_segmentation(
+    segmentation: object,
+    scale_x: float,
+    scale_y: float,
+) -> object | None:
+    if not isinstance(segmentation, list):
+        return None
+    scaled: list[list[float]] = []
+    for polygon in segmentation:
+        if not isinstance(polygon, list) or len(polygon) % 2:
+            return None
+        values: list[float] = []
+        for index, coordinate in enumerate(polygon):
+            factor = scale_x if index % 2 == 0 else scale_y
+            values.append(float(coordinate) * factor)
+        scaled.append(values)
+    return scaled
 
 
 def _cached_result(destination: Path) -> dict[str, Any] | None:
@@ -482,20 +534,61 @@ def prepare_training_data(
             continue
         operational_name = TACO_TO_OPERATIONAL.get(source_name, other_name)
         operational_id = class_id_by_name[operational_name]
+        source_image = source_images_by_id[image_id]
+        try:
+            source_width = int(source_image["width"])
+            source_height = int(source_image["height"])
+            actual_width = int(downloaded[image_id]["width"])
+            actual_height = int(downloaded[image_id]["height"])
+        except (KeyError, TypeError, ValueError):
+            invalid_annotations.append(
+                {
+                    "annotation_id": annotation.get("id"),
+                    "reason": "missing_image_dimensions",
+                }
+            )
+            continue
+        if min(source_width, source_height, actual_width, actual_height) <= 0:
+            invalid_annotations.append(
+                {
+                    "annotation_id": annotation.get("id"),
+                    "reason": "invalid_image_dimensions",
+                }
+            )
+            continue
+        scale_x = actual_width / source_width
+        scale_y = actual_height / source_height
+        bbox = [
+            bbox[0] * scale_x,
+            bbox[1] * scale_y,
+            bbox[2] * scale_x,
+            bbox[3] * scale_y,
+        ]
         try:
             annotation_id = int(annotation.get("id", source_index))
         except (TypeError, ValueError):
             annotation_id = source_index
+        source_area = annotation.get("area")
+        area = (
+            float(source_area) * scale_x * scale_y
+            if source_area is not None
+            else bbox[2] * bbox[3]
+        )
         normalized = {
             "id": annotation_id,
             "image_id": image_id,
             "category_id": operational_id,
             "bbox": bbox,
-            "area": float(annotation.get("area") or bbox[2] * bbox[3]),
+            "area": area,
             "iscrowd": int(annotation.get("iscrowd", 0)),
         }
-        if annotation.get("segmentation") is not None:
-            normalized["segmentation"] = annotation["segmentation"]
+        scaled_segmentation = _scaled_segmentation(
+            annotation.get("segmentation"),
+            scale_x,
+            scale_y,
+        )
+        if scaled_segmentation is not None:
+            normalized["segmentation"] = scaled_segmentation
         split = downloaded[image_id]["split"]
         annotations_by_split[split].append(normalized)
         mapped_counts[operational_name] += 1
@@ -522,8 +615,8 @@ def prepare_training_data(
                 {
                     "id": int(record["image_id"]),
                     "file_name": Path(record["local_file"]).name,
-                    "width": int(source_image.get("width") or 0),
-                    "height": int(source_image.get("height") or 0),
+                    "width": int(record["width"]),
+                    "height": int(record["height"]),
                     "license": source_image.get("license"),
                     "date_captured": source_image.get("date_captured"),
                 }
@@ -579,6 +672,8 @@ def prepare_training_data(
         {
             **record,
             "original_file_name": source_images_by_id[image_id].get("file_name"),
+            "annotation_width": source_images_by_id[image_id].get("width"),
+            "annotation_height": source_images_by_id[image_id].get("height"),
             "license": _license_metadata(
                 source_images_by_id[image_id],
                 license_by_id,
@@ -587,7 +682,7 @@ def prepare_training_data(
         for image_id, record in sorted(downloaded.items())
     ]
     manifest = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "dataset": "TACO operational mapping",
         "dataset_repository": TACO_REPOSITORY,
         "annotations_url": annotations_url,
@@ -628,7 +723,9 @@ def prepare_training_data(
             "TACO annotations are CC BY 4.0. Individual images can have "
             "different public licenses. Preserve the per-image metadata in "
             "this manifest and review redistribution terms before publishing "
-            "a derived dataset or model."
+            "a derived dataset or model. Bounding boxes and polygon coordinates "
+            "are scaled from the annotation dimensions to the dimensions of "
+            "the downloaded public image artifact."
         ),
     }
     _atomic_json(destination / "manifest.json", manifest)

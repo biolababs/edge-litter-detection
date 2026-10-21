@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -85,7 +86,10 @@ class TrainingDataTests(unittest.TestCase):
             if url == annotations_url:
                 return json.dumps(source).encode("utf-8")
             if url.startswith("https://example.test/"):
-                return b"\xff\xd8\xff\xe0training-image"
+                return base64.b64decode(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAUCAIAAAA7jDsB"
+                    "AAAAC0lEQVR4nGNgGAWjYBSMAgABtAABkRu9WQAAAABJRU5ErkJggg=="
+                )
             raise AssertionError(url)
 
         with TemporaryDirectory() as temporary:
@@ -118,6 +122,16 @@ class TrainingDataTests(unittest.TestCase):
                 )
                 for split in ("train", "valid", "test")
             }
+            normalized_annotations = [
+                annotation
+                for payload in split_payloads.values()
+                for annotation in payload["annotations"]
+            ]
+            normalized_images = [
+                image
+                for payload in split_payloads.values()
+                for image in payload["images"]
+            ]
 
         self.assertFalse(result["cached"])
         self.assertEqual(
@@ -133,7 +147,22 @@ class TrainingDataTests(unittest.TestCase):
         self.assertEqual(manifest["class_instance_counts"]["plastic_bottle"], 1)
         self.assertEqual(manifest["class_instance_counts"]["metal_can"], 1)
         self.assertEqual(manifest["class_instance_counts"]["other_litter"], 1)
+        self.assertEqual(manifest["schema_version"], "1.1")
         self.assertIn("tire", manifest["classes_without_instances"])
+        self.assertTrue(
+            all(image["width"] == 10 and image["height"] == 20 for image in normalized_images)
+        )
+        first_bbox = next(
+            annotation["bbox"]
+            for annotation in normalized_annotations
+            if annotation["id"] == 101
+        )
+        for observed, expected in zip(
+            first_bbox,
+            [0.1, 0.5, 0.3, 1.0],
+            strict=True,
+        ):
+            self.assertAlmostEqual(observed, expected)
         for payload in split_payloads.values():
             self.assertEqual(len(payload["images"]), 1)
             self.assertEqual(len(payload["annotations"]), 1)

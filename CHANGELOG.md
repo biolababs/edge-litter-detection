@@ -6,6 +6,8 @@
 
 - Added public-checkpoint zero-shot COCO evaluation for the deterministic,
   grouped TACO operational test split.
+- Corrected TACO annotation coordinates when public 640-pixel image artifacts
+  differ from the original annotation dimensions.
 - Added opt-in end-to-end timing profiles covering capture/decode, detector
   preprocessing, model forward, detector postprocessing, tracking and policy,
   JSONL, SQLite, and annotation output.
